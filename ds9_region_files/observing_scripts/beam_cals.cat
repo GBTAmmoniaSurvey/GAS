@@ -1,0 +1,7 @@
+# Calibrator catalog for GAS
+format=spherical
+coordmode=J2000
+head = name   	ra     		dec    
+3C286		13:31:08.3	30:30:33
+3C48		01:37:41.3	33:09:35
+
