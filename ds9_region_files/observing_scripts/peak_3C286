@@ -1,0 +1,23 @@
+# Astrid script to point/focus on 3C286
+# This script assumes the GBT is configured for continuum observations
+# You MUST configure pointing before using this script
+
+# Input sources
+calCat = Catalog("/users/rfriesen/GAS/beam_cals.cat")
+# Include VEGAS setup
+execfile("/users/rfriesen/GAS/vegas_kfpa_config")
+
+# Move near Target so AutoPeak finds the correct point source
+target = '3C286' 
+Slew(target)
+Balance()
+
+# Check which beam is ideal for point/focus:
+AutoPeakFocus(target,                                 #source name
+     	      Offset("Encoder", "00:10:00", 0),       #offset Az
+              Offset("Encoder", 0, "00:10:00"),       #offset El
+              30,beamName='7',refBeam='3')            #time, beam, refbeam
+
+# Make sure we're back to spectral line setup (just in case)
+execfile("/users/rfriesen/GAS/vegas_kfpa_config")
+
