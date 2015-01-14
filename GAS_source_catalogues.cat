@@ -5,6 +5,7 @@ veldef=VRAD-LSR
 # Taurus: Initial selection by Youngmin Seo. TaurusNNN
 # Perseus: Initial selection by Jaime Pineda. L1455, L1451, L1448, NGC1333
 # Orion A: Initial selection by Rachel Friesen. 
+# Orion B: Initial selection by Helen Kirk. 
 HEAD = NAME RA DEC VEL
 Perseus_map_L1455-E    03:28:02.388 +30:10:39.84 4.9
 Perseus_map_L1455-N    03:27:17.343 +30:15:05.40 4.9
@@ -78,3 +79,20 @@ OrionA_map_16 05:40:20 -07:48:15 10.0
 OrionA_map_17 05:41:20 -07:55:00 10.0
 OrionA_map_18 05:41:30 -08:05:00 10.0
 OrionA_map_19 05:40:50 -08:05:00 10.0
+OrionB_map_1	5:41:54.580	-1:44:31.0	10.0
+OrionB_map_2	5:41:14.580	-1:44:31.0	10.0
+OrionB_map_3	5:41:54.580	-1:54:31.0	10.0
+OrionB_map_4	5:41:14.580	-1:54:31.0	10.0
+OrionB_map_5	5:41:31.403	-2:14:31.0	10.0
+OrionB_map_6	5:41:31.403	-2:24:31.0	10.0
+OrionB_map_7	5:42:05.880	-2:04:31.0	10.0
+OrionB_map_8	5:46:07.521	-0:11:20.0	10.0
+OrionB_map_9	5:46:18.000	-0:01:20.0	10.0
+OrionB_map_10	5:46:58.000	-0:01:20.0	10.0
+OrionB_map_11	5:46:18.000	0:08:40.0	10.0
+OrionB_map_12	5:46:58.000	0:08:40.0	10.0
+OrionB_map_13	5:46:58.000	0:18:40.0	10.0
+OrionB_map_14	5:47:38.000	0:18:40.0	10.0
+OrionB_map_15	5:46:18.000	0:23:40.0	10.0
+OrionB_map_16	5:46:18.000	0:28:40.0	10.0
+OrionB_map_17	5:54:20.000	1:46:20.00	10.0
