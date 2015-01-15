@@ -1,0 +1,19 @@
+#Map of a source using the K band 2; assumes previous
+#setup of the configuration.
+#HISTORY 
+# 10APR07 GIL test the sub-beam nodding
+# 09MAR18 GIL map TMC in Hc5n line in upper K band
+# 09MAR07 GIL remove extra breaks
+# 09FEB12 GIL remove extra breaks
+
+#First put in your sources
+calCat = Catalog("/users/rfriesen/GAS/beam_cals.cat")
+
+target = "3C286"
+
+Slew( target)
+#
+Nod( target, "3", "7", scanDuration=30.0)
+Nod( target, "2", "6", scanDuration=30.0)
+Nod( target, "4", "1", scanDuration=30.0)
+Nod( target, "1", "5", scanDuration=30.0)

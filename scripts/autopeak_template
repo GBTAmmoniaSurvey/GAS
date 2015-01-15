@@ -1,0 +1,24 @@
+# Astrid script to find a point source near a target source
+# This script assumes the GBT is configured for continuum observations
+# You must input target for region being observed
+
+# Input sources
+srcCat = Catalog("/users/rfriesen/GAS/GAS_regions.cat")
+# Include VEGAS setup 
+execfile("/users/rfriesen/GAS/vegas_kfpa_config")
+
+# Move near Target so AutoPeak finds the correct point source
+target = srcName 
+Slew(target)
+Balance()
+
+# Auto Peak focus finds the nearest point source near 
+# the observer's target location
+# Check beamName, refBeam parameters
+# AutoPeakFocus() determines its own best configuration automatically 
+# and does not reset the configuration after being run.
+AutoPeakFocus(location=target,flux=0.7,radius=15.0)
+
+# Make sure we're back to spectral line setup (just in case)
+execfile("/users/rfriesen/GAS/vegas_kfpa_config")
+
