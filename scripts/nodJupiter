@@ -1,0 +1,32 @@
+#Map of a source using the K band 2; assumes previous
+#setup of the configuration.
+#HISTORY 
+# 10APR07 GIL test the sub-beam nodding
+# 09MAR18 GIL map TMC in Hc5n line in upper K band
+# 09MAR07 GIL remove extra breaks
+# 09FEB12 GIL remove extra breaks
+
+#First put in your sources
+execfile("/home/astro-util/projects/TKFPA/sources.cat")
+# Set VEGAS configuration
+execfile("/home/astro-util/projects/GAS/ds9_region_files/observing_scripts/vegas_kfpa_config")
+
+target = "JUPITER"
+
+Slew( target)
+Balance()
+#
+#Print "Nodding beams 3 and 7"
+Nod( target, "3", "7", scanDuration=30.0)
+#Print "Nodding beams 2 and 6"
+Nod( target, "2", "6", scanDuration=30.0)
+#Print "Nodding beams 4 and 1"
+Nod( target, "4", "1", scanDuration=30.0)
+#Print "Nodding beams 1 and 5"
+Nod( target, "1", "5", scanDuration=30.0)
+
+
+
+
+
+
