@@ -1,0 +1,17 @@
+# Script to track L1489PPC for calibration
+# One beam only
+
+# Source catalogue
+calCat = Catalog("/home/astro-util/projects/GAS/GAS_source_catalogues.cat")
+
+# Ensure VEGAS spectral line setup
+execfile("/home/astro-util/projects/GAS/ds9_region_files/observing_scripts/vegas_kfpa_config")
+
+# Move to target
+target = 'Standard_L1489PPC'
+Slew(target)
+Balance()
+
+# Track target for 30s
+Track(target,None,30,beamName='1')
+

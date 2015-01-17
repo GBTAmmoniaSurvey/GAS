@@ -1,0 +1,24 @@
+# Read in source catalog
+srcCat = Catalog('/home/astro-util/projects/GAS/GAS_source_catalogues.cat')
+# Set up KFPA VEGAS spectral line configuration
+execfile('/home/astro-util/projects/GAS/ds9_region_files/observing_scripts/vegas_kfpa_config')
+
+# Edit 'source' to map name
+srcName = 'OrionA_map_02'
+
+Slew(srcName)
+Balance()
+
+# Add integration on bright source within region?
+# If so, then slew to brightSource instead, then track, then scan map. 
+#Track(brightSource,None,30.0,"1")
+
+# Start an OTF scan map. 
+# From mapping calculator, tint = 1.044s, swper=0.348s
+# This setup: total time 1.4 hours
+RALongMap(srcName,
+	  Offset("J2000", 10.02/60., 0, cosv=True),
+	  Offset("J2000", 0, 10.02/60., cosv=True),
+  	  Offset("J2000", 0, 12.791/3600., cosv=True),
+	  scanDuration=97.092 )
+
