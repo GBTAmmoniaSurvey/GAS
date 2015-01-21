@@ -27,7 +27,7 @@ for bank in BankNames:
     InputFile = RawDataDir+SessionDir+'AGBT15A_430_'+\
         str(SessionNumber).zfill(2)+\
         '.raw.vegas.{0}.fits'.format(bank)
-    command = 'gbtpipeline -i '+InputFile
+    command = 'gbtpipeline-test -i '+InputFile
     for key in OptionDict:
         command = command+' '+key+' '+OptionDict[key]
     print(command)
