@@ -51,3 +51,33 @@ vegas.vpol  = 'cross'
 """
 
 Configure(vegas_GAS_config)
+
+vegas_TP_GAS_config="""
+receiver    = 'RcvrArray18_26'
+beam        = 'all'
+obstype     = 'Spectroscopy'
+backend     = 'VEGAS'
+restfreq    = [
+			{''restfreq'':23694.4955,''beam'':''1,2,3,4,5,6,7''},
+			{''restfreq'':23722.6336,''beam'':''1,2,3,4,5,6,7''},
+			{''restfreq'':23870.1296,''beam'':''1,2,3,4,5,6,7''},
+			{''restfreq'':23963.9010,''beam'':''1,2,3,4,5,6,7''},
+			{''restfreq'':23687.8974,''beam'':''1,2,3,4,5,6,7''},
+			{''restfreq'':24815.8772,''beam'':''1,2,3,4,5,6,7''},
+			{''restfreq'':22344.03,''beam'':''-1''}]
+deltafreq   = 0
+dopplertrackfreq = 23694.4955
+bandwidth   = 23.44
+swmode      = 'tp'
+swtype      = 'none'
+swper       = 0.348
+tint        = 1.044
+vlow        = 0
+vhigh       = 0
+vframe      = 'lsrk'
+vdef        = 'Radio'
+noisecal    = 'lo'
+pol         = 'Circular'
+nchan       = 'low'
+vegas.vpol  = 'cross'
+"""
