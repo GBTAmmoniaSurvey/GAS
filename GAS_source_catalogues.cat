@@ -6,6 +6,7 @@ veldef=VRAD-LSR
 # Perseus: Initial selection by Jaime Pineda. L1455, L1451, L1448, NGC1333
 # Orion A: Initial selection by Rachel Friesen. 
 # Orion B: Initial selection by Helen Kirk. 
+# Oph: Initial seletion by Hope Chen and Anna Punanova. Modifications by Jaime Pineda.
 # Standard_: Two sources to observe every night. Initial selection by Yancy Shirley.
 HEAD = NAME RA DEC VEL
 Perseus_map_L1455-E    03:28:02.388 +30:10:39.84  4.9
@@ -109,5 +110,18 @@ OrionB_map_14          05:47:38.000 +00:18:40.0  10.0
 OrionB_map_15          05:46:18.000 +00:23:40.0  10.0
 OrionB_map_16          05:46:18.000 +00:28:40.0  10.0
 OrionB_map_17          05:54:20.000 +01:46:20.00 10.0
+Oph_L1688-1            16:26:00     -24:15:00     3.0
+Oph_L1688-2            16:26:00     -24:25:00     3.0
+Oph_L1688-3            16:26:45     -24:20:00     3.0
+Oph_L1688-4            16:26:45     -24:30:00     3.0
+Oph_L1688-5            16:26:45     -24:40:00     3.0
+Oph_L1688-6            16:27:28     -24:23:15     3.0
+Oph_L1688-7            16:27:28     -24:33:15     3.0
+Oph_L1688-8            16:27:28     -24:43:15     3.0
+Oph_L1689-1            16:34:48     -24:38:04     4.0
+Oph_L1689-2            16:32:27     -24:28:35.67  4.0
+Oph_L1689-3            16:31:37.117 -24:49:41.03  4.0
+Oph_L1689-4            16:31:58.622 -24:57:52.83  4.0
+Oph_L1709-1            16:32:40     -23:53:00     2.5
 Standard_L43-E         16:34:35.6   -15:47:02.2   0.94
 Standard_L1489PPC      04:04:47.6   +26:19:17.9   6.85
