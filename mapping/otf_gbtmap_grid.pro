@@ -238,6 +238,7 @@ FOR i=0L, sz-1L DO BEGIN
   endif else begin
     nregion, blwin
     baseline, nfit=blorder
+    print,fshift()
     gshift, fshift()                              ; align spectrum
     radec[i,*]=GetRaDec(!g.s[0])                  ; coordinates are stored
     aux=GetData()
