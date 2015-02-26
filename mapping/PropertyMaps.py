@@ -12,44 +12,42 @@ OneOneFile = 'NGC1333_ABCDEFGH_NH3_11_all_blsub.rg.fits'
 TwoTwoFile = 'NGC1333_ABCDEFGH_NH3_22_all_blsub.fits'
 ThreeThreeFile = 'NGC1333_ABCDEFGH_NH3_33_all_blsub.fits'
 
-w11 = fits.getdata(OneOneIntegrated)
-
-threshold = 0.2
-mask = w11.squeeze() > threshold
-cube11 = pyspeckit.Cube(OneOneFile,maskmap=mask)
-cube11.units="K"
-cube22 = pyspeckit.Cube(TwoTwoFile,maskmap=mask)
-cube22.units="K"
-cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=mask)
-cube33.units="K"
 
 beam11 = Beam.from_fits_header(fits.getheader(OneOneFile))
 cube11sc = SpectralCube.read(OneOneFile)
 cube22sc = SpectralCube.read(TwoTwoFile)
-noisy = signal_id.noise.Noise(cube11sc, beam = beam11)
-noisy.calculate_spatial()
+
+noisy = signal_id.noise.Noise(cube11sc)
+noisy.estimate_noise(spectral_flat=True,niter=2)
 errmap11 = (noisy.spatial_norm*noisy.scale)
 rms = np.nanmedian(errmap11)
-
-cubes = pyspeckit.CubeStack([cube11,cube22,cube33],maskmap=mask)
-cubes.units="K"
-
-peakloc = np.argmax(w11)
+mask = (noisy.snr>5)*(noisy.spatial_norm<2.5)
+maskcube = cube11sc.with_mask(mask)
+maskcube = maskcube.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+slab = maskcube#.spectral_slab(5*u.km/u.s,15*u.km/u.s)
+w11=slab.moment(0,0).value
+peakloc = np.nanargmax(w11)
 xmax,ymax = np.unravel_index(peakloc,w11.shape)
-
-masked11 = cube22sc.with_mask(cube22sc>5*rms)
-nu0 = masked11.header['RESTFRQ']
-moment1 = (((nu0-masked11.moment(1,0).value)/nu0*con.c).to(u.km/u.s)).value
-moment1[np.isnan(moment1)]=8.0
-moment2 = (((masked11.moment(2,0).value)**0.5/nu0*con.c).to(u.km/u.s)).value/5
+moment1 = slab.moment(1,0).value
+moment2 = (slab.moment(2,0).value)**0.5
 moment2[np.isnan(moment2)]=0.2
 moment2[moment2<0.2]=0.2
+
+maskmap = w11>0.5
+cube11 = pyspeckit.Cube(OneOneFile,maskmap=maskmap)
+cube11.units="K"
+cube22 = pyspeckit.Cube(TwoTwoFile,maskmap=maskmap)
+cube22.units="K"
+cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=maskmap)
+cube33.units="K"
+cubes = pyspeckit.CubeStack([cube11,cube22,cube33],maskmap=maskmap)
+cubes.units="K"
+
 guesses = np.zeros((6,)+cubes.cube.shape[1:])
-guesses[0,:,:] = 20                    # Kinetic temperature 
-guesses[1,:,:] = 5                     # Excitation  Temp
+guesses[0,:,:] = 12                    # Kinetic temperature 
+guesses[1,:,:] = 3                     # Excitation  Temp
 guesses[2,:,:] = 14.5                  # log(column)
-guesses[3,:,:] = moment2  # Line width / 5 (the NH3 moment overestimates linewidth)                  
-guesses[4,:,:] = moment1  # Line centroid              
+guesses[3,:,:] = moment2  # Line width / 5 (the NH3 moment overestimates linewidth)               guesses[4,:,:] = moment1  # Line centroid              
 guesses[5,:,:] = 0.5                   # F(ortho) - ortho NH3 fraction (fixed)
 
 F=False
@@ -63,7 +61,7 @@ cubes.fiteach(fittype='ammonia', multifit=True, guesses=guesses,
               limitedmin=[T,T,F,T,T,T],
               minpars=[2.73,2.73,0,0,-5,0],
               use_nearest_as_guess=True, start_from_point=(xmax,ymax),
-              multicore=4,
+              multicore=1,
               errmap=errmap11)
 
 fitcubefile = fits.PrimaryHDU(data=np.concatenate([cubes.parcube,cubes.errcube]), header=cubes.header)
@@ -83,4 +81,4 @@ fitcubefile.header.update('CDELT3',1)
 fitcubefile.header.update('CTYPE3','FITPAR')
 fitcubefile.header.update('CRVAL3',0)
 fitcubefile.header.update('CRPIX3',1)
-fitcubefile.writeto("parameter_maps.fits")
+fitcubefile.writeto("parameter_maps.fits",clobber=True)
