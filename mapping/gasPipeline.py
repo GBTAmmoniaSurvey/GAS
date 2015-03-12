@@ -31,13 +31,14 @@ def wrapper(logfile='ObservationLog.csv',region='',window=['0']):
 
     t = parseLog(logfile=logfile)
     for observation in t:
-        if region in observation['Source']:
+        if region in observation['Region name']:
             for thisWindow in window:
                 doPipeline(SessionNumber=observation['Session'],
-                            StartScan=observation['Start Scan'],
-                            EndScan=observation['End Scan'],
-                            Region=observation['Source'],
-                            Window=str(thisWindow))
+                           StartScan=observation['Start Scan'],
+                           EndScan=observation['End Scan'],
+                           Source=observation['Source'],
+                           Region=region,
+                           Window=str(thisWindow))
 
 
 def parseLog(logfile='ObservationLog.csv'):
@@ -52,20 +53,35 @@ def parseLog(logfile='ObservationLog.csv'):
 
 
 def doPipeline(doMap=False,SessionNumber=1,StartScan = 11, EndScan=58, 
-                Region='Perseus_map_NGC1333-A', Window='0'):
+               Source='Perseus_map_NGC1333-A', Window='0', 
+               Region = 'NGC1333', OptionDict = OptionDict,
+               OutputRoot = '/lustre/pipeline/scratch/GAS/'):
 
     RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/'
     SessionDir = 'AGBT15A_430_'+str(SessionNumber).zfill(2)+'.raw.vegas/'
     BankNames = ['A','B','C','D','E','F','G','H']
+    
+    # Set default pipeline options as a dictionary
+    if ~OptionDict:
+        OptionDict = {'--window':Window,
+                      '--imaging-off':'',
+                      '--clobber':'',
+                      '-v':'4',
+                      '-m':'{0}:{1}'.format(StartScan,EndScan),
+                      '--units':'tmb',
+                      '--keep-temporary-files':'',
+                      }
+    
 
-    OptionDict = {'--window':Window,
-                  '--imaging-off':'',
-                  '--clobber':'',
-                  '-v':'4',
-                  '-m':'{0}:{1}'.format(StartScan,EndScan),
-                  '--units':'tmb',
-                  '--keep-temporary-files':'',
-                  }
+    # Try to make the output directory
+    OutputDirectory = OutputRoot+Region+'_'+Window
+    if ~os.access(OutputDirectory,os.W_OK):
+        try:
+            os.mkdir(OutputDirectory)
+        except:
+            warnings.warn('Unable to make output directory '+OutputDirectory)
+            raise
+
     # Grind through calibration
     for bank in BankNames:
         InputFile = RawDataDir+SessionDir+'AGBT15A_430_'+\
@@ -76,6 +92,21 @@ def doPipeline(doMap=False,SessionNumber=1,StartScan = 11, EndScan=58,
             command = command+' '+key+' '+OptionDict[key]
         print(command)
         subprocess.call(command,shell=True)
+        # Pipeline outputs into master directory for region.
+        for feed in ['0','1','2','3','4','5','6']:
+            for pol in ['0','1']:
+                indexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
+                    format(StartScan,EndScan,Window,feed,pol) 
+                try:
+                    os.rename(indexname,OutputDirectory+'/'+indexname)
+                except:
+                    pass
+                filename = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
+                    format(StartScan,EndScan,Window,feed,pol) 
+                try:
+                    os.rename(fitsname,OutputDirectory+'/'+fitsname)
+                except:
+                    pass
 
     # Map to SDFITS in AIPS (we're getting monotonically farther from good)
     if doMap:
@@ -83,7 +114,7 @@ def doPipeline(doMap=False,SessionNumber=1,StartScan = 11, EndScan=58,
 
         sdfList = []
         for ctr,fl in enumerate(filelist):
-            sdfFile = '{0}.{1}.sdf '.format(Region,ctr)
+            sdfFile = '{0}.{1}.sdf '.format(Source,ctr)
             sdfList = sdfList + [sdfFile]
             command = 'idlToSdfits -l -o '+sdfFile+' '+fl
             print(command)
