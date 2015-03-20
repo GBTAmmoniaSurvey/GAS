@@ -4,18 +4,12 @@ import os
 import subprocess
 import glob
 import warnings
-# doMap = False
-# SessionNumber = 1
-# StartScan = 11
-# EndScan = 58
-# Region = 'Perseus_map_NGC1333-A'
-# Window = '3'
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
             window=['0','1','3','4','5','6']):
     """
     This is the GAS pipeline which chomps the observation logs and
-    then batch calibrates the data.  It requires AstropPy because
+    then batch calibrates the data.  It requires AstroPy because
     their tables are pretty nifty.
 
     Usage from iPython prompt: In the directory you want to produce
@@ -25,9 +19,10 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     execfile('/users/erosolow/GAS/mapping/gasPipeline.py')
     wrapper(logfile='../ObservationLog.csv',region='NGC1333',window=['3'])
 
-    logfile -- Full path to CSV version of the logfile
-    region -- Substring to calibrate a region
-    window -- List of spectral windows to calibrate.
+    region -- Region name as given in logs
+    window -- List of spectral windows to calibrate (as strings)
+    logfile -- Full path to CSV version of the logfile (optional)
+    If a logfile isn't specified, program will get it from Google.
     """
 
     if not os.access(logfile,os.R_OK):
@@ -46,6 +41,9 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
 
 
 def parseLog(logfile='ObservationLog.csv'):
+    """
+    Ingests a CSV log file into an astropy table
+    """
     try:
         from astropy.table import Table
     except:
@@ -113,41 +111,18 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
             for pol in ['0','1']:
                 indexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
                     format(StartScan,EndScan,Window,feed,pol) 
+                outindexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.index'.\
+                    format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
                 try:
-                    os.rename(indexname,OutputDirectory+'/'+indexname)
+                    os.rename(indexname,OutputDirectory+'/'+outindexname)
                 except:
                     pass
                 filename = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
                     format(StartScan,EndScan,Window,feed,pol) 
+                outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
+                    format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
                 try:
-                    os.rename(filename,OutputDirectory+'/'+filename)
+                    os.rename(filename,OutputDirectory+'/'+outputfile)
                 except:
                     pass
 
-    # Map to SDFITS in AIPS (we're getting monotonically farther from good)
-    # if doMap:
-    #     filelist = glob.glob('*scan*{0}*{1}*fits'.format(StartScan,EndScan))
-
-    #     sdfList = []
-    #     for ctr,fl in enumerate(filelist):
-    #         sdfFile = '{0}.{1}.sdf '.format(Source,ctr)
-    #         sdfList = sdfList + [sdfFile]
-    #         command = 'idlToSdfits -l -o '+sdfFile+' '+fl
-    #         print(command)
-    #         subprocess.call(command,shell=True)
-
-    #     # Contruct the database
-    #     command = 'doImage /home/gbtpipeline/release/contrib/dbcon.py {0} '.format(os.getuid())
-    #     for fl in sdfList:
-    #         command = command + fl
-    #     print(command)
-    #     subprocess.call(command,shell=True)
-
-    #     # Run the imaging
-    #     command = 'doImage /home/gbtpipeline/release/contrib/mapDefault.py {0}'.format(os.getuid())
-    #     print(command)
-    #     subprocess.call(command,shell=True)
-
-    #     # clear the AIPS catalog
-    #     command = 'doImage /home/gbtpipeline/release/contrib/clear_AIPS_catalog.py {0}'.format(os.getuid())
-    #     subprocess.call(command,shell=True)
