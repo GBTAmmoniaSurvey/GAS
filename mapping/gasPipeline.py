@@ -30,7 +30,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     window -- List of spectral windows to calibrate.
     """
 
-    if ~os.access(logfile,os.R_OK):
+    if not os.access(logfile,os.R_OK):
         updateLogs()
 
     t = parseLog(logfile=logfile)
@@ -89,7 +89,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
         OutputRoot = os.getcwd()+'/'
     # Try to make the output directory
     print('Region {0}'.format(Region))
-    OutputDirectory = OutputRoot+Region+WindowDict[Window]
+    OutputDirectory = OutputRoot+Region+'_'+WindowDict[Window]
     if not os.access(OutputDirectory,os.W_OK):
         try:
             os.mkdir(OutputDirectory)
