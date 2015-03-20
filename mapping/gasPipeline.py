@@ -1,5 +1,5 @@
 #/bin/env python
-
+import pdb
 import os 
 import subprocess
 import glob
@@ -11,7 +11,8 @@ import warnings
 # Region = 'Perseus_map_NGC1333-A'
 # Window = '3'
 
-def wrapper(logfile='ObservationLog.csv',region='',window=['0']):
+def wrapper(logfile='ObservationLog.csv',region='NGC1333',
+            window=['0','1','3','4','5','6']):
     """
     This is the GAS pipeline which chomps the observation logs and
     then batch calibrates the data.  It requires AstropPy because
@@ -29,9 +30,12 @@ def wrapper(logfile='ObservationLog.csv',region='',window=['0']):
     window -- List of spectral windows to calibrate.
     """
 
+    if ~os.access(logfile,os.R_OK):
+        updateLogs()
+
     t = parseLog(logfile=logfile)
     for observation in t:
-        if region in observation['Region name']:
+        if region == observation['Region name']:
             for thisWindow in window:
                 doPipeline(SessionNumber=observation['Session'],
                            StartScan=observation['Start Scan'],
@@ -50,19 +54,29 @@ def parseLog(logfile='ObservationLog.csv'):
     t = Table.read(logfile)
     return(t)
 
+def updateLogs(output='ObservationLog.csv'):
+    command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheet/ccc?key=1F6MnXjK1Y1VyM8zWW3R5VvLAFF2Hkc85SGBRBxQ24JY&output=csv'"
+    subprocess.call(command,shell=True)
 
-
-def doPipeline(doMap=False,SessionNumber=1,StartScan = 11, EndScan=58, 
+def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58, 
                Source='Perseus_map_NGC1333-A', Window='0', 
-               Region = 'NGC1333', OptionDict = OptionDict,
-               OutputRoot = '/lustre/pipeline/scratch/GAS/'):
+               Region = 'NGC1333', OptionDict = None,
+               OutputRoot = None):
 
     RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/'
     SessionDir = 'AGBT15A_430_'+str(SessionNumber).zfill(2)+'.raw.vegas/'
     BankNames = ['A','B','C','D','E','F','G','H']
+
+    WindowDict = {'0':'NH3_11',
+                  '1':'HC7N_21_20',
+                  '2':'C2S',
+                  '3':'NH3_22',
+                  '4':'NH3_33',
+                  '5':'HC5N',
+                  '6':'HC7N_22_21'}
     
     # Set default pipeline options as a dictionary
-    if ~OptionDict:
+    if OptionDict is None:
         OptionDict = {'--window':Window,
                       '--imaging-off':'',
                       '--clobber':'',
@@ -71,13 +85,15 @@ def doPipeline(doMap=False,SessionNumber=1,StartScan = 11, EndScan=58,
                       '--units':'tmb',
                       '--keep-temporary-files':'',
                       }
-    
-
+    if OutputRoot is None:
+        OutputRoot = os.getcwd()+'/'
     # Try to make the output directory
-    OutputDirectory = OutputRoot+Region+'_'+Window
-    if ~os.access(OutputDirectory,os.W_OK):
+    print('Region {0}'.format(Region))
+    OutputDirectory = OutputRoot+Region+WindowDict[Window]
+    if not os.access(OutputDirectory,os.W_OK):
         try:
             os.mkdir(OutputDirectory)
+            print('Made directory {0}'.format(OutputDirectory))
         except:
             warnings.warn('Unable to make output directory '+OutputDirectory)
             raise
@@ -104,34 +120,34 @@ def doPipeline(doMap=False,SessionNumber=1,StartScan = 11, EndScan=58,
                 filename = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
                     format(StartScan,EndScan,Window,feed,pol) 
                 try:
-                    os.rename(fitsname,OutputDirectory+'/'+fitsname)
+                    os.rename(filename,OutputDirectory+'/'+filename)
                 except:
                     pass
 
     # Map to SDFITS in AIPS (we're getting monotonically farther from good)
-    if doMap:
-        filelist = glob.glob('*scan*{0}*{1}*fits'.format(StartScan,EndScan))
+    # if doMap:
+    #     filelist = glob.glob('*scan*{0}*{1}*fits'.format(StartScan,EndScan))
 
-        sdfList = []
-        for ctr,fl in enumerate(filelist):
-            sdfFile = '{0}.{1}.sdf '.format(Source,ctr)
-            sdfList = sdfList + [sdfFile]
-            command = 'idlToSdfits -l -o '+sdfFile+' '+fl
-            print(command)
-            subprocess.call(command,shell=True)
+    #     sdfList = []
+    #     for ctr,fl in enumerate(filelist):
+    #         sdfFile = '{0}.{1}.sdf '.format(Source,ctr)
+    #         sdfList = sdfList + [sdfFile]
+    #         command = 'idlToSdfits -l -o '+sdfFile+' '+fl
+    #         print(command)
+    #         subprocess.call(command,shell=True)
 
-        # Contruct the database
-        command = 'doImage /home/gbtpipeline/release/contrib/dbcon.py {0} '.format(os.getuid())
-        for fl in sdfList:
-            command = command + fl
-        print(command)
-        subprocess.call(command,shell=True)
+    #     # Contruct the database
+    #     command = 'doImage /home/gbtpipeline/release/contrib/dbcon.py {0} '.format(os.getuid())
+    #     for fl in sdfList:
+    #         command = command + fl
+    #     print(command)
+    #     subprocess.call(command,shell=True)
 
-        # Run the imaging
-        command = 'doImage /home/gbtpipeline/release/contrib/mapDefault.py {0}'.format(os.getuid())
-        print(command)
-        subprocess.call(command,shell=True)
+    #     # Run the imaging
+    #     command = 'doImage /home/gbtpipeline/release/contrib/mapDefault.py {0}'.format(os.getuid())
+    #     print(command)
+    #     subprocess.call(command,shell=True)
 
-        # clear the AIPS catalog
-        command = 'doImage /home/gbtpipeline/release/contrib/clear_AIPS_catalog.py {0}'.format(os.getuid())
-        subprocess.call(command,shell=True)
+    #     # clear the AIPS catalog
+    #     command = 'doImage /home/gbtpipeline/release/contrib/clear_AIPS_catalog.py {0}'.format(os.getuid())
+    #     subprocess.call(command,shell=True)
