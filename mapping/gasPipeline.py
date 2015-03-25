@@ -82,6 +82,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                       '-v':'4',
                       '-m':'{0}:{1}'.format(StartScan,EndScan),
                       '--units':'tmb',
+                      '--smoothing-kernel-size':'0',
                       '--keep-temporary-files':'',
                       }
     if OutputRoot is None:
