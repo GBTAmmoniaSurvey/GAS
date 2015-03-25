@@ -4,7 +4,7 @@ import glob
 from astropy.io import fits
 import astropy.wcs as wcs
 import itertools
-from scipy.special import jv as besselJ
+from scipy.special import j1
 import pdb
 
 import astropy.utils.console as console
@@ -25,7 +25,7 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     
     ind  = (np.where(distance<=Rsup))
     d = distance[ind]
-    wt = besselJ(d*pia,1)/\
+    wt = j1(d*pia)/\
         (pia*d)*\
         np.exp(-d**2*b2)
 #    wt[ind] = np.exp(-distance[ind]**2*b2)*\
@@ -135,13 +135,13 @@ def griddata(pixPerBeam = 3.0,
             xpoints,ypoints,zpoints = w.wcs_world2pix(spectrum['CRVAL2'],
                                                       spectrum['CRVAL3'],
                                                       spectrum['CRVAL1'],0)
-            if (xpoints > 0) and (xpoints <naxis1) and (ypoints >0) and (ypoints < naxis2):
+            if (xpoints > 0) and (xpoints < naxis1) and (ypoints >0) and (ypoints < naxis2):
                 pixelWeight,Index = gridFunction(xmat,ymat,
                                                  xpoints,ypoints,
-                                                 pixPerBeam = 3.0)
-                vector = np.outer(outslice*spectrum_wt,pixelWeight/spectrum['TSYS'])
-                vector_wts = np.outer(spectrum_wt,pixelWeight/spectrum['TSYS'])
-                wts = pixelWeight/spectrum['TSYS']
+                                                 pixPerBeam = pixPerBeam)
+                vector = np.outer(outslice*spectrum_wt,pixelWeight/spectrum['TSYS']**2)
+                vector_wts = np.outer(spectrum_wt,pixelWeight/spectrum['TSYS']**2)
+                wts = pixelWeight/spectrum['TSYS']**2
                 outCube[:,ymat[Index],xmat[Index]] += vector
                 outWts[ymat[Index],xmat[Index]] += wts
 
