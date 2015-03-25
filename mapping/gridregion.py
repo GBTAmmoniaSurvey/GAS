@@ -38,12 +38,16 @@ def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
     DEClist = []
     for thisfile in filelist:
         s = fits.getdata(thisfile)
+        try:
+            RAlist = RAlist + [s['CRVAL2']]
+            DEClist = DEClist +[s['CRVAL3']]
+        except:
+            pdb.set_trace()
 
-        RAlist = RAlist + [s['CRVAL2']]
-        DEClist = DEClist +[s['CRVAL3']]
     longitude = np.array(list(itertools.chain(*RAlist)))
     latitude = np.array(list(itertools.chain(*DEClist)))
-
+    longitude = longitude[longitude != 0]
+    latitude = latitude[longitude != 0]
     minLon = longitude.min()
     maxLon = longitude.max()
     minLat = latitude.min()
@@ -60,7 +64,6 @@ def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
     crpix1 = naxis1/2
     crval1 = (minLon+maxLon)/2
     ctype1 = s[0]['CTYPE2']+'---TAN'
-
     outdict = {'CRVAL1':crval1,'CRPIX1':crpix1,'CDELT1':cdelt1,'NAXIS1':naxis1,'CTYPE1':ctype1,
                'CRVAL2':crval2,'CRPIX2':crpix2,'CDELT2':cdelt2,'NAXIS2':naxis2,'CTYPE2':ctype2}
 
@@ -109,7 +112,6 @@ def griddata(pixPerBeam = 3.0,
         w.wcs.ctype = [templateHeader['CTYPE1'],templateHeader['CTYPE2'],ctype3]
         naxis2 = templateHeader['NAXIS2']
         naxis1 = templateHeader['NAXIS1']
-
     outCube = np.zeros((naxis3,naxis2,naxis1))
     outWts = np.zeros((naxis2,naxis1))
 
@@ -132,14 +134,15 @@ def griddata(pixPerBeam = 3.0,
             xpoints,ypoints,zpoints = w.wcs_world2pix(spectrum['CRVAL2'],
                                                       spectrum['CRVAL3'],
                                                       spectrum['CRVAL1'],0)
-            pixelWeight,Index = gridFunction(xmat,ymat,
-                                                xpoints,ypoints,
-                                                pixPerBeam = 3.0)
-            vector = np.outer(outslice*spectrum_wt,pixelWeight/spectrum['TSYS'])
-            vector_wts = np.outer(spectrum_wt,pixelWeight/spectrum['TSYS'])
-            wts = pixelWeight/spectrum['TSYS']
-            outCube[:,ymat[Index],xmat[Index]] += vector
-            outWts[ymat[Index],xmat[Index]] += wts
+            if (xpoints > 0) and (xpoints <naxis1) and (ypoints >0) and (ypoints < naxis2):
+                pixelWeight,Index = gridFunction(xmat,ymat,
+                                                 xpoints,ypoints,
+                                                 pixPerBeam = 3.0)
+                vector = np.outer(outslice*spectrum_wt,pixelWeight/spectrum['TSYS'])
+                vector_wts = np.outer(spectrum_wt,pixelWeight/spectrum['TSYS'])
+                wts = pixelWeight/spectrum['TSYS']
+                outCube[:,ymat[Index],xmat[Index]] += vector
+                outWts[ymat[Index],xmat[Index]] += wts
 
     outWts.shape = (1,)+outWts.shape
     outCube /= outWts
