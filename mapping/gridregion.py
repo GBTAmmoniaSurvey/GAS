@@ -11,9 +11,10 @@ import astropy.utils.console as console
 
 
 def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
-    a = 1.55*(3.0/pixPerBeam)
-    b = 2.52*(3.0/pixPerBeam)
-    Rsup = 1.0 
+    a = 1.55/(3.0/pixPerBeam)
+    b = 2.52/(3.0/pixPerBeam)
+    
+    Rsup = 1.0*pixPerBeam 
     dmin = 1e-4
     dx = (xdata - xpix)/pixPerBeam
     dy = (ydata - ypix)/pixPerBeam
@@ -47,7 +48,7 @@ def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
     longitude = np.array(list(itertools.chain(*RAlist)))
     latitude = np.array(list(itertools.chain(*DEClist)))
     longitude = longitude[longitude != 0]
-    latitude = latitude[longitude != 0]
+    latitude = latitude[latitude != 0]
     minLon = longitude.min()
     maxLon = longitude.max()
     minLat = latitude.min()
@@ -58,7 +59,7 @@ def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
     cdelt2 = beamSize/pixPerBeam
     crval2 = (maxLat+minLat)/2
     ctype2 = s[0]['CTYPE3']+'--TAN'
-    cdelt1 = beamSize/pixPerBeam
+    cdelt1 = -beamSize/pixPerBeam # Negative to go in the usual direction on sky.
     naxis1 = np.ceil((maxLon-minLon)/(beamSize/pixPerBeam)*\
                          np.cos(crval2/180*np.pi)+2*pixPerBeam)
     crpix1 = naxis1/2
