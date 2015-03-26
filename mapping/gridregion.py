@@ -1,4 +1,4 @@
-from sdpy import makecube
+#from sdpy import makecube
 import numpy as np
 import glob
 from astropy.io import fits
@@ -31,7 +31,7 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
 #    wt[ind] = np.exp(-distance[ind]**2*b2)*\
 #              np.sin(pia*distance[ind])/\
 #              (pia*distance[ind])
-    wt[(d<dmin)]=1.0
+    wt[(d<dmin)]=0.5  #Peak of the jinc function is 0.5 not 1.0
     return(wt,ind)
 
 def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
@@ -135,13 +135,15 @@ def griddata(pixPerBeam = 3.0,
             xpoints,ypoints,zpoints = w.wcs_world2pix(spectrum['CRVAL2'],
                                                       spectrum['CRVAL3'],
                                                       spectrum['CRVAL1'],0)
-            if (xpoints > 0) and (xpoints < naxis1) and (ypoints >0) and (ypoints < naxis2):
+            tsys = spectrum['TSYS']
+            if (tsys>10) and (xpoints > 0) and (xpoints < naxis1) \
+                    and (ypoints >0) and (ypoints < naxis2):
                 pixelWeight,Index = gridFunction(xmat,ymat,
                                                  xpoints,ypoints,
                                                  pixPerBeam = pixPerBeam)
-                vector = np.outer(outslice*spectrum_wt,pixelWeight/spectrum['TSYS']**2)
-                vector_wts = np.outer(spectrum_wt,pixelWeight/spectrum['TSYS']**2)
-                wts = pixelWeight/spectrum['TSYS']**2
+                vector = np.outer(outslice*spectrum_wt,pixelWeight/tsys**2)
+                vector_wts = np.outer(spectrum_wt,pixelWeight/tsys**2)
+                wts = pixelWeight/tsys**2
                 outCube[:,ymat[Index],xmat[Index]] += vector
                 outWts[ymat[Index],xmat[Index]] += wts
 
