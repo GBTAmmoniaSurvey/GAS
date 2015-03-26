@@ -14,10 +14,10 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     a = 1.55/(3.0/pixPerBeam)
     b = 2.52/(3.0/pixPerBeam)
     
-    Rsup = 1.0*pixPerBeam 
+    Rsup = 1.0*pixPerBeam # Support radius is 1 FWHM
     dmin = 1e-4
-    dx = (xdata - xpix)/pixPerBeam
-    dy = (ydata - ypix)/pixPerBeam
+    dx = (xdata - xpix)#/pixPerBeam
+    dy = (ydata - ypix)#/pixPerBeam
 
     pia = np.pi/a
     b2 = 1./(b**2)
@@ -87,9 +87,9 @@ def griddata(pixPerBeam = 3.0,
     nu0 = s[0]['RESTFREQ']
     beamSize = 1.22 * (c/nu0/100.0)*180/np.pi # in arcsec
 
-    naxis3 = len(s[0]['DATA'])
+    naxis3 = len(s[0]['DATA'][startChannel:endChannel])
     nuslice = (range(naxis3))[startChannel:endChannel]
-    naxis3 = len(nuslice)
+
 
     crpix3 = s[0]['CRPIX1']-startChannel
     crval3 = s[0]['CRVAL1']
@@ -129,7 +129,7 @@ def griddata(pixPerBeam = 3.0,
         print("Now processing {0}".format(thisfile))
         print("This is file {0} of {1}".format(ctr,len(filelist)))
         for spectrum in console.ProgressBar((s[1].data)):
-            outslice = (spectrum['DATA'])[nuslice]
+            outslice = (spectrum['DATA'])[startChannel:endChannel]
             spectrum_wt = np.isfinite(outslice).astype(np.float)
             outslice = np.nan_to_num(outslice)
             xpoints,ypoints,zpoints = w.wcs_world2pix(spectrum['CRVAL2'],
