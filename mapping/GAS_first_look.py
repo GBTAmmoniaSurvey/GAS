@@ -8,6 +8,8 @@ from pyspeckit.parallel_map import parallel_map
 from astropy import log
 from spectral_cube import SpectralCube
 
+#from radio_beam import Beam
+
 import pkg_resources
 from pkg_resources import parse_version
 if pkg_resources.get_distribution("spectral_cube").version < parse_version('0.2.dev694'):
@@ -200,12 +202,16 @@ def GAS_peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,
     mom_0 = cube_main.moment(order=0)
     rms   = cube_rms.std(axis=0)
     Tpeak = cube_main.max(axis=0)
+    #
+    ######beam11 = Beam.from_fits_header(fits.getheader(cube_raw))
+    ######Beam.to_header_keywords()
+    #
     #Tpeak = cube[index_peak].max(axis=0)
     #mom_0 = cube[index_peak].moment(order=0)
     #rms   = cube[index_rms].std(axis=0)
-    print file_in+'  Median rms=', np.median(rms)
+    print(file_in+'  Median rms='+ str(np.median(rms)))
     SNR=Tpeak.value/rms.value
-    print file_in+'  Median rms for SNR>5=', np.median(rms[np.where(SNR>5)])
+    print(file_in+'  Median rms for SNR>5=' + str(np.median(rms[np.where(SNR>5)])))
     mom_0.write( file_in.replace('.fits', '_mom0.fits'), overwrite=overwrite)
     rms.write(   file_in.replace('.fits', '_rms.fits'), overwrite=overwrite)
     Tpeak.write( file_in.replace('.fits', '_Tpeak.fits'), overwrite=overwrite)

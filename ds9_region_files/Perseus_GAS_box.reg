@@ -1,9 +1,9 @@
 # Region file format: DS9 version 4.1
 global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
 fk5
-box(3:28:02.388,+30:10:39.84,600",600",180) # width=2 text={L1455-E}
-box(3:27:17.343,+30:15:05.40,600",600",180) # width=2 text={L1455-N}
-box(3:27:17.361,+30:05:10.41,600",600",180) # width=2 text={L1455-S}
+box(3:28:03.460,+30:10:00.00,600",600",180) # width=2 text={L1455-E}
+box(3:27:17.300,+30:11:30.40,600",600",180) # width=2 text={L1455-N}
+box(3:27:17.300,+30:01:30.40,600",600",180) # width=2 text={L1455-S}
 box(3:25:15.635,+30:21:49.22,600",600",180) # color=blue width=2 text={L1451-C}
 box(3:24:34.284,+30:22:10.40,600",600",180) # width=2 text={L1451-W}
 box(3:25:35.534,+30:12:02.43,600",600",180) # width=2 text={L1451-S}
