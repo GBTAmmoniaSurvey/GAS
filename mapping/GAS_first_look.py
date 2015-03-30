@@ -198,6 +198,7 @@ def GAS_peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,
     #rms  =np.std( cube[index_rms, :,:], axis=0)
     #Tpeak=np.max( cube[index_peak,:,:], axis=0)
     mom_0 = cube_main.moment(order=0)
+    mom_1 = cube_main.moment(order=1)
     rms   = cube_rms.std(axis=0)
     Tpeak = cube_main.max(axis=0)
     #Tpeak = cube[index_peak].max(axis=0)
@@ -207,6 +208,7 @@ def GAS_peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,
     SNR=Tpeak.value/rms.value
     print file_in+'  Median rms for SNR>5=', np.median(rms[np.where(SNR>5)])
     mom_0.write( file_in.replace('.fits', '_mom0.fits'), overwrite=overwrite)
+    mom_1.write( file_in.replace('.fits', '_mom1.fits'), overwrite=overwrite)
     rms.write(   file_in.replace('.fits', '_rms.fits'), overwrite=overwrite)
     Tpeak.write( file_in.replace('.fits', '_Tpeak.fits'), overwrite=overwrite)
     ###SNR.write( file_in.replace('.fits', '_SNR.fits'), overwrite=True)
