@@ -3,12 +3,12 @@
 # You must input target for region being observed
 
 # Input sources
-srcCat = Catalog("/users/rfriesen/GAS/GAS_regions.cat")
+srcCat = Catalog("/home/astro-util/projects/GAS/GAS_source_catalogues.cat")
 # Include VEGAS setup 
-execfile("/users/rfriesen/GAS/vegas_kfpa_config")
+execfile("/home/astro-util/projects/GAS/ds9_region_files/observing_scripts/vegas_kfpa_config")
 
 # Move near Target so AutoPeak finds the correct point source
-target = srcName 
+target = Perseus_map_L1455-E
 Slew(target)
 Balance()
 
@@ -20,5 +20,5 @@ Balance()
 AutoPeakFocus(location=target,flux=0.7,radius=15.0)
 
 # Make sure we're back to spectral line setup (just in case)
-execfile("/users/rfriesen/GAS/vegas_kfpa_config")
+execfile("/home/astro-util/projects/GAS/ds9_region_files/observing_scripts/vegas_kfpa_config")
 
