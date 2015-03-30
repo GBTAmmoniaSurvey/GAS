@@ -6,7 +6,7 @@ import glob
 import warnings
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
-            window=['0','1','3','4','5','6'],overwrite=False):
+            window=['0','1','2','3','4','5','6'],overwrite=False):
     """
     This is the GAS pipeline which chomps the observation logs and
     then batch calibrates the data.  It requires AstroPy because
@@ -106,8 +106,9 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                 for pol in ['0','1']:
                     outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
                         format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
-                    FilesIntact = FilesIntact and os.access(OutputDirectory+'/'+outputfile,os.R_OK)
-                    print('Data for Polarization {0} of Feed {1} appear on disk... skipping'.format(pol,feed))
+                    FilesIntact = FilesIntact and os.path.exists(OutputDirectory+'/'+outputfile)
+                    if FilesIntact:
+                        print('Data for Polarization {0} of Feed {1} appear on disk... skipping'.format(pol,feed))
                     
         if (not FilesIntact) or (overwrite):
             InputFile = RawDataDir+SessionDir+'AGBT15A_430_'+\
