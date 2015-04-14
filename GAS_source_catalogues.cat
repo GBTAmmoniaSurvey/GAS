@@ -7,11 +7,12 @@ veldef=VRAD-LSR
 # Orion A: Initial selection by Rachel Friesen. 
 # Orion B: Initial selection by Helen Kirk. 
 # Oph: Initial seletion by Hope Chen and Anna Punanova. Modifications by Jaime Pineda.
+# Serpens: James and Rachel
 # Standard_: Two sources to observe every night. Initial selection by Yancy Shirley.
 HEAD = NAME RA DEC VEL
-Perseus_map_L1455-E    03:28:02.388 +30:10:39.84  4.9
-Perseus_map_L1455-N    03:27:17.343 +30:15:05.40  4.9
-Perseus_map_L1455-S    03:27:17.361 +30:05:10.41  4.9
+Perseus_map_L1455-E    03:28:03.460 +30:10:00.00  4.9
+Perseus_map_L1455-N    03:27:17.300 +30:11:30.40  4.9
+Perseus_map_L1455-S    03:27:17.300 +30:01:30.40  4.9
 Perseus_map_L1451-C    03:25:15.635 +30:21:49.22  4.1
 Perseus_map_L1451-W    03:24:34.284 +30:22:10.40  4.1
 Perseus_map_L1451-S    03:25:35.534 +30:12:02.43  4.1
@@ -74,6 +75,7 @@ Taurus_map_044         04:33:04.850 +26:00:42.80  4.0
 Taurus_map_045         04:33:24.704 +26:11:15.42  4.0
 Taurus_map_046         04:29:39.089 +26:58:42.72  4.0
 Taurus_map_047         04:28:35.822 +26:51:03.74  4.0
+L1544                  05:04:17.200 +25:10:43.70  7.1
 OrionA_map_01          05:35:16     -04:57:00    10.0
 OrionA_map_02          05:35:26     -05:07:00    10.0
 OrionA_map_03          05:35:43     -05:17:00    10.0
@@ -125,5 +127,36 @@ Oph_L1689-2            16:32:26.6   -24:28:35.67  4.0
 Oph_L1689-3            16:31:49     -24:49:42     4.0
 Oph_L1689-4            16:32:00     -24:59:42     4.0
 Oph_L1709-1            16:32:40     -23:53:00     2.5
+serpAquila_map_1       18:31:15     -02:07:00     7.5
+serpAquila_map_2       18:31:15     -01:57:00     7.5
+serpAquila_map_3       18:31:55     -02:01:00     7.5
+serpAquila_map_4       18:31:20     -02:17:00     7.5
+serpAquila_map_5       18:32:00     -02:19:00     7.5
+serpAquila_map_6       18:29:07     -02:05:30     7.5
+serpAquila_map_7       18:29:02     -01:41:30     7.5
+serpAquila_map_8       18:29:42     -01:41:30     7.5
+serpAquila_map_9       18:29:07     -01:31:30     7.5
+serpAquila_map_10      18:27:40     -03:49:00     7.5
+serpAquila_map_11      18:27:54     -03:39:00     7.5
+serpAquila_map_12      18:28:10     -03:49:00     7.5
+#NOTE: 10x5 arcmin map
+serpAquila_map_13      18:29:07     -03:43:00     7.5
+#NOTE: 5x10 arcmin map
+serpM_map_1            18:29:00     +00:32:00     7.5
+serpM_map_2            18:29:40     +00:35:30     7.5
+#NOTE: 10x5 arcmin map
+serpM_map_3            18:29:30     +00:28:00     7.5
+#NOTE: 5x10 arcmin map
+serpN_map_1            18:38:32     +00:34:00     7.5
+serpN_map_2            18:39:12     +00:32:00     7.5
+serpN_map_3            18:39:17     +00:22:00     7.5
+serpN_map_4            18:39:20     +00:14:30     7.5
+#NOTE: 10x5 arcmin map
+serpE_map_1            18:37:52     -01:49:00     7.5
+serpE_map_2            18:37:52     -01:39:00     7.5
+serpE_map_3            18:38:28     -01:11:00     7.5
+serpE_map_4            18:36:42     -01:12:00     7.5
+serpE_map_5            18:36:12     -01:12:00     7.5
+#NOTE: 5x10 arcmin map
 Standard_L43-E         16:34:35.6   -15:47:02.2   0.94
 Standard_L1489PPC      04:04:47.6   +26:19:17.9   6.85
