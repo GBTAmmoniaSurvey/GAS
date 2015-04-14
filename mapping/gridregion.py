@@ -6,9 +6,22 @@ import astropy.wcs as wcs
 import itertools
 from scipy.special import j1
 import pdb
-
+import numpy.fft as fft
 import astropy.utils.console as console
+import numpy.polynomial.legendre as legendre
 
+def baselineSpectrum(spectrum,order=1,baselineIndex=()):
+    x=np.arange(len(spectrum))
+    coeffs = legendre.legfit(x[baselineIndex],spectrum[baselineIndex],order)
+    pdb.set_trace()
+    spectrum -= legendre.legval(x,coeffs)
+    
+    return(spectrum)
+
+
+def channelShift(spectrum,shift):
+
+    return(spectrum)
 
 def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     a = 1.55/(3.0/pixPerBeam)
@@ -77,7 +90,8 @@ def griddata(pixPerBeam = 3.0,
              region = 'NGC1333',
              dirname = 'NGC1333_NH3_11',
              startChannel = 1024, endChannel = 3072,
-             ):
+             doBaseline = True,
+             baselineRegion = [slice(512,1024,1),slice(3072,3584,1)]):
 
     filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
     #pull a test structure
@@ -88,6 +102,8 @@ def griddata(pixPerBeam = 3.0,
     beamSize = 1.22 * (c/nu0/100.0)*180/np.pi # in arcsec
 
     naxis3 = len(s[0]['DATA'][startChannel:endChannel])
+    nuindex = np.arange(len(s[0]['DATA']))
+    baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
     nuslice = (range(naxis3))[startChannel:endChannel]
 
 
@@ -99,7 +115,8 @@ def griddata(pixPerBeam = 3.0,
     w = wcs.WCS(naxis=3)
     
     if templateHeader is None:
-        wcsdict = autoHeader(filelist, beamSize = beamSize, pixPerBeam = pixPerBeam)
+        wcsdict = autoHeader(filelist, beamSize = beamSize, 
+                             pixPerBeam = pixPerBeam)
         w.wcs.crpix = [wcsdict['CRPIX1'],wcsdict['CRPIX2'],crpix3]
         w.wcs.cdelt = np.array([wcsdict['CDELT1'],wcsdict['CDELT2'],cdelt3])
         w.wcs.crval = [wcsdict['CRVAL1'],wcsdict['CRVAL2'],crval3]
@@ -107,10 +124,14 @@ def griddata(pixPerBeam = 3.0,
         naxis2 = wcsdict['NAXIS2']
         naxis1 = wcsdict['NAXIS1']
     else:
-        w.wcs.crpix = [templateHeader['CRPIX1'],templateHeader['CRPIX2'],crpix3]
-        w.wcs.cdelt = np.array([templateHeader['CDELT1'],templateHeader['CDELT2'],cdelt3])
-        w.wcs.crval = [templateHeader['CRVAL1'],templateHeader['CRVAL2'],crval3]
-        w.wcs.ctype = [templateHeader['CTYPE1'],templateHeader['CTYPE2'],ctype3]
+        w.wcs.crpix = [templateHeader['CRPIX1'],
+                       templateHeader['CRPIX2'],crpix3]
+        w.wcs.cdelt = np.array([templateHeader['CDELT1'],
+                                templateHeader['CDELT2'],cdelt3])
+        w.wcs.crval = [templateHeader['CRVAL1'],
+                       templateHeader['CRVAL2'],crval3]
+        w.wcs.ctype = [templateHeader['CTYPE1'],
+                       templateHeader['CTYPE2'],ctype3]
         naxis2 = templateHeader['NAXIS2']
         naxis1 = templateHeader['NAXIS1']
     outCube = np.zeros((naxis3,naxis2,naxis1))
@@ -128,8 +149,15 @@ def griddata(pixPerBeam = 3.0,
         s = fits.open(thisfile)
         print("Now processing {0}".format(thisfile))
         print("This is file {0} of {1}".format(ctr,len(filelist)))
-        for spectrum in console.ProgressBar((s[1].data)):
-            outslice = (spectrum['DATA'])[startChannel:endChannel]
+        for spectrum in console.ProgressBar((s[1].data)):            #pre-processing
+            specData = spectrum['DATA']
+            #baseline fit
+            if doBaseline:
+                specData = baselineSpectrum(specData,order=2,
+                                            baselineIndex=baselineIndex)
+            #shift frequency here
+                pdb.set_trace()
+            outslice = (specData)[startChannel:endChannel]
             spectrum_wt = np.isfinite(outslice).astype(np.float)
             outslice = np.nan_to_num(outslice)
             xpoints,ypoints,zpoints = w.wcs_world2pix(spectrum['CRVAL2'],
