@@ -26,6 +26,7 @@ def channelShift(spectrum,shift):
 def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     a = 1.55/(3.0/pixPerBeam)
     b = 2.52/(3.0/pixPerBeam)
+    c = 1.55/(3.0/pixPerBeam)
     
     Rsup = 1.0*pixPerBeam # Support radius is 1 FWHM
     dmin = 1e-4
@@ -38,8 +39,8 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     
     ind  = (np.where(distance<=Rsup))
     d = distance[ind]
-    wt = j1(d*pia)/\
-        (pia*d)*\
+    wt = j1(d/c)/\
+        (d/c)*\
         np.exp(-d**2*b2)
 #    wt[ind] = np.exp(-distance[ind]**2*b2)*\
 #              np.sin(pia*distance[ind])/\

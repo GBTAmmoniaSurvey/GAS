@@ -14,6 +14,80 @@ file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorde
 GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
 
 # 
+# OrionA MOSAIC
+#
+
+# 
+# NH3 (1,1)
+#
+a_rms = [ 50, 300, 440, 555, 670, 820, 875]
+b_rms = [170, 350, 450, 565, 720, 860, 910]
+index_rms=GAS_FL.create_index( a_rms, b_rms)
+index_peak=np.arange(445,560)
+
+file_in='OrionA/OrionA_NH3_11_mosaic.fits'
+file_out=file_in.replace('.fits','_base1.fits')
+file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+file_out=file_in.replace('.fits','_base2.fits')
+file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+# 
+# NH3 (2,2)
+#
+a_rms = [  0, 270, 575, 745]
+b_rms = [225, 420, 660, 935]
+index_rms=GAS_FL.create_index( a_rms, b_rms)
+index_peak=np.arange(425,562)
+
+file_in='OrionA/OrionA_NH3_22_mosaic.fits'
+file_out=file_in.replace('.fits','_base1.fits')
+file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+file_out=file_in.replace('.fits','_base2.fits')
+file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+# 
+# NH3 (3,3)
+#
+a_rms = [  0, 290, 425, 600]
+b_rms = [255, 410, 445, 945]
+index_rms=GAS_FL.create_index( a_rms, b_rms)
+index_peak=np.arange(440,580)
+
+file_in='OrionA/OrionA_NH3_33_mosaic.fits'
+file_out=file_in.replace('.fits','_base1.fits')
+file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+file_out=file_in.replace('.fits','_base2.fits')
+file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+# 
+# HC5N
+#
+a_rms = [  0, 550]
+b_rms = [420, 945]
+index_rms=GAS_FL.create_index( a_rms, b_rms)
+index_peak=np.arange(450,560)
+
+file_in='OrionA/OrionA_HC5N_mosaic.fits'
+file_out=file_in.replace('.fits','_base1.fits')
+file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+file_out=file_in.replace('.fits','_base2.fits')
+file_new=GAS_FL.GAS_baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+GAS_FL.GAS_peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+
+
+# 
 # NGC 1333
 #
 a_rms = [  0, 165, 239, 325, 435, 540, 700]
