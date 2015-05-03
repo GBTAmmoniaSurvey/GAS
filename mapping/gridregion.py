@@ -26,8 +26,8 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     
     ind  = (np.where(distance<=Rsup))
     d = distance[ind]
-    wt = j1(d/c)/\
-        (d/c)*\
+    wt = j1(pia*d)/\
+        (pia*d)*\
         np.exp(-d**2*b2)
 #    wt[ind] = np.exp(-distance[ind]**2*b2)*\
 #              np.sin(pia*distance[ind])/\
