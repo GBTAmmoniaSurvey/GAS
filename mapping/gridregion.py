@@ -86,7 +86,9 @@ def griddata(pixPerBeam = 3.0,
 
     c = 299792458.
     nu0 = s[0]['RESTFREQ']
-    beamSize = 1.22 * (c/nu0/100.0)*180/np.pi # in arcsec
+    
+    Data_Unit = s[0]['TUNIT7']
+    beamSize = 1.22 * (c/nu0/100.0)*180/np.pi # in degrees
 
     naxis3 = len(s[0]['DATA'][startChannel:endChannel])
     nuslice = (range(naxis3))[startChannel:endChannel]
@@ -98,6 +100,19 @@ def griddata(pixPerBeam = 3.0,
     cdelt3 = s[0]['CDELT1']
 
     w = wcs.WCS(naxis=3)
+
+    w.wcs.restfrq = nu0
+    w.wcs.radesys = s[0]['RADESYS']
+    w.wcs.equinox = s[0]['EQUINOX']
+    # 
+    # Spectral frame. We would like LSRK, however, at the moment we have not converted the 
+    # frequencies yet. The cubes are in TOPO to make sure we explicitly acknowledge this issue.
+    #
+    #if s[0]['VELDEF'] == 'RADI-LSR':
+    #    w.wcs.specsys = 'TOPOCENT'
+    #
+    if s[0]['CTYPE1'] == 'FREQ-OBS':
+        w.wcs.specsys = 'TOPOCENT'
     
     if templateHeader is None:
         wcsdict = autoHeader(filelist, beamSize = beamSize, pixPerBeam = pixPerBeam)
@@ -150,8 +165,21 @@ def griddata(pixPerBeam = 3.0,
 
     outWts.shape = (1,)+outWts.shape
     outCube /= outWts
-
+    # Create basic fits header from WCS structure
     hdr = fits.Header(w.to_header())
+    # Add restfrequency used in the observations
+    #hdr['RESTFREQ'] = nu0
+    # Velocity frame
+    #if veldef == 'RADI-LSR':
+    #    hdr['SPECSYS'] = 'LSRK'
+    # Brightness scale
+    if Data_Unit == 'Tmb':
+        hdr['BUNIT'] = 'K'
+    # Add beam size information into header. 
+    hdr['BMAJ'] = beamSize
+    hdr['BMIN'] = beamSize
+    hdr['BPA'] = 0.0
+    # 
     hdu = fits.PrimaryHDU(outCube,header=hdr)
     hdu.writeto(dirname+'.fits',clobber=True)
 
