@@ -111,7 +111,9 @@ def griddata(pixPerBeam = 3.0,
 
     c = 299792458.
     nu0 = s[0]['RESTFREQ']
-    beamSize = 1.22 * (c/nu0/100.0)*180/np.pi # in arcsec
+    
+    Data_Unit = s[0]['TUNIT7']
+    beamSize = 1.22 * (c/nu0/100.0)*180/np.pi # in degrees
 
     naxis3 = len(s[0]['DATA'][startChannel:endChannel])
     nuindex = np.arange(len(s[0]['DATA']))
@@ -125,6 +127,19 @@ def griddata(pixPerBeam = 3.0,
     cdelt3 = s[0]['CDELT1']
 
     w = wcs.WCS(naxis=3)
+
+    w.wcs.restfrq = nu0
+    w.wcs.radesys = s[0]['RADESYS']
+    w.wcs.equinox = s[0]['EQUINOX']
+    # 
+    # Spectral frame. We would like LSRK, however, at the moment we have not converted the 
+    # frequencies yet. The cubes are in TOPO to make sure we explicitly acknowledge this issue.
+    #
+    #if s[0]['VELDEF'] == 'RADI-LSR':
+    #    w.wcs.specsys = 'TOPOCENT'
+    #
+    if s[0]['CTYPE1'] == 'FREQ-OBS':
+        w.wcs.specsys = 'TOPOCENT'
     
     if templateHeader is None:
         wcsdict = autoHeader(filelist, beamSize = beamSize, 
@@ -196,18 +211,41 @@ def griddata(pixPerBeam = 3.0,
         outCubeTemp /= outWtsTemp
 
         hdr = fits.Header(w.to_header())
-        hdr['SSYSOBSR']='TOPOCENT'
-        hdr['SPECSYSR']='LSRK'
+        hdr['RESTFREQ'] = nu0
+        # Brightness scale
+        if Data_Unit == 'Tmb':
+            hdr['BUNIT'] = 'K'
+        # Add beam size information into header. 
+        hdr['BMAJ'] = beamSize
+        hdr['BMIN'] = beamSize
+        hdr['BPA'] = 0.0
+        hdr['SSYSOBS']='TOPOCENT'
+        hdr['SPECSYS']='LSRK'
+        hdr['TELESCOP']='GBT'
+        hdr['INSTRUME']='KFPA'
+        hdr['EQUINOX']='2000.0'
+
         hdu = fits.PrimaryHDU(outCubeTemp,header=hdr)
         hdu.writeto(dirname+'.fits',clobber=True)
 
     outWt.shape = (1,)+outWtsTemp.shape
     outCube /= outWts
-
+    # Create basic fits header from WCS structure
     hdr = fits.Header(w.to_header())
+    # Add restfrequency used in the observations
+    hdr['RESTFREQ'] = nu0
+    # Brightness scale
+    if Data_Unit == 'Tmb':
+        hdr['BUNIT'] = 'K'
+    # Add beam size information into header. 
+    hdr['BMAJ'] = beamSize
+    hdr['BMIN'] = beamSize
+    hdr['BPA'] = 0.0
     hdr['SSYSOBSR']='TOPOCENT'
     hdr['SPECSYSR']='LSRK'
-    hdu = fits.PrimaryHDU(outCubeTemp,header=hdr)
+    hdr['TELESCOP']='NRAO-GBT'
+    # 
+    hdu = fits.PrimaryHDU(outCube,header=hdr)
     hdu.writeto(dirname+'.fits',clobber=True)
 
 
