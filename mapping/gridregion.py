@@ -13,15 +13,27 @@ import numpy.polynomial.legendre as legendre
 def baselineSpectrum(spectrum,order=1,baselineIndex=()):
     x=np.arange(len(spectrum))
     coeffs = legendre.legfit(x[baselineIndex],spectrum[baselineIndex],order)
-    pdb.set_trace()
+#    pdb.set_trace()
     spectrum -= legendre.legval(x,coeffs)
     
     return(spectrum)
 
-
-def channelShift(spectrum,shift):
-
-    return(spectrum)
+def freqShiftValue(freqIn,vshift,convention='RADIO'):
+    cms = 299792458.
+    if convention.upper() in 'OPTICAL':
+        return freqIn/(1.0+vshift/cms)
+    if convention.upper() in 'TRUE':
+        return freqIn*((cms+vshift)/(cms-vshift))**0.5
+    if convention.upper() in 'RADIO':
+        return freqIn*(1.0-vshift/cms)
+    
+def channelShift(x,ChanShift):
+# Shift a spectrum by a set number of channels.  
+    ftx = np.fft.fft(x)
+    m = np.fft.fftfreq(len(x))
+    phase = np.exp(2*np.pi*m*1j*ChanShift)
+    x2 = np.real(np.fft.ifft(ftx*phase))
+    return(x2)
 
 def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     a = 1.55/(3.0/pixPerBeam)
@@ -106,9 +118,9 @@ def griddata(pixPerBeam = 3.0,
     baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
     nuslice = (range(naxis3))[startChannel:endChannel]
 
-
+    # Default behavior is to park the object velocity at the center channel.
+    crval3 = s[0]['RESTFREQ']*(1-s[0]['VELOCITY']/c)
     crpix3 = s[0]['CRPIX1']-startChannel
-    crval3 = s[0]['CRVAL1']
     ctype3 = s[0]['CTYPE1']
     cdelt3 = s[0]['CDELT1']
 
@@ -156,7 +168,10 @@ def griddata(pixPerBeam = 3.0,
                 specData = baselineSpectrum(specData,order=2,
                                             baselineIndex=baselineIndex)
             #shift frequency here
-                pdb.set_trace()
+            DeltaNu = spectrum['CRVAL1']-freqShiftValue(spectrum['CRVAL1'],-spectrum['RVSYS'])
+            DeltaChan = DeltaNu/cdelt3
+            specData = channelShift(specData,DeltaChan)
+#            pdb.set_trace()
             outslice = (specData)[startChannel:endChannel]
             spectrum_wt = np.isfinite(outslice).astype(np.float)
             outslice = np.nan_to_num(outslice)
@@ -179,6 +194,8 @@ def griddata(pixPerBeam = 3.0,
     outCube /= outWts
 
     hdr = fits.Header(w.to_header())
+    hdr['SSYSOBSR']='TOPOCENT'
+    hdr['SPECSYSR']='LSRK'
     hdu = fits.PrimaryHDU(outCube,header=hdr)
     hdu.writeto(dirname+'.fits',clobber=True)
 
