@@ -168,7 +168,7 @@ def griddata(pixPerBeam = 3.0,
                 specData = baselineSpectrum(specData,order=2,
                                             baselineIndex=baselineIndex)
             #shift frequency here
-            DeltaNu = spectrum['CRVAL1']-freqShiftValue(spectrum['CRVAL1'],-spectrum['RVSYS'])
+            DeltaNu = freqShiftValue(spectrum['CRVAL1'],-spectrum['RVSYS'])-spectrum['CRVAL1']
             DeltaChan = DeltaNu/cdelt3
             specData = channelShift(specData,DeltaChan)
 #            pdb.set_trace()
@@ -189,15 +189,27 @@ def griddata(pixPerBeam = 3.0,
                 wts = pixelWeight/tsys**2
                 outCube[:,ymat[Index],xmat[Index]] += vector
                 outWts[ymat[Index],xmat[Index]] += wts
+# Temporarily do a file write for every batch of scans.
+        outWtsTemp = np.copy(outWts)
+        outWtsTemp.shape = (1,)+outWtsTemp.shape
+        outCubeTemp = np.copy(outCube)
+        outCubeTemp /= outWtsTemp
 
-    outWts.shape = (1,)+outWts.shape
+        hdr = fits.Header(w.to_header())
+        hdr['SSYSOBSR']='TOPOCENT'
+        hdr['SPECSYSR']='LSRK'
+        hdu = fits.PrimaryHDU(outCubeTemp,header=hdr)
+        hdu.writeto(dirname+'.fits',clobber=True)
+
+    outWt.shape = (1,)+outWtsTemp.shape
     outCube /= outWts
 
     hdr = fits.Header(w.to_header())
     hdr['SSYSOBSR']='TOPOCENT'
     hdr['SPECSYSR']='LSRK'
-    hdu = fits.PrimaryHDU(outCube,header=hdr)
+    hdu = fits.PrimaryHDU(outCubeTemp,header=hdr)
     hdu.writeto(dirname+'.fits',clobber=True)
+
 
     w2 = w.dropaxis(2)
     hdr2 = fits.Header(w2.to_header())
