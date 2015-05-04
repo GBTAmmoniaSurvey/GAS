@@ -104,8 +104,15 @@ def griddata(pixPerBeam = 3.0,
     w.wcs.restfrq = nu0
     w.wcs.radesys = s[0]['RADESYS']
     w.wcs.equinox = s[0]['EQUINOX']
-    if s[0]['VELDEF'] == 'RADI-LSR':
-        w.wcs.specsys = 'LSRK'
+    # 
+    # Spectral frame. We would like LSRK, however, at the moment we have not converted the 
+    # frequencies yet. The cubes are in TOPO to make sure we explicitly acknowledge this issue.
+    #
+    #if s[0]['VELDEF'] == 'RADI-LSR':
+    #    w.wcs.specsys = 'TOPOCENT'
+    #
+    if s[0]['CTYPE1'] == 'FREQ-OBS':
+        w.wcs.specsys = 'TOPOCENT'
     
     if templateHeader is None:
         wcsdict = autoHeader(filelist, beamSize = beamSize, pixPerBeam = pixPerBeam)
