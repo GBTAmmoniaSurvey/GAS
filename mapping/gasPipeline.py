@@ -5,6 +5,20 @@ import subprocess
 import glob
 import warnings
 
+def reduceAll(overwrite=False):
+    updateLogs()
+    catalog = parseLog()
+    uniqSrc = set(catalog['Region name'])
+    cwd = os.getcwd()
+    for region in uniqSrc:
+        try:
+            os.chdir(cwd+'/'+region)
+        except OSError:
+            os.mkdir(cwd+'/'+region)
+            os.chdir(cwd+'/'+region)
+        wrapper(region=region, overwrite = overwrite)
+        os.chdir(cwd)
+
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
             window=['0','1','2','3','4','5','6'],overwrite=False):
     """
@@ -138,6 +152,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                     format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
                 try:
                     os.rename(filename,OutputDirectory+'/'+outputfile)
+                    os.chown(OutputDirectory+'/'+outputfile,0774)
                 except:
                     pass
 

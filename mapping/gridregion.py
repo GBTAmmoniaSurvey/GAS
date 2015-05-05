@@ -6,14 +6,38 @@ import astropy.wcs as wcs
 import itertools
 from scipy.special import j1
 import pdb
-
+import numpy.fft as fft
 import astropy.utils.console as console
+import numpy.polynomial.legendre as legendre
 
+def baselineSpectrum(spectrum,order=1,baselineIndex=()):
+    x=np.arange(len(spectrum))
+    coeffs = legendre.legfit(x[baselineIndex],spectrum[baselineIndex],order)
+#    pdb.set_trace()
+    spectrum -= legendre.legval(x,coeffs)
+    
+    return(spectrum)
+
+def freqShiftValue(freqIn,vshift,convention='RADIO'):
+    cms = 299792458.
+    if convention.upper() in 'OPTICAL':
+        return freqIn/(1.0+vshift/cms)
+    if convention.upper() in 'TRUE':
+        return freqIn*((cms+vshift)/(cms-vshift))**0.5
+    if convention.upper() in 'RADIO':
+        return freqIn*(1.0-vshift/cms)
+    
+def channelShift(x,ChanShift):
+# Shift a spectrum by a set number of channels.  
+    ftx = np.fft.fft(x)
+    m = np.fft.fftfreq(len(x))
+    phase = np.exp(2*np.pi*m*1j*ChanShift)
+    x2 = np.real(np.fft.ifft(ftx*phase))
+    return(x2)
 
 def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     a = 1.55/(3.0/pixPerBeam)
     b = 2.52/(3.0/pixPerBeam)
-    c = 1.55/(3.0/pixPerBeam)
     
     Rsup = 1.0*pixPerBeam # Support radius is 1 FWHM
     dmin = 1e-4
@@ -26,8 +50,8 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     
     ind  = (np.where(distance<=Rsup))
     d = distance[ind]
-    wt = j1(pia*d)/\
-        (pia*d)*\
+    wt = j1(d*pia)/\
+        (d*pia)*\
         np.exp(-d**2*b2)
 #    wt[ind] = np.exp(-distance[ind]**2*b2)*\
 #              np.sin(pia*distance[ind])/\
@@ -78,7 +102,8 @@ def griddata(pixPerBeam = 3.0,
              region = 'NGC1333',
              dirname = 'NGC1333_NH3_11',
              startChannel = 1024, endChannel = 3072,
-             ):
+             doBaseline = True,
+             baselineRegion = [slice(512,1024,1),slice(3072,3584,1)]):
 
     filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
     #pull a test structure
@@ -91,11 +116,13 @@ def griddata(pixPerBeam = 3.0,
     beamSize = 1.22 * (c/nu0/100.0)*180/np.pi # in degrees
 
     naxis3 = len(s[0]['DATA'][startChannel:endChannel])
+    nuindex = np.arange(len(s[0]['DATA']))
+    baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
     nuslice = (range(naxis3))[startChannel:endChannel]
 
-
+    # Default behavior is to park the object velocity at the center channel in the VRAD-LSR frame
+    crval3 = s[0]['RESTFREQ']*(1-s[0]['VELOCITY']/c)
     crpix3 = s[0]['CRPIX1']-startChannel
-    crval3 = s[0]['CRVAL1']
     ctype3 = s[0]['CTYPE1']
     cdelt3 = s[0]['CDELT1']
 
@@ -104,6 +131,7 @@ def griddata(pixPerBeam = 3.0,
     w.wcs.restfrq = nu0
     w.wcs.radesys = s[0]['RADESYS']
     w.wcs.equinox = s[0]['EQUINOX']
+    w.wcs.specsys = 'LSRK'  # We are forcing this conversion to make nice cubes.
     # 
     # Spectral frame. We would like LSRK, however, at the moment we have not converted the 
     # frequencies yet. The cubes are in TOPO to make sure we explicitly acknowledge this issue.
@@ -111,11 +139,12 @@ def griddata(pixPerBeam = 3.0,
     #if s[0]['VELDEF'] == 'RADI-LSR':
     #    w.wcs.specsys = 'TOPOCENT'
     #
-    if s[0]['CTYPE1'] == 'FREQ-OBS':
-        w.wcs.specsys = 'TOPOCENT'
+    #if s[0]['CTYPE1'] == 'FREQ-OBS':
+    #    w.wcs.specsys = 'TOPOCENT'
     
     if templateHeader is None:
-        wcsdict = autoHeader(filelist, beamSize = beamSize, pixPerBeam = pixPerBeam)
+        wcsdict = autoHeader(filelist, beamSize = beamSize, 
+                             pixPerBeam = pixPerBeam)
         w.wcs.crpix = [wcsdict['CRPIX1'],wcsdict['CRPIX2'],crpix3]
         w.wcs.cdelt = np.array([wcsdict['CDELT1'],wcsdict['CDELT2'],cdelt3])
         w.wcs.crval = [wcsdict['CRVAL1'],wcsdict['CRVAL2'],crval3]
@@ -123,10 +152,14 @@ def griddata(pixPerBeam = 3.0,
         naxis2 = wcsdict['NAXIS2']
         naxis1 = wcsdict['NAXIS1']
     else:
-        w.wcs.crpix = [templateHeader['CRPIX1'],templateHeader['CRPIX2'],crpix3]
-        w.wcs.cdelt = np.array([templateHeader['CDELT1'],templateHeader['CDELT2'],cdelt3])
-        w.wcs.crval = [templateHeader['CRVAL1'],templateHeader['CRVAL2'],crval3]
-        w.wcs.ctype = [templateHeader['CTYPE1'],templateHeader['CTYPE2'],ctype3]
+        w.wcs.crpix = [templateHeader['CRPIX1'],
+                       templateHeader['CRPIX2'],crpix3]
+        w.wcs.cdelt = np.array([templateHeader['CDELT1'],
+                                templateHeader['CDELT2'],cdelt3])
+        w.wcs.crval = [templateHeader['CRVAL1'],
+                       templateHeader['CRVAL2'],crval3]
+        w.wcs.ctype = [templateHeader['CTYPE1'],
+                       templateHeader['CTYPE2'],ctype3]
         naxis2 = templateHeader['NAXIS2']
         naxis1 = templateHeader['NAXIS1']
     outCube = np.zeros((naxis3,naxis2,naxis1))
@@ -144,8 +177,22 @@ def griddata(pixPerBeam = 3.0,
         s = fits.open(thisfile)
         print("Now processing {0}".format(thisfile))
         print("This is file {0} of {1}".format(ctr,len(filelist)))
-        for spectrum in console.ProgressBar((s[1].data)):
-            outslice = (spectrum['DATA'])[startChannel:endChannel]
+        for spectrum in console.ProgressBar((s[1].data)):            #pre-processing
+            specData = spectrum['DATA']
+            #baseline fit
+            if doBaseline:
+                specData = baselineSpectrum(specData,order=1,
+                                            baselineIndex=baselineIndex)
+
+            # This part takes the TOPOCENTRIC frequency that is at
+            # CRPIX1 (i.e., CRVAL1) and calculates the what frequency
+            # that would have in the LSRK frame with freqShiftValue.
+            # This then compares to the desired frequency CRVAL3.
+
+            DeltaNu = freqShiftValue(spectrum['CRVAL1'],-spectrum['VFRAME'])-crval3
+            DeltaChan = DeltaNu/cdelt3
+            specData = channelShift(specData,-DeltaChan)
+            outslice = (specData)[startChannel:endChannel]
             spectrum_wt = np.isfinite(outslice).astype(np.float)
             outslice = np.nan_to_num(outslice)
             xpoints,ypoints,zpoints = w.wcs_world2pix(spectrum['CRVAL2'],
@@ -162,16 +209,36 @@ def griddata(pixPerBeam = 3.0,
                 wts = pixelWeight/tsys**2
                 outCube[:,ymat[Index],xmat[Index]] += vector
                 outWts[ymat[Index],xmat[Index]] += wts
+# Temporarily do a file write for every batch of scans.
+        outWtsTemp = np.copy(outWts)
+        outWtsTemp.shape = (1,)+outWtsTemp.shape
+        outCubeTemp = np.copy(outCube)
+        outCubeTemp /= outWtsTemp
+
+        hdr = fits.Header(w.to_header())
+        hdr['RESTFREQ'] = nu0
+        # Brightness scale
+        if Data_Unit == 'Tmb':
+            hdr['BUNIT'] = 'K'
+        hdr['BMAJ'] = beamSize
+        hdr['BMIN'] = beamSize
+        hdr['BPA'] = 0.0
+        hdr['SSYSOBS']='TOPOCENT'
+        hdr['SPECSYS']='LSRK'
+        hdr['TELESCOP']='GBT'
+        hdr['INSTRUME']='KFPA'
+
+        hdu = fits.PrimaryHDU(outCubeTemp,header=hdr)
+        hdu.writeto(dirname+'.fits',clobber=True)
 
     outWts.shape = (1,)+outWts.shape
     outCube /= outWts
+
+
     # Create basic fits header from WCS structure
     hdr = fits.Header(w.to_header())
     # Add restfrequency used in the observations
-    #hdr['RESTFREQ'] = nu0
-    # Velocity frame
-    #if veldef == 'RADI-LSR':
-    #    hdr['SPECSYS'] = 'LSRK'
+    hdr['RESTFREQ'] = nu0
     # Brightness scale
     if Data_Unit == 'Tmb':
         hdr['BUNIT'] = 'K'
@@ -179,9 +246,14 @@ def griddata(pixPerBeam = 3.0,
     hdr['BMAJ'] = beamSize
     hdr['BMIN'] = beamSize
     hdr['BPA'] = 0.0
-    # 
+    # Observed in TOPOCENT frame.  Reported in LSRK frame
+    hdr['SSYSOBS']='TOPOCENT'
+    hdr['SPECSYS']='LSRK'
+    hdr['TELESCOP']='GBT'
+    hdr['INSTRUME']='KFPA'
     hdu = fits.PrimaryHDU(outCube,header=hdr)
     hdu.writeto(dirname+'.fits',clobber=True)
+
 
     w2 = w.dropaxis(2)
     hdr2 = fits.Header(w2.to_header())
