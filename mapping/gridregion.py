@@ -181,7 +181,7 @@ def griddata(pixPerBeam = 3.0,
             specData = spectrum['DATA']
             #baseline fit
             if doBaseline:
-                specData = baselineSpectrum(specData,order=2,
+                specData = baselineSpectrum(specData,order=1,
                                             baselineIndex=baselineIndex)
 
             # This part takes the TOPOCENTRIC frequency that is at
