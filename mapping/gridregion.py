@@ -95,6 +95,16 @@ def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
 
     return(outdict)
 
+def addHeader_nonStd( hdr, beamSize, Data_Unit):
+    if Data_Unit == 'Tmb':
+        hdr['BUNIT'] = 'K'
+    hdr['BMAJ'] = beamSize
+    hdr['BMIN'] = beamSize
+    hdr['BPA'] = 0.0
+    hdr['TELESCOP']='GBT'
+    hdr['INSTRUME']='KFPA'
+    return(hdr)
+
 def griddata(pixPerBeam = 3.0,
              templateHeader = None,
              gridFunction = jincGrid, 
@@ -132,16 +142,8 @@ def griddata(pixPerBeam = 3.0,
     w.wcs.radesys = s[0]['RADESYS']
     w.wcs.equinox = s[0]['EQUINOX']
     w.wcs.specsys = 'LSRK'  # We are forcing this conversion to make nice cubes.
-    # 
-    # Spectral frame. We would like LSRK, however, at the moment we have not converted the 
-    # frequencies yet. The cubes are in TOPO to make sure we explicitly acknowledge this issue.
-    #
-    #if s[0]['VELDEF'] == 'RADI-LSR':
-    #    w.wcs.specsys = 'TOPOCENT'
-    #
-    #if s[0]['CTYPE1'] == 'FREQ-OBS':
-    #    w.wcs.specsys = 'TOPOCENT'
-    
+    w.wcs.ssysobs = 'TOPOCENT'
+       
     if templateHeader is None:
         wcsdict = autoHeader(filelist, beamSize = beamSize, 
                              pixPerBeam = pixPerBeam)
@@ -216,18 +218,8 @@ def griddata(pixPerBeam = 3.0,
         outCubeTemp /= outWtsTemp
 
         hdr = fits.Header(w.to_header())
-        hdr['RESTFREQ'] = nu0
-        # Brightness scale
-        if Data_Unit == 'Tmb':
-            hdr['BUNIT'] = 'K'
-        hdr['BMAJ'] = beamSize
-        hdr['BMIN'] = beamSize
-        hdr['BPA'] = 0.0
-        hdr['SSYSOBS']='TOPOCENT'
-        hdr['SPECSYS']='LSRK'
-        hdr['TELESCOP']='GBT'
-        hdr['INSTRUME']='KFPA'
-
+        hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
+        #
         hdu = fits.PrimaryHDU(outCubeTemp,header=hdr)
         hdu.writeto(dirname+'.fits',clobber=True)
 
@@ -237,20 +229,9 @@ def griddata(pixPerBeam = 3.0,
 
     # Create basic fits header from WCS structure
     hdr = fits.Header(w.to_header())
-    # Add restfrequency used in the observations
-    hdr['RESTFREQ'] = nu0
-    # Brightness scale
-    if Data_Unit == 'Tmb':
-        hdr['BUNIT'] = 'K'
-    # Add beam size information into header. 
-    hdr['BMAJ'] = beamSize
-    hdr['BMIN'] = beamSize
-    hdr['BPA'] = 0.0
-    # Observed in TOPOCENT frame.  Reported in LSRK frame
-    hdr['SSYSOBS']='TOPOCENT'
-    hdr['SPECSYS']='LSRK'
-    hdr['TELESCOP']='GBT'
-    hdr['INSTRUME']='KFPA'
+    # Add non standard fits keyword
+    hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
+    #
     hdu = fits.PrimaryHDU(outCube,header=hdr)
     hdu.writeto(dirname+'.fits',clobber=True)
 
