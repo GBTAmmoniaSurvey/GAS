@@ -8,12 +8,6 @@ from pyspeckit.parallel_map import parallel_map
 from astropy import log
 from spectral_cube import SpectralCube
 
-#from radio_beam import Beam
-
-import pkg_resources
-from pkg_resources import parse_version
-if pkg_resources.get_distribution("spectral_cube").version < parse_version('0.2.dev694'):
-     sys.exit('ERROR: Please use version of spectral_cube 0.2.dev694 or newer')
 
 def create_index( a, b):
     """ create_index takes two arrays and it creates an array that covers all indices 
@@ -86,7 +80,7 @@ def blfunc_generator(x=None, polyorder=None, splineorder=None,
 
     return blfunc
 
-def GAS_baseline_cube(cube, polyorder=None, cubemask=None, splineorder=None,
+def baseline_cube(cube, polyorder=None, cubemask=None, splineorder=None,
                   numcores=None, sampling=1):
     """
     Given a cube, fit a polynomial to each spectrum
@@ -133,7 +127,7 @@ def GAS_baseline_cube(cube, polyorder=None, cubemask=None, splineorder=None,
     return blcube
 
 
-def GAS_baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100)):
+def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100)):
     """ GAS_baseline: Function that reads in a cube and removes a baseline. 
     The baseline is a polynomial of order 'polyorder' (default=1), and it is fitted 
     on the channels clean of line emission, 'index_clean' (default=[0:100]).
@@ -154,7 +148,7 @@ def GAS_baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100)):
     return file_out
 
 
-def GAS_peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440), overwrite=True):
+def peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440), overwrite=True):
     """ Calculate rms, integrated intensity and peak intensity maps.
 
     Parameters
