@@ -1,4 +1,3 @@
-#/bin/env python
 import pdb
 import os 
 import subprocess
