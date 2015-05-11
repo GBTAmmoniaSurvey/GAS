@@ -9,7 +9,7 @@ def grid_SerAqu():
     region_name='Serpens_Aquila'
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
     
-    hd_temp=fits.getheader(region_name'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
@@ -23,7 +23,7 @@ def grid_NGC1333():
     region_name='NGC1333'
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
     
-    hd_temp=fits.getheader(region_name'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
@@ -37,7 +37,7 @@ def grid_L1455():
     region_name='L1455'
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
     
-    hd_temp=fits.getheader(region_name'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
@@ -51,7 +51,7 @@ def grid_L1688():
     region_name='L1688'
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
     
-    hd_temp=fits.getheader(region_name'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
@@ -65,7 +65,7 @@ def grid_OrionA():
     region_name='OrionA'
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
     
-    hd_temp=fits.getheader(region_name'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
@@ -79,7 +79,7 @@ def grid_OrionB():
     region_name='OrionB'
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
     
-    hd_temp=fits.getheader(region_name'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
@@ -93,7 +93,7 @@ def grid_B18():
     region_name='B18'
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
     
-    hd_temp=fits.getheader(region_name'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
