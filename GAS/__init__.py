@@ -17,4 +17,5 @@ if not _ASTROPY_SETUP_:
     import gasPipeline
     import gridregion
     import run_grid_regions
+    import first_look
     pass
