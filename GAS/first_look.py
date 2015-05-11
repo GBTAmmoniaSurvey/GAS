@@ -128,7 +128,7 @@ def baseline_cube(cube, polyorder=None, cubemask=None, splineorder=None,
 
 
 def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100)):
-    """ GAS_baseline: Function that reads in a cube and removes a baseline. 
+    """  baseline: Function that reads in a cube and removes a baseline. 
     The baseline is a polynomial of order 'polyorder' (default=1), and it is fitted 
     on the channels clean of line emission, 'index_clean' (default=[0:100]).
     """
@@ -141,7 +141,7 @@ def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100)):
     cubemask[index_clean,:,:] = False
     cubemask = (cubemask) | (np.isnan(cube))
     # Remove a line
-    cube_bl = GAS_baseline_cube( cube, polyorder=polyorder, cubemask=cubemask, numcores=None, sampling=1)
+    cube_bl = baseline_cube( cube, polyorder=polyorder, cubemask=cubemask, numcores=None, sampling=1)
     # Save cube
     hdu = fits.PrimaryHDU(cube_bl, header=hd)
     hdu.writeto(file_out, clobber=True)
