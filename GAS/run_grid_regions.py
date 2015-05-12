@@ -1,20 +1,20 @@
 
 from . import gridregion
 
-#from astropy.io import fits
+from astropy.io import fits
 
 def grid_SerAqu():
     print("You will image the GBT Ammonia Survey data for Serpens_Aquila")
     data_dir = '/lustre/pipeline/scratch/GAS'
     region_name = 'Serpens_Aquila'
     startChannel = 1024 + 668 # default 1024
-    endChannel = 1024 + 1462  # default 3072
+    endChannel = 1024 + 1452  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11', 
         startChannel = startChannel, endChannel = endChannel)
     
     hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     startChannel = 1024 + 630 # default 1024
-    endChannel = 1024 + 1462  # default 3072
+    endChannel = 1024 + 1452  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22', 
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
     startChannel = 1024 + 790 # default 1024
