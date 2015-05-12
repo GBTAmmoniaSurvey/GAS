@@ -105,6 +105,7 @@ def FirstLook_SerAqu():
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now NH3(2,2)")
     a_rms = [  0, 230, 460, 665]
     b_rms = [150, 380, 610, 820]
@@ -115,6 +116,7 @@ def FirstLook_SerAqu():
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now NH3(3,3)")
     a_rms = [  0, 300]
     b_rms = [220, 490]
@@ -125,6 +127,7 @@ def FirstLook_SerAqu():
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now CCS")
     a_rms = [  0, 260]
     b_rms = [200, 490]
@@ -135,6 +138,7 @@ def FirstLook_SerAqu():
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now HC5N")
     a_rms = [  0, 260]
     b_rms = [200, 490]
