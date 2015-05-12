@@ -97,11 +97,11 @@ def FirstLook_L1688():
 
 def FirstLook_SerAqu():
     print("Now NH3(1,1)")
-    a_rms = [  0, 255, 575, 825, 1000, 1300, 1619]
-    b_rms = [140, 455, 640, 860, 1100, 1490, 1750]
+    a_rms = [  0, 150, 310, 420, 530, 690]
+    b_rms = [ 60, 230, 330, 440, 610, 780]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(600,800)
-    file_in='Serpens_Aquila/Serpens_Aquila_NH3_11.fits'
+    index_peak=np.arange(340,420)
+    file_in='Serpens_Aquila_test/Serpens_Aquila_NH3_11.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
