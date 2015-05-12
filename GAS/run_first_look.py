@@ -133,7 +133,7 @@ def FirstLook_SerAqu():
     b_rms = [200, 490]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(220,250)
-    file_in='Serpens_Aquila_test/Serpens_Aquila_CCS.fits'
+    file_in='Serpens_Aquila_test/Serpens_Aquila_C2S.fits'
     # 1st order polynomial
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
