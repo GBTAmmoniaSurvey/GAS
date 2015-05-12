@@ -5,17 +5,38 @@ from . import gridregion
 
 def grid_SerAqu():
     print("You will image the GBT Ammonia Survey data for Serpens_Aquila")
-    data_dir='/lustre/pipeline/scratch/GAS'
-    region_name='Serpens_Aquila'
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
+    data_dir = '/lustre/pipeline/scratch/GAS'
+    region_name = 'Serpens_Aquila'
+    startChannel = 1024 + 668 # default 1024
+    endChannel = 1024 + 1462  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11', 
+        startChannel = startChannel, endChannel = endChannel)
     
     hd_temp=fits.getheader(region_name+'_NH3_11.fits')
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N',       templateHeader=hd_temp)
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20', templateHeader=hd_temp)
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21', templateHeader=hd_temp)
+    startChannel = 1024 + 630 # default 1024
+    endChannel = 1024 + 1462  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22', 
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 790 # default 1024
+    endChannel = 1024 + 1290  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33', 
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 790 # default 1024
+    endChannel = 1024 + 1290  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S', 
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 790 # default 1024
+    endChannel = 1024 + 1290  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N', 
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 950 # default 1024
+    endChannel = 1024 + 1150  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20', 
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 950 # default 1024
+    endChannel = 1024 + 1150  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21', 
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
 
 def grid_NGC1333():
     print("You will image the GBT Ammonia Survey data for NGC1333")
