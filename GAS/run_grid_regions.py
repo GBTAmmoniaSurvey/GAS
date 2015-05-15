@@ -98,16 +98,20 @@ def grid_OrionA():
     endChannel = 1024 + 1540  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
-    ######### ----------> Up to here done
-    ########## Update below 
-    startChannel = 1024 + 577 # default 1024
-    endChannel = 1024 + 1540  # default 3072
+    startChannel = 1024 + 790 # default 1024
+    endChannel = 1024 + 1290  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 600 # default 1024
+    endChannel = 1024 + 1150  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N', 
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 600 # default 1024
+    endChannel = 1024 + 1130  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20', 
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 600 # default 1024
+    endChannel = 1024 + 1150  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21', 
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
 
