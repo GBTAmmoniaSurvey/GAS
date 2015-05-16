@@ -46,12 +46,22 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     for observation in t:
         if region == observation['Region name']:
             for thisWindow in window:
-                doPipeline(SessionNumber=observation['Session'],
+                if str(observation['Special RawDir']) == '--':
+                    doPipeline(SessionNumber=observation['Session'],
                            StartScan=observation['Start Scan'],
                            EndScan=observation['End Scan'],
                            Source=observation['Source'],
                            Region=region,
                            Window=str(thisWindow),overwrite=overwrite)
+                else :
+                        doPipeline(SessionNumber=observation['Session'],
+                           StartScan=observation['Start Scan'],
+                           EndScan=observation['End Scan'],
+                           Source=observation['Source'],
+                           Region=region,
+                           RawDataDir=observation['Special RawDir'],
+                           Window=str(thisWindow),overwrite=overwrite)
+
 
 
 def parseLog(logfile='ObservationLog.csv'):
@@ -73,9 +83,11 @@ def updateLogs(output='ObservationLog.csv'):
 def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58, 
                Source='Perseus_map_NGC1333-A', Window='0', 
                Region = 'NGC1333', OptionDict = None,
+               RawDataDir = None, 
                OutputRoot = None, overwrite=False):
 
-    RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/'
+    if RawDataDir is None:
+        RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/' 
     SessionDir = 'AGBT15A_430_'+str(SessionNumber).zfill(2)+'.raw.vegas/'
     BankNames = ['A','B','C','D','E','F','G','H']
     print('Reducing '+SessionDir)
