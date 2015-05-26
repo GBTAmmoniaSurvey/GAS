@@ -58,27 +58,34 @@ def grid_L1455():
     region_name='L1455'
     startChannel = 630
     endChannel = 1380
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11' 
+        startChannel = startChannel, endChannel = endChannel)
     
     hd_temp=fits.getheader(region_name+'_NH3_11.fits')
     startChannel = 700
     endChannel = 1350
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
     startChannel = 700 # No lines. Using the same as NH3_22 
     endChannel = 1350 # No lines. Using the same as NH3_22
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
     startChannel = 700 
     endChannel = 1350
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
     startChannel = 700 # No Lines. Using the same as previous
     endChannel = 1350 # No Lines. Using the same as previous
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N',       templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
     startChannel = 1750 
     endChannel = 2048 
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20', templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
     startChannel = 700 # No Lines. Using the same as previous
     endChannel = 1350 # No Lines. Using the same as previous
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21', templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
 
 def grid_L1688():
     print("You will image the GBT Ammonia Survey data for L1688")
