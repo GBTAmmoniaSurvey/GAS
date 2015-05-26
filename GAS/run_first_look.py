@@ -4,33 +4,35 @@ import numpy as np
 
 def FirstLook_OrionA():
     print("Now NH3(1,1)")
-    a_rms = [ 50, 300, 440, 555, 670, 820, 875]
-    b_rms = [170, 350, 450, 565, 720, 860, 910]
+    a_rms = [  0, 158, 315, 428, 530, 693, 751]
+    b_rms = [ 60, 230, 327, 438, 604, 735, 760]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(445,560)
+    index_peak=np.arange(326,430)
     file_in='OrionA/OrionA_NH3_11.fits'
     # 1st order polynomial
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    # 2nd order polynomial
-    file_out=file_in.replace('.fits','_base2.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    ## 2nd order polynomial
+    # file_out=file_in.replace('.fits','_base2.fits')
+    #file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+    #first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now NH3(2,2)")
-    a_rms = [  0, 270, 575, 745]
-    b_rms = [225, 420, 660, 935]
+    a_rms = [  0, 260, 520, 730]
+    b_rms = [150, 380, 610, 850]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(425,562)
+    index_peak=np.arange(380,520)
     file_in='OrionA/OrionA_NH3_22.fits'
     # 1st order polynomial
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    # 2nd order polynomial
-    file_out=file_in.replace('.fits','_base2.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    ## 2nd order polynomial
+    #file_out=file_in.replace('.fits','_base2.fits')
+    #file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+    #first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now NH3(3,3)")
     a_rms = [  0, 290, 425, 600]
     b_rms = [255, 410, 445, 945]
