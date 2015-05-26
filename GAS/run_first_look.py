@@ -34,30 +34,59 @@ def FirstLook_OrionA():
     #first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
     print("Now NH3(3,3)")
-    a_rms = [  0, 290, 425, 600]
-    b_rms = [255, 410, 445, 945]
+    a_rms = [ 10, 250, 530]
+    b_rms = [210, 310, 930]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(440,580)
+    index_peak=np.arange(410,540)
     file_in='OrionA/OrionA_NH3_33.fits'
     # 1st order polynomial
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    #2nd order polynomial
+    ##2nd order polynomial
+    #file_out=file_in.replace('.fits','_base2.fits')
+    #file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+    #first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now CCS")
+    a_rms = [  0, 260]
+    b_rms = [200, 490]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(220,250)
+    file_in='OrionA/OrionA_C2S.fits'
     file_out=file_in.replace('.fits','_base2.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now HC5N")
-    a_rms = [  0, 550]
-    b_rms = [420, 945]
+    # HC5N channel range must be updated
+    a_rms = [  0, 500]
+    b_rms = [380, 545]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(450,560)
+    index_peak=np.arange(400,480)
     file_in='OrionA/OrionA_HC5N.fits'
-    # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    file_out=file_in.replace('.fits','_base2.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    # 2nd order polynomial
+    #
+    print("Now HC7N 21-20")
+    # HC7N channel range must be updated
+    a_rms = [  0, 160, 480]
+    b_rms = [115, 360, 525]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(400,460)
+    file_in='OrionA/OrionA_HC7N_21_20.fits'
+    file_out=file_in.replace('.fits','_base2.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC7N 22-21")
+    # HC7N channel range must be updated
+    a_rms = [  0, 480]
+    b_rms = [360, 525]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(400,460)
+    file_in='OrionA/OrionA_HC7N_22_21.fits'
     file_out=file_in.replace('.fits','_base2.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
