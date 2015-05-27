@@ -58,7 +58,7 @@ def grid_L1455():
     region_name='L1455'
     startChannel = 630
     endChannel = 1380
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11' 
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11', 
         startChannel = startChannel, endChannel = endChannel)
     
     hd_temp=fits.getheader(region_name+'_NH3_11.fits')
