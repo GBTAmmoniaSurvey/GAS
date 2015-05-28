@@ -78,8 +78,8 @@ def grid_L1455():
     endChannel = 1024 + 1350 # No Lines. Using the same as previous
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
-    startChannel = 1024 + 1750 
-    endChannel = 1024 + 2048 
+    startChannel = 1024 + 700 # No Lines. Using the same as previous 
+    endChannel = 1024 + 1350  # No Lines. Using the same as previous
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
     startChannel = 1024 + 700 # No Lines. Using the same as previous
