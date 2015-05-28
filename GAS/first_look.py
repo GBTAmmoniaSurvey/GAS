@@ -7,7 +7,7 @@ import pyspeckit
 from pyspeckit.parallel_map import parallel_map
 from astropy import log
 from spectral_cube import SpectralCube
-
+from signal_id import Noise
 
 def create_index( a, b):
     """ create_index takes two arrays and it creates an array that covers all indices 
@@ -212,4 +212,14 @@ def peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440)
     rms.write(   file_in.replace('.fits', '_rms.fits'), overwrite=overwrite)
     Tpeak.write( file_in.replace('.fits', '_Tpeak.fits'), overwrite=overwrite)
     ###SNR.write( file_in.replace('.fits', '_SNR.fits'), overwrite=True)
+
+#def diff_rms(file_in, nIters=2,threshold = 3):
+#    cube_raw = SpectralCube.read(file_in)
+#    cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+    
+    # This calculates the RMS 
+#    for ii in range(nIters):
+#        diffrms = np.nanstd(np.roll(cube,2,axis=0)-cube),axis=0)/2**0.5
+#        mask = diffrms 
+#        cube.with_mask(
 
