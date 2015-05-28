@@ -105,10 +105,10 @@ def FirstLook_NGC1333():
 
 def FirstLook_B18():
     print("Now NH3(1,1)")
-    a_rms = [  0, 145, 230, 310, 420, 520, 690]
-    b_rms = [100, 205, 270, 375, 475, 640, 795]
+    a_rms = [  0, 115, 230, 345, 455, 625, 655]
+    b_rms = [ 80, 245, 280, 385, 490, 650, 760]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(370,415)
+    index_peak=np.arange(352,381)
     file_in='B18/B18_NH3_11.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
