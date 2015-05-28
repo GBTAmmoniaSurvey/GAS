@@ -113,6 +113,26 @@ def FirstLook_B18():
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now CCS")
+    a_rms = [   0, 245]
+    b_rms = [ 210, 490]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(225,243)
+    file_in='B18/B18_CCS.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC5N")
+    a_rms = [  10, 245]
+    b_rms = [ 210, 540]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(225,243)
+    file_in='B18/B18_HC5N.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
 
 
 def FirstLook_L1688():
