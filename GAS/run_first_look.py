@@ -237,7 +237,7 @@ def FirstLook_L1455():
     a_rms = [   0, 350]  
     b_rms = [ 290, 648]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(260,390)  
+    index_peak=np.arange(309,334)  
     file_in='L1455/L1455_C2S.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
@@ -247,7 +247,7 @@ def FirstLook_L1455():
     a_rms = [   0, 350]  
     b_rms = [ 290, 648]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(260,390)  
+    index_peak=np.arange(315,325)  
     file_in='L1455/L1455_HC5N.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
@@ -255,19 +255,19 @@ def FirstLook_L1455():
 
     print("Now HC7N_21_20")
     a_rms = [   0, 180]  
-    b_rms = [ 130, 295]
+    b_rms = [ 130, 275]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(120,190)  
+    index_peak=np.arange(128,147)  
     file_in='L1455/L1455_HC7N_21_20.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
 
     print("Now HC7N_22_21")
-    a_rms = [   0, 180]  # No lines. Using the same as HC7N_21_20
-    b_rms = [ 130, 295]  # No lines. Using the same as HC7N_21_20
+    a_rms = [   0, 340]  # No lines. Using the same as HC7N_21_20
+    b_rms = [ 290, 648]  # No lines. Using the same as HC7N_21_20
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(120,190)  # No lines. Using the same as HC7N_21_20
+    index_peak=np.arange(308,328)  # No lines. Using the same as HC7N_21_20
     file_in='L1455/L1455_HC7N_22_21.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
