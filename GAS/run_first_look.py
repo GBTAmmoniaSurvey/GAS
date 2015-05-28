@@ -310,7 +310,7 @@ def FirstLook_NGC1333():
     b_rms = [150, 380, 610, 850]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(380,520)
-    file_in='OrionA/OrionA_NH3_22.fits'
+    file_in='NGC1333/NGC1333_NH3_22.fits'
     # 1st order polynomial
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
@@ -325,7 +325,7 @@ def FirstLook_NGC1333():
     b_rms = [210, 310, 930]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(410,540)
-    file_in='OrionA/OrionA_NH3_33.fits'
+    file_in='NGC1333/NGC1333_NH3_33.fits'
     # 1st order polynomial
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
