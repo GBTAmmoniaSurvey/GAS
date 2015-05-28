@@ -200,27 +200,6 @@ def FirstLook_SerAqu():
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    
-def FirstLook_L1544():
-    print("Now NH3(1,1)")
-    a_rms = [  0,  55, 135, 185, 235, 310]
-    b_rms = [ 40, 115, 165, 215, 290, 350]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(168,180)
-    file_in='L1544/L1544_NH3_11.fits'
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-
-    print("Now NH3(2,2)")
-    a_rms = [  0,  20]
-    b_rms = [ 10,  25]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(10,18)
-    file_in='L1544/L1544_NH3_22.fits'
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
 
 def FirstLook_L1455():
     print("Now NH3(1,1)")
