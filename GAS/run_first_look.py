@@ -114,6 +114,26 @@ def FirstLook_B18():
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
+    print("Now NH3(2,2)")
+    a_rms = [   0, 440]
+    b_rms = [ 409, 870]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(420,435)
+    file_in='B18/B18_NH3_22.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now NH3(3,3)")
+    a_rms = [   0, 530]
+    b_rms = [ 409, 960]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(410,485)
+    file_in='B18/B18_NH3_33.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now CCS")
     a_rms = [   0, 245]
     b_rms = [ 210, 490]
@@ -125,11 +145,31 @@ def FirstLook_B18():
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
     print("Now HC5N")
-    a_rms = [  10, 245]
-    b_rms = [ 210, 540]
+    a_rms = [  10, 435]
+    b_rms = [ 409, 540]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(225,243)
+    index_peak=np.arange(414,430)
     file_in='B18/B18_HC5N.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC7N_21_20")
+    a_rms = [  10, 435]
+    b_rms = [ 409, 540]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(412,430)
+    file_in='B18/B18_HC7N_21_20.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC7N_22_21")
+    a_rms = [  10, 435]
+    b_rms = [ 409, 540]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(412,430)
+    file_in='B18/B18_HC7N_22_21.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
