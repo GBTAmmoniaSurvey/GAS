@@ -205,7 +205,7 @@ def FirstLook_L1544():
 def FirstLook_L1455():
     print("Now NH3(1,1)")
     a_rms = [   0, 140, 300, 410, 520, 680]
-    b_rms = [ 105, 270, 370, 480, 630, 750]
+    b_rms = [ 105, 270, 370, 480, 630, 745]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(350,430)
     file_in='L1455/L1455_NH3_11.fits'
@@ -215,7 +215,7 @@ def FirstLook_L1455():
 
     print("Now NH3(2,2)")
     a_rms = [   0, 340]
-    b_rms = [ 290, 650]
+    b_rms = [ 290, 648]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(260,400)
     file_in='L1455/L1455_NH3_22.fits'
@@ -225,7 +225,7 @@ def FirstLook_L1455():
 
     print("Now NH3(3,3)")
     a_rms = [   0, 340]  # No lines. Using the same as NH3(2,2)
-    b_rms = [ 290, 650]  # No lines. Using the same as NH3(2,2)
+    b_rms = [ 290, 648]  # No lines. Using the same as NH3(2,2)
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(260,400)  # No lines. Using the same as NH3(2,2)
     file_in='L1455/L1455_NH3_33.fits'
@@ -235,7 +235,7 @@ def FirstLook_L1455():
 
     print("Now CCS")
     a_rms = [   0, 350]  
-    b_rms = [ 290, 650]
+    b_rms = [ 290, 648]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(260,390)  
     file_in='L1455/L1455_C2S.fits'
@@ -245,7 +245,7 @@ def FirstLook_L1455():
 
     print("Now HC5N")
     a_rms = [   0, 350]  
-    b_rms = [ 290, 650]
+    b_rms = [ 290, 648]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(260,390)  
     file_in='L1455/L1455_HC5N.fits'
@@ -255,7 +255,7 @@ def FirstLook_L1455():
 
     print("Now HC7N_21_20")
     a_rms = [   0, 180]  
-    b_rms = [ 130, 298]
+    b_rms = [ 130, 295]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(120,190)  
     file_in='L1455/L1455_HC7N_21_20.fits'
@@ -265,7 +265,7 @@ def FirstLook_L1455():
 
     print("Now HC7N_22_21")
     a_rms = [   0, 180]  # No lines. Using the same as HC7N_21_20
-    b_rms = [ 130, 298]  # No lines. Using the same as HC7N_21_20
+    b_rms = [ 130, 295]  # No lines. Using the same as HC7N_21_20
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(120,190)  # No lines. Using the same as HC7N_21_20
     file_in='L1455/L1455_HC7N_22_21.fits'
