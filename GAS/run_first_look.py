@@ -177,14 +177,55 @@ def FirstLook_B18():
 
 def FirstLook_L1688():
     print("Now NH3(1,1)")
-    a_rms = [  0, 145, 230, 310, 420, 525, 690]
-    b_rms = [ 95, 210, 265, 360, 470, 640, 795]
+    a_rms = [  0, 100, 270, 365, 475, 630]
+    b_rms = [ 40, 190, 305, 410, 570, 650]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(370,415)
+    index_peak=np.arange(314,354)
     file_in='L1688/L1688_NH3_11.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now NH3(2,2)")
+    a_rms = [   0, 360]
+    b_rms = [ 295, 650]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(297,346)
+    file_in='B18/B18_NH3_22.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    #The code didn't produce the fits file for NH3 (3, 3).
+    #
+    print("Now CCS")
+    a_rms = [   0, 325]
+    b_rms = [ 295, 650]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(303,316)
+    file_in='B18/B18_C2S.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC5N")
+    a_rms = [   0, 365]
+    b_rms = [ 335, 650]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(337,356)
+    file_in='B18/B18_HC5N.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    #HC7N (21-20) shows an absorption feature at ~ 91 km/s (at 23.6951 GHz)
+    #from its rest frequency (used 23.6879 GHz). There's no emission line.
+    #Below are the channel indeces for the absorption feature.
+    #a_rms = [  0, 520]
+    #b_rms = [480, 650]
+    #index_peak = np.arange(485,510)
+    #
+    #The code didn't produce the fits file for HC7N (22-21).
 
 def FirstLook_SerAqu():
     print("Now NH3(1,1)")
