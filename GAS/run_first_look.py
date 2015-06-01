@@ -91,18 +91,6 @@ def FirstLook_OrionA():
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
 
-
-def FirstLook_NGC1333():
-    print("Now NH3(1,1)")
-    a_rms = [  0, 165, 239, 325, 435, 540, 700]
-    b_rms = [100, 200, 270, 370, 475, 630, 795]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(370,450)
-    file_in='NGC1333/NGC1333_NH3_11.fits'
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-
 def FirstLook_B18():
     print("Now NH3(1,1)")
     a_rms = [  0, 115, 280, 385, 490, 655]
@@ -191,7 +179,7 @@ def FirstLook_L1688():
     b_rms = [ 295, 650]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(297,346)
-    file_in='B18/B18_NH3_22.fits'
+    file_in='L1688/L1688_NH3_22.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
@@ -203,7 +191,7 @@ def FirstLook_L1688():
     b_rms = [ 295, 650]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(303,316)
-    file_in='B18/B18_C2S.fits'
+    file_in='L1688/L1688_C2S.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
@@ -213,7 +201,7 @@ def FirstLook_L1688():
     b_rms = [ 335, 650]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(337,356)
-    file_in='B18/B18_HC5N.fits'
+    file_in='L1688/L1688_HC5N.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
