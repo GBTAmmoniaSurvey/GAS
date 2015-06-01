@@ -1,7 +1,7 @@
 from . import first_look
 import numpy as np
-
-
+from spectral_cube import SpectralCube
+import astropy.units as u
 def FirstLook_OrionA():
     print("Now NH3(1,1)")
     a_rms = [  0, 158, 315, 428, 530, 693, 751]
@@ -114,22 +114,62 @@ def FirstLook_B18():
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
+    print("Now NH3(2,2)")
+    a_rms = [   0, 440]
+    b_rms = [ 409, 870]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(420,435)
+    file_in='B18/B18_NH3_22.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now NH3(3,3)")
+    a_rms = [   0, 530]
+    b_rms = [ 409, 960]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(410,485)
+    file_in='B18/B18_NH3_33.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
     print("Now CCS")
     a_rms = [   0, 245]
     b_rms = [ 210, 490]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(225,243)
-    file_in='B18/B18_CCS.fits'
+    file_in='B18/B18_C2S.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
     print("Now HC5N")
-    a_rms = [  10, 245]
-    b_rms = [ 210, 540]
+    a_rms = [  10, 435]
+    b_rms = [ 409, 540]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(225,243)
+    index_peak=np.arange(414,430)
     file_in='B18/B18_HC5N.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC7N_21_20")
+    a_rms = [  10, 435]
+    b_rms = [ 409, 540]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(412,430)
+    file_in='B18/B18_HC7N_21_20.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC7N_22_21")
+    a_rms = [  10, 435]
+    b_rms = [ 409, 540]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(412,430)
+    file_in='B18/B18_HC7N_22_21.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
@@ -137,14 +177,55 @@ def FirstLook_B18():
 
 def FirstLook_L1688():
     print("Now NH3(1,1)")
-    a_rms = [  0, 145, 230, 310, 420, 525, 690]
-    b_rms = [ 95, 210, 265, 360, 470, 640, 795]
+    a_rms = [  0, 100, 270, 365, 475, 630]
+    b_rms = [ 40, 190, 305, 410, 570, 650]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(370,415)
+    index_peak=np.arange(314,354)
     file_in='L1688/L1688_NH3_11.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now NH3(2,2)")
+    a_rms = [   0, 360]
+    b_rms = [ 295, 650]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(297,346)
+    file_in='B18/B18_NH3_22.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    #The code didn't produce the fits file for NH3 (3, 3).
+    #
+    print("Now CCS")
+    a_rms = [   0, 325]
+    b_rms = [ 295, 650]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(303,316)
+    file_in='B18/B18_C2S.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC5N")
+    a_rms = [   0, 365]
+    b_rms = [ 335, 650]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(337,356)
+    file_in='B18/B18_HC5N.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    #HC7N (21-20) shows an absorption feature at ~ 91 km/s (at 23.6951 GHz)
+    #from its rest frequency (used 23.6879 GHz). There's no emission line.
+    #Below are the channel indeces for the absorption feature.
+    #a_rms = [  0, 520]
+    #b_rms = [480, 650]
+    #index_peak = np.arange(485,510)
+    #
+    #The code didn't produce the fits file for HC7N (22-21).
 
 def FirstLook_SerAqu():
     print("Now NH3(1,1)")
@@ -197,27 +278,6 @@ def FirstLook_SerAqu():
     index_peak=np.arange(220,250)
     file_in='Serpens_Aquila_test/Serpens_Aquila_HC5N.fits'
     # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    
-def FirstLook_L1544():
-    print("Now NH3(1,1)")
-    a_rms = [  0,  55, 135, 185, 235, 310]
-    b_rms = [ 40, 115, 165, 215, 290, 350]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(168,180)
-    file_in='L1544/L1544_NH3_11.fits'
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-
-    print("Now NH3(2,2)")
-    a_rms = [  0,  20]
-    b_rms = [ 10,  25]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(10,18)
-    file_in='L1544/L1544_NH3_22.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
@@ -292,3 +352,62 @@ def FirstLook_L1455():
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
+
+def FirstLook_NGC1333():
+    print("Now NH3(1,1)")
+    a_rms = [  0, 158, 315, 428, 530, 693, 751]
+    b_rms = [ 60, 230, 327, 438, 604, 735, 760]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(326,430)
+    file_in='NGC1333/NGC1333_NH3_11.fits'
+    # 1st order polynomial
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    print("Now NH3(2,2)")
+    a_rms = [  0, 190, 360, 600]
+    b_rms = [70, 300, 470, 640]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(380,520)
+    file_in='NGC1333/NGC1333_NH3_22.fits'
+    # 1st order polynomial
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    ## 2nd order polynomial
+    #file_out=file_in.replace('.fits','_base2.fits')
+    #file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
+    #first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now NH3(3,3)")
+    a_rms = [ 10, 190, 420]
+    b_rms = [70, 360, 500]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(410,540)
+    file_in='NGC1333/NGC1333_NH3_33.fits'
+    # 1st order polynomial
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    linelist = ['C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    vsys = 8.5*u.km/u.s
+    throw = 8*u.km/u.s
+    for line in linelist:
+        file_in = 'NGC1333/NGC1333_{0}.fits'.format(line)
+        s = SpectralCube.read(file_in)
+        s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+        a_rms = [s.closest_spectral_channel(vsys-2*throw),
+                 s.closest_spectral_channel(vsys+throw)]
+        b_rms = [s.closest_spectral_channel(vsys-throw),
+                 s.closest_spectral_channel(vsys+2*throw)]
+        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                              s.closest_spectral_channel(vsys-3*u.km/u.s))
+        index_rms=first_look.create_index( a_rms, b_rms)
+
+        file_out=file_in.replace('.fits','_base1.fits')
+        file_new=first_look.baseline( file_in, file_out, 
+                                      index_clean=index_rms, polyorder=1)
+        first_look.peak_rms( file_new, index_rms=index_rms, 
+                             index_peak=index_peak)
+        
