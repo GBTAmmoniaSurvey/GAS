@@ -194,6 +194,9 @@ def peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440)
     #Tpeak=np.max( cube[index_peak,:,:], axis=0)
     mom_0 = cube_main.moment(order=0)
     mom_1 = cube_main.moment(order=1)
+    c2 = cube_main.with_fill_value(0)
+    peak_chan = np.argmax(c2.filled_data[:],axis=0)
+    peak_v = (cube_main.spectral_axis)[peak_chan]
     rms   = cube_rms.std(axis=0)
     Tpeak = cube_main.max(axis=0)
     #
@@ -210,6 +213,10 @@ def peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440)
     mom_1.write( file_in.replace('.fits', '_mom1.fits'), overwrite=overwrite)
     rms.write(   file_in.replace('.fits', '_rms.fits'), overwrite=overwrite)
     Tpeak.write( file_in.replace('.fits', '_Tpeak.fits'), overwrite=overwrite)
+    hdr = cube_main.wcs.celestial.to_header()
+    hdr['BUNIT']='km/s'
+    hdu = fits.PrimaryHDU(peak_v.value,header = hdr)
+    hdu.writeto(file_in.replace('.fits','_vpeak.fits'), clobber=overwrite)
     ###SNR.write( file_in.replace('.fits', '_SNR.fits'), overwrite=True)
 
 #def diff_rms(file_in, nIters=2,threshold = 3):
