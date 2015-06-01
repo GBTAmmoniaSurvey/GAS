@@ -401,8 +401,10 @@ def FirstLook_NGC1333():
                  s.closest_spectral_channel(vsys+throw)]
         b_rms = [s.closest_spectral_channel(vsys-throw),
                  s.closest_spectral_channel(vsys+2*throw)]
-        import pdb
-        pdb.set_trace()
+        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                              s.closest_spectral_channel(vsys-3*u.km/u.s))
+        index_rms=first_look.create_index( a_rms, b_rms)
+
         file_out=file_in.replace('.fits','_base1.fits')
         file_new=first_look.baseline( file_in, file_out, 
                                       index_clean=index_rms, polyorder=1)
