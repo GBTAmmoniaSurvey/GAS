@@ -112,34 +112,34 @@ def grid_L1688():
     print("You will image the GBT Ammonia Survey data for L1688")
     data_dir='/lustre/pipeline/scratch/GAS'
     region_name='L1688'
-    startChannel = 1024 + 0 #As is in the fits file
-    endChannel = 1024 + 650
+    startChannel = 1024 + 650 #As is in the fits file
+    endChannel = 1024 + 1400
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11',
         startChannel = startChannel, endChannel = endChannel )
     
     hd_temp=fits.getheader(region_name+'_NH3_11.fits')
-    startChannel = 1024 + 0 #As is in the fits file
-    endChannel = 1024 + 650
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
-    startChannel = 1024 + 0 #As is in the fits file
-    endChannel = 1024 + 650
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
-    startChannel = 1024 + 0 #As is in the fits file
-    endChannel = 1024 + 650
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
-    startChannel = 1024 + 0 #As is in the fits file
-    endChannel = 1024 + 650
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
-    startChannel = 1024 + 0 #As is in the fits file
-    endChannel = 1024 + 650
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
-    startChannel = 1024 + 0 #As is in the fits file
-    endChannel = 1024 + 650
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
 
