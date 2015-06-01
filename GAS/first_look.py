@@ -7,7 +7,6 @@ import pyspeckit
 from pyspeckit.parallel_map import parallel_map
 from astropy import log
 from spectral_cube import SpectralCube
-from signal_id import Noise
 
 def create_index( a, b):
     """ create_index takes two arrays and it creates an array that covers all indices 
