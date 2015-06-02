@@ -184,7 +184,15 @@ def FirstLook_L1688():
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
-    #The code didn't produce the fits file for NH3 (3, 3).
+    print("Now NH3(3,3)")
+    a_rms = [   0, 395]
+    b_rms = [ 272, 649]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(298,342)
+    file_in='B18/B18_NH3_33.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
     print("Now CCS")
     a_rms = [   0, 369]
