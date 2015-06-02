@@ -165,20 +165,20 @@ def FirstLook_B18():
 
 def FirstLook_L1688():
     print("Now NH3(1,1)")
-    a_rms = [  0, 100, 270, 365, 475, 630]
-    b_rms = [ 40, 190, 305, 410, 570, 650]
+    a_rms = [  0, 121, 290, 404, 505, 665]
+    b_rms = [ 74, 239, 332, 447, 611, 749]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(314,354)
+    index_peak=np.arange(350,377)
     file_in='L1688/L1688_NH3_11.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
     print("Now NH3(2,2)")
-    a_rms = [   0, 360]
-    b_rms = [ 295, 650]
+    a_rms = [   0, 349]
+    b_rms = [ 285, 649]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(297,346)
+    index_peak=np.arange(298,342)
     file_in='L1688/L1688_NH3_22.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
@@ -187,20 +187,20 @@ def FirstLook_L1688():
     #The code didn't produce the fits file for NH3 (3, 3).
     #
     print("Now CCS")
-    a_rms = [   0, 325]
-    b_rms = [ 295, 650]
+    a_rms = [   0, 369]
+    b_rms = [ 278, 649]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(303,316)
+    index_peak=np.arange(307,325)
     file_in='L1688/L1688_C2S.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
     print("Now HC5N")
-    a_rms = [   0, 365]
-    b_rms = [ 335, 650]
+    a_rms = [   0, 358]
+    b_rms = [ 288, 649]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(337,356)
+    index_peak=np.arange(306,317)
     file_in='L1688/L1688_HC5N.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
