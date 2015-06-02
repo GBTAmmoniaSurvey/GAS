@@ -166,77 +166,63 @@ def FirstLook_B18():
 
 def FirstLook_L1688():
     print("Now NH3(1,1)")
-    a_rms = [  0, 100, 270, 365, 475, 630]
-    b_rms = [ 40, 190, 305, 410, 570, 650]
+    a_rms = [  0, 121, 290, 404, 505, 665]
+    b_rms = [ 74, 239, 332, 447, 611, 749]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(314,354)
+    index_peak=np.arange(350,377)
     file_in='L1688/L1688_NH3_11.fits'
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
-    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
-    vsys = 3*u.km/u.s
-    throw = 8*u.km/u.s
-    for line in linelist:
-        file_in = 'L1688/L1688_{0}.fits'.format(line)
-        s = SpectralCube.read(file_in)
-        s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
-        a_rms = [s.closest_spectral_channel(vsys+2*throw),
-                 s.closest_spectral_channel(vsys-throw)]
-        b_rms = [s.closest_spectral_channel(vsys+throw),
-                 s.closest_spectral_channel(vsys-2*throw)]
-        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
-                              s.closest_spectral_channel(vsys-3*u.km/u.s))
-        index_rms=first_look.create_index( a_rms, b_rms)
-
-        file_out=file_in.replace('.fits','_base1.fits')
-        file_new=first_look.baseline( file_in, file_out, 
-                                      index_clean=index_rms, polyorder=1)
-        first_look.peak_rms( file_new, index_rms=index_rms, 
-                             index_peak=index_peak)
-        
-
-    # print("Now NH3(2,2)")
-    # a_rms = [   0, 360]
-    # b_rms = [ 295, 650]
-    # index_rms=first_look.create_index( a_rms, b_rms)
-    # index_peak=np.arange(297,346)
-    # file_in='L1688/L1688_NH3_22.fits'
-    # file_out=file_in.replace('.fits','_base1.fits')
-    # file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    # first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    # #
-    # #The code didn't produce the fits file for NH3 (3, 3).
-    # #
-    # print("Now CCS")
-    # a_rms = [   0, 325]
-    # b_rms = [ 295, 650]
-    # index_rms=first_look.create_index( a_rms, b_rms)
-    # index_peak=np.arange(303,316)
-    # file_in='L1688/L1688_C2S.fits'
-    # file_out=file_in.replace('.fits','_base1.fits')
-    # file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    # first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    # #
-    # print("Now HC5N")
-    # a_rms = [   0, 365]
-    # b_rms = [ 335, 650]
-    # index_rms=first_look.create_index( a_rms, b_rms)
-    # index_peak=np.arange(337,356)
-    # file_in='L1688/L1688_HC5N.fits'
-    # file_out=file_in.replace('.fits','_base1.fits')
-    # file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    # first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    # #
-    # #HC7N (21-20) shows an absorption feature at ~ 91 km/s (at 23.6951 GHz)
-    # #from its rest frequency (used 23.6879 GHz). There's no emission line.
-    # #Below are the channel indeces for the absorption feature.
-    # #a_rms = [  0, 520]
-    # #b_rms = [480, 650]
-    # #index_peak = np.arange(485,510)
-    # #
-    # #The code didn't produce the fits file for HC7N (22-21).
+    print("Now NH3(2,2)")
+    a_rms = [   0, 349]
+    b_rms = [ 285, 649]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(298,342)
+    file_in='L1688/L1688_NH3_22.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now NH3(3,3)")
+    a_rms = [   0, 395]
+    b_rms = [ 272, 649]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(298,342)
+    file_in='L1688/L1688_NH3_33.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now CCS")
+    a_rms = [   0, 369]
+    b_rms = [ 278, 649]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(307,325)
+    file_in='L1688/L1688_C2S.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    print("Now HC5N")
+    a_rms = [   0, 358]
+    b_rms = [ 288, 649]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(306,317)
+    file_in='L1688/L1688_HC5N.fits'
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    #
+    #HC7N (21-20) shows an absorption feature at ~ 91 km/s (at 23.6951 GHz)
+    #from its rest frequency (used 23.6879 GHz). There's no emission line.
+    #Below are the channel indeces for the absorption feature.
+    #a_rms = [  0, 520]
+    #b_rms = [480, 650]
+    #index_peak = np.arange(485,510)
+    #
+    #The code didn't produce the fits file for HC7N (22-21).
 
 def FirstLook_SerAqu():
     print("Now NH3(1,1)")
