@@ -206,7 +206,7 @@ def peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440)
     #Tpeak = cube[index_peak].max(axis=0)
     #mom_0 = cube[index_peak].moment(order=0)
     #rms   = cube[index_rms].std(axis=0)
-    print(file_in+'  Median rms='+ str(np.median(rms)))
+    print(file_in+'  Median rms='+ str(np.nanmedian(rms)))
     SNR=Tpeak.value/rms.value
     print(file_in+'  Median rms for SNR>5=' + str(np.median(rms[np.where(SNR>5)])))
     mom_0.write( file_in.replace('.fits', '_mom0.fits'), overwrite=overwrite)
