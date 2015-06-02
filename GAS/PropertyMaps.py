@@ -7,7 +7,7 @@ import signal_id
 from radio_beam import Beam
 import astropy.constants as con
 import astropy.units as u
-from skimage.morphology import remove_small_objects,closing,disk
+from skimage.morphology import remove_small_objects,closing,disk,opening
 
 def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15):
 
@@ -16,7 +16,7 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15):
     RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,blorder)
     TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,blorder)
     ThreeThreeFile = '{0}/{0}_NH3_33_base{1}.fits'.format(region,blorder)
-
+        
     beam11 = Beam.from_fits_header(fits.getheader(OneOneFile))
     cube11sc = SpectralCube.read(OneOneFile)
     cube22sc = SpectralCube.read(TwoTwoFile)
@@ -24,9 +24,9 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15):
     snr = cube11sc.filled_data[:].value/errmap11
     peaksnr = np.max(snr,axis=0)
     rms = np.nanmedian(errmap11)
-    planemask = (peaksnr>3.5)*(errmap11 < 0.2)
-    planemask = remove_small_objects(planemask,min_size=20)
-    planemask = closing(planemask,disk(1))
+    planemask = (peaksnr>3.5)*(errmap11 < 0.15)
+    planemask = remove_small_objects(planemask,min_size=40)
+    planemask = opening(planemask,disk(1))
     #planemask = (peaksnr>20) * (errmap11 < 0.2)
 
     mask = (snr>3)*planemask
@@ -50,12 +50,16 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15):
     cubes = pyspeckit.CubeStack([cube11,cube22,cube33],maskmap=planemask)
     cubes.units="K"
     guesses = np.zeros((6,)+cubes.cube.shape[1:])
+    moment1[moment1<vmin] = vmin+0.2
+    moment1[moment1>vmax] = vmax-0.2
     guesses[0,:,:] = 12                    # Kinetic temperature 
     guesses[1,:,:] = 3                     # Excitation  Temp
     guesses[2,:,:] = 14.5                  # log(column)
     guesses[3,:,:] = moment2  # Line width / 5 (the NH3 moment overestimates linewidth)               
     guesses[4,:,:] = moment1  # Line centroid              
     guesses[5,:,:] = 0.5                   # F(ortho) - ortho NH3 fraction (fixed)
+    import pdb
+    pdb.set_trace()
     F=False
     T=True
     print('start fit')

@@ -4,8 +4,8 @@ from spectral_cube import SpectralCube
 import astropy.units as u
 def FirstLook_OrionA():
     print("Now NH3(1,1)")
-    a_rms = [  0, 158, 315, 428, 530, 693, 751]
-    b_rms = [ 60, 230, 327, 438, 604, 735, 760]
+    a_rms = [  0, 158, 315, 428, 530, 693]
+    b_rms = [ 60, 230, 327, 438, 604, 735]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(326,430)
     file_in='OrionA/OrionA_NH3_11.fits'
@@ -102,6 +102,7 @@ def FirstLook_B18():
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
+
     print("Now NH3(2,2)")
     a_rms = [   0, 440]
     b_rms = [ 409, 870]

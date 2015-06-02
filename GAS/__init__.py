@@ -19,4 +19,5 @@ if not _ASTROPY_SETUP_:
     import run_grid_regions
     import first_look
     import run_first_look
+    import PropertyMaps
     pass

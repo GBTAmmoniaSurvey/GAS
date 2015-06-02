@@ -109,7 +109,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                       '--units':'tmb',
                       '--smoothing-kernel-size':'0',
                       '--keep-temporary-files':'',
-                      }
+                      '--beam-scaling':'1,1,1,1,1,1,1,1,1,1,1,1,1,1'}
     if OutputRoot is None:
         OutputRoot = os.getcwd()+'/'
     # Try to make the output directory
