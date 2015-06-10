@@ -9,7 +9,7 @@ import astropy.constants as con
 import astropy.units as u
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
-def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15):
+def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
 
     OneOneIntegrated = '{0}/{0}_NH3_11_mom0.fits'.format(region,blorder)
     OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
@@ -22,22 +22,24 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15):
     cube22sc = SpectralCube.read(TwoTwoFile)
     errmap11 = fits.getdata(RMSFile)
     snr = cube11sc.filled_data[:].value/errmap11
+    snr2 = ( cube11sc.with_spectral_unit(u.km/u.s,velocity_convention='radio')).filled_data[:].value/errmap11
     peaksnr = np.max(snr,axis=0)
     rms = np.nanmedian(errmap11)
-    planemask = (peaksnr>3.5)*(errmap11 < 0.15)
+    planemask = (peaksnr>3.5) # *(errmap11 < 0.15)
     planemask = remove_small_objects(planemask,min_size=40)
     planemask = opening(planemask,disk(1))
     #planemask = (peaksnr>20) * (errmap11 < 0.2)
 
     mask = (snr>3)*planemask
+    mask2 = (snr2>3)*planemask
     maskcube = cube11sc.with_mask(mask.astype(bool))
     maskcube = maskcube.with_spectral_unit(u.km/u.s,velocity_convention='radio')
-    slab = maskcube.spectral_slab(15*u.km/u.s,5*u.km/u.s)
-    w11=slab.moment(0,0).value
+    slab = maskcube.spectral_slab( vmax*u.km/u.s, vmin*u.km/u.s)
+    w11=slab.moment( order=0, axis=0).value
     peakloc = np.nanargmax(w11)
     ymax,xmax = np.unravel_index(peakloc,w11.shape)
-    moment1 = slab.moment(1,0).value
-    moment2 = (slab.moment(2,0).value)**0.5
+    moment1 = slab.moment( order=1, axis=0).value
+    moment2 = (slab.moment( order=2, axis=0).value)**0.5
     moment2[np.isnan(moment2)]=0.2
     moment2[moment2<0.2]=0.2
     maskmap = w11>0.5
@@ -58,6 +60,12 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15):
     guesses[3,:,:] = moment2  # Line width / 5 (the NH3 moment overestimates linewidth)               
     guesses[4,:,:] = moment1  # Line centroid              
     guesses[5,:,:] = 0.5                   # F(ortho) - ortho NH3 fraction (fixed)
+    if do_plot:
+        import matplotlib.pyplot as plt
+        plt.imshow( w11, origin='lower')
+        #plt.imshow( moment1, origin='lower')
+        #plt.imshow( moment2, origin='lower')
+        plt.show()
     import pdb
     pdb.set_trace()
     F=False
