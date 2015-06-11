@@ -25,7 +25,7 @@ Dependencies
 
 astropy
 pyspeckit
-spectral_cube
+spectral_cube (>0.1.17.dev1838)
 signal_id
 radio_beam
 scikit-image
