@@ -58,8 +58,6 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15):
     guesses[3,:,:] = moment2  # Line width / 5 (the NH3 moment overestimates linewidth)               
     guesses[4,:,:] = moment1  # Line centroid              
     guesses[5,:,:] = 0.5                   # F(ortho) - ortho NH3 fraction (fixed)
-    import pdb
-    pdb.set_trace()
     F=False
     T=True
     print('start fit')
