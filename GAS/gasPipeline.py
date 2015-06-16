@@ -86,6 +86,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                Source='Perseus_map_NGC1333-A', Window='0', 
                Region = 'NGC1333', OptionDict = None,
                RawDataDir = None, 
+               Gains='1,1,1,1,1,1,1,1,1,1,1,1,1,1',
                OutputRoot = None, overwrite=False):
 
     if RawDataDir is None:
