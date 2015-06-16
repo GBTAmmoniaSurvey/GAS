@@ -9,7 +9,7 @@ import astropy.constants as con
 import astropy.units as u
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
-def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
+def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False, snr_min=5.0, multicore=1):
 
     OneOneIntegrated = '{0}/{0}_NH3_11_mom0.fits'.format(region,blorder)
     OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
@@ -22,16 +22,14 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
     cube22sc = SpectralCube.read(TwoTwoFile)
     errmap11 = fits.getdata(RMSFile)
     snr = cube11sc.filled_data[:].value/errmap11
-    snr2 = ( cube11sc.with_spectral_unit(u.km/u.s,velocity_convention='radio')).filled_data[:].value/errmap11
     peaksnr = np.max(snr,axis=0)
     rms = np.nanmedian(errmap11)
-    planemask = (peaksnr>3.5) # *(errmap11 < 0.15)
+    planemask = (peaksnr>snr_min) # *(errmap11 < 0.15)
     planemask = remove_small_objects(planemask,min_size=40)
     planemask = opening(planemask,disk(1))
     #planemask = (peaksnr>20) * (errmap11 < 0.2)
 
     mask = (snr>3)*planemask
-    mask2 = (snr2>3)*planemask
     maskcube = cube11sc.with_mask(mask.astype(bool))
     maskcube = maskcube.with_spectral_unit(u.km/u.s,velocity_convention='radio')
     slab = maskcube.spectral_slab( vmax*u.km/u.s, vmin*u.km/u.s)
@@ -44,13 +42,13 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
     moment2[moment2<0.2]=0.2
     maskmap = w11>0.5
     cube11 = pyspeckit.Cube(OneOneFile,maskmap=planemask)
-    cube11.units="K"
+    cube11.unit="K"
     cube22 = pyspeckit.Cube(TwoTwoFile,maskmap=planemask)
-    cube22.units="K"
+    cube22.unit="K"
     cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=planemask)
-    cube33.units="K"
+    cube33.unit="K"
     cubes = pyspeckit.CubeStack([cube11,cube22,cube33],maskmap=planemask)
-    cubes.units="K"
+    cubes.unit="K"
     guesses = np.zeros((6,)+cubes.cube.shape[1:])
     moment1[moment1<vmin] = vmin+0.2
     moment1[moment1>vmax] = vmax-0.2
@@ -63,11 +61,7 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
     if do_plot:
         import matplotlib.pyplot as plt
         plt.imshow( w11, origin='lower')
-        #plt.imshow( moment1, origin='lower')
-        #plt.imshow( moment2, origin='lower')
         plt.show()
-    import pdb
-    pdb.set_trace()
     F=False
     T=True
     print('start fit')
@@ -81,7 +75,7 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
                   start_from_point=(xmax,ymax),
                   use_neighbor_as_guess=True, 
                   position_order = 1/peaksnr,
-                  errmap=errmap11)
+                  errmap=errmap11, multicore=multicore)
 
     fitcubefile = fits.PrimaryHDU(data=np.concatenate([cubes.parcube,cubes.errcube]), header=cubes.header)
     fitcubefile.header.update('PLANE1','TKIN')
