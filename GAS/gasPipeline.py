@@ -46,12 +46,16 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     for observation in t:
         if region == observation['Region name']:
             for thisWindow in window:
+                if str(observation['Beam Gains']) == '--':
+                    Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
+                else:
+                    Gains = observation['Beam Gains']
                 if str(observation['Special RawDir']) == '--':
                     doPipeline(SessionNumber=observation['Session'],
                            StartScan=observation['Start Scan'],
                            EndScan=observation['End Scan'],
                            Source=observation['Source'],
-                           Gains=observation['Beam Gains'],
+                           Gains=Gains,
                            Region=region,
                            Window=str(thisWindow),overwrite=overwrite)
                 else :
@@ -59,7 +63,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
                            StartScan=observation['Start Scan'],
                            EndScan=observation['End Scan'],
                            Source=observation['Source'],
-                           Gains=observation['Beam Gains'],
+                           Gains=Gains,
                            Region=region,
                            RawDataDir=observation['Special RawDir'],
                            Window=str(thisWindow),overwrite=overwrite)
@@ -86,11 +90,13 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                Source='Perseus_map_NGC1333-A', Window='0', 
                Region = 'NGC1333', OptionDict = None,
                RawDataDir = None, 
-               Gains='1,1,1,1,1,1,1,1,1,1,1,1,1,1',
+               Gains=None,
                OutputRoot = None, overwrite=False):
 
     if RawDataDir is None:
         RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/' 
+    if Gains is None:
+        Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
     SessionDir = 'AGBT15A_430_'+str(SessionNumber).zfill(2)+'.raw.vegas/'
     BankNames = ['A','B','C','D','E','F','G','H']
     print('Reducing '+SessionDir)
@@ -112,7 +118,6 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                       '--units':'tmb',
                       '--smoothing-kernel-size':'0',
                       '--keep-temporary-files':'',
-                      #'--beam-scaling':'1,1,1,1,1,1,1,1,1,1,1,1,1,1'}
                       '--beam-scaling':Gains}
     if OutputRoot is None:
         OutputRoot = os.getcwd()+'/'
