@@ -9,7 +9,124 @@ import astropy.constants as con
 import astropy.units as u
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
-def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
+def add_plot_text( fig, region, blorder, distance):
+    # set nan color and beam size color
+    fig.set_nan_color('0.8')
+    fig.add_beam()
+    fig.beam.set_color('#E31A1C')
+    # Scale bar
+    ang_sep = (0.1*u.pc/distance)*u.rad
+    fig.add_scalebar(ang_sep)
+    fig.scalebar.set(color='black')
+    fig.scalebar.set_label('0.1 pc')
+    # Add region and tick labels parameters
+    fig.tick_labels.set_xformat('hh:mm:ss')
+    fig.tick_labels.set_yformat('dd:mm')
+    fig.add_label(0.05,0.90, region, relative=True, color='black')
+    fig.ticks.set_color('black')
+    fig.ticks.set_minor_frequency(4)
+
+def plot_cubefit( region='NGC1333', blorder=1, distance=145*u.pc):
+    import aplpy
+    data_file = "{0}_parameter_maps.fits".format(region)
+    w11_file='{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,blorder)
+
+    hdu   =fits.open(data_file)
+    header=hdu[0].header
+    data  =hdu[0].data
+    hdu.close()
+    rm_key=['NAXIS3','CRPIX3','CDELT3', 'CUNIT3', 'CTYPE3', 'CRVAL3']
+    for key_i in rm_key:
+        header.remove(key_i)
+    header['NAXIS'] = 2
+    header['WCSAXES'] = 2
+    # 
+    # Create masked Centroid velocity map
+    vc = data[4,:,:] 
+    evc = data[10,:,:] 
+    vc[ evc > 0.1] = np.nan
+    vc[ vc == 0.0] = np.nan
+    hdu_vc = fits.PrimaryHDU(vc, header)
+    # Create masked velocity dispersion map
+    dv = data[3,:,:] 
+    edv = data[9,:,:] 
+    dv[ edv > 0.2*dv] = np.nan
+    dv[ edv > 0.1] = np.nan
+    dv[ dv == 0.0] = np.nan
+    hdu_dv = fits.PrimaryHDU(dv, header)
+    # Create masked Kinetic Temperature map
+    tk = data[0,:,:] 
+    etk = data[6,:,:] 
+    tk[ etk > 0.5] = np.nan
+    tk[ tk == 0.0] = np.nan
+    hdu_tk = fits.PrimaryHDU(tk, header)
+    # Create masked Excitation Temperature map
+    tex = data[1,:,:] 
+    etex = data[7,:,:] 
+    tex[ etex > 1.0] = np.nan
+    tex[ tex == 0.0] = np.nan
+    hdu_tex = fits.PrimaryHDU(tex, header)
+
+
+    #
+    # Centroid velocity
+    #
+    color_table='RdYlBu_r'
+    fig0=aplpy.FITSFigure(hdu_vc, hdu=0)
+    fig0.show_colorscale( cmap=color_table)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=np.arange(0.3,5,0.5), zorder=34)
+    add_plot_text( fig0, region, blorder, distance)
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('V$_{LSR}$ (km s$^{-1}$)')
+    # Save file
+    fig0.save("{0}_Vc.pdf".format(region))
+    #
+    # Sigma
+    # 
+    color_table='Blues'
+    fig0=aplpy.FITSFigure(hdu_dv, hdu=0)
+    fig0.show_colorscale( cmap=color_table, vmin=0.05, vmax=0.4)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=np.arange(0.3,5,0.5), zorder=34)
+    add_plot_text( fig0, region, blorder, distance)
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('$\sigma_{v}$ (km s$^{-1}$)')
+    # Save file
+    fig0.save("{0}_sigmaV.pdf".format(region))
+    #
+    # Tkin
+    # 
+    color_table='YlOrBr'
+    fig0=aplpy.FITSFigure(hdu_tk, hdu=0)
+    fig0.show_colorscale( cmap=color_table)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=np.arange(0.3,5,0.5), zorder=34)
+    add_plot_text( fig0, region, blorder, distance)
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('T$_{kin}$ (K)')
+    # Save file
+    fig0.save("{0}_Tkin.pdf".format(region))
+    #
+    # Tkin
+    # 
+    color_table='YlOrBr'
+    fig0=aplpy.FITSFigure(hdu_tex, hdu=0)
+    fig0.show_colorscale( cmap=color_table)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=np.arange(0.3,5,0.5), zorder=34)
+    add_plot_text( fig0, region, blorder, distance)
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('T$_{ex}$ (K)')
+    # Save file
+    fig0.save("{0}_Tex.pdf".format(region))
+
+
+def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False, snr_min=5.0, multicore=1):
 
     OneOneIntegrated = '{0}/{0}_NH3_11_mom0.fits'.format(region,blorder)
     OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
@@ -24,7 +141,7 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
     snr = cube11sc.filled_data[:].value/errmap11
     peaksnr = np.max(snr,axis=0)
     rms = np.nanmedian(errmap11)
-    planemask = (peaksnr>3.5) # *(errmap11 < 0.15)
+    planemask = (peaksnr>snr_min) # *(errmap11 < 0.15)
     planemask = remove_small_objects(planemask,min_size=40)
     planemask = opening(planemask,disk(1))
     #planemask = (peaksnr>20) * (errmap11 < 0.2)
@@ -42,13 +159,13 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
     moment2[moment2<0.2]=0.2
     maskmap = w11>0.5
     cube11 = pyspeckit.Cube(OneOneFile,maskmap=planemask)
-    cube11.units="K"
+    cube11.unit="K"
     cube22 = pyspeckit.Cube(TwoTwoFile,maskmap=planemask)
-    cube22.units="K"
+    cube22.unit="K"
     cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=planemask)
-    cube33.units="K"
+    cube33.unit="K"
     cubes = pyspeckit.CubeStack([cube11,cube22,cube33],maskmap=planemask)
-    cubes.units="K"
+    cubes.unit="K"
     guesses = np.zeros((6,)+cubes.cube.shape[1:])
     moment1[moment1<vmin] = vmin+0.2
     moment1[moment1>vmax] = vmax-0.2
@@ -61,11 +178,7 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
     if do_plot:
         import matplotlib.pyplot as plt
         plt.imshow( w11, origin='lower')
-        #plt.imshow( moment1, origin='lower')
-        #plt.imshow( moment2, origin='lower')
         plt.show()
-    import pdb
-    pdb.set_trace()
     F=False
     T=True
     print('start fit')
@@ -79,7 +192,7 @@ def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False):
                   start_from_point=(xmax,ymax),
                   use_neighbor_as_guess=True, 
                   position_order = 1/peaksnr,
-                  errmap=errmap11)
+                  errmap=errmap11, multicore=multicore)
 
     fitcubefile = fits.PrimaryHDU(data=np.concatenate([cubes.parcube,cubes.errcube]), header=cubes.header)
     fitcubefile.header.update('PLANE1','TKIN')
