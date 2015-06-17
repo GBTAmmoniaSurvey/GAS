@@ -51,6 +51,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
                            StartScan=observation['Start Scan'],
                            EndScan=observation['End Scan'],
                            Source=observation['Source'],
+                           Gains=observation['Beam Gains'],
                            Region=region,
                            Window=str(thisWindow),overwrite=overwrite)
                 else :
@@ -58,6 +59,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
                            StartScan=observation['Start Scan'],
                            EndScan=observation['End Scan'],
                            Source=observation['Source'],
+                           Gains=observation['Beam Gains'],
                            Region=region,
                            RawDataDir=observation['Special RawDir'],
                            Window=str(thisWindow),overwrite=overwrite)
@@ -84,6 +86,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                Source='Perseus_map_NGC1333-A', Window='0', 
                Region = 'NGC1333', OptionDict = None,
                RawDataDir = None, 
+               Gains='1,1,1,1,1,1,1,1,1,1,1,1,1,1',
                OutputRoot = None, overwrite=False):
 
     if RawDataDir is None:
@@ -109,7 +112,8 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                       '--units':'tmb',
                       '--smoothing-kernel-size':'0',
                       '--keep-temporary-files':'',
-                      '--beam-scaling':'1,1,1,1,1,1,1,1,1,1,1,1,1,1'}
+                      #'--beam-scaling':'1,1,1,1,1,1,1,1,1,1,1,1,1,1'}
+                      '--beam-scaling':Gains}
     if OutputRoot is None:
         OutputRoot = os.getcwd()+'/'
     # Try to make the output directory
