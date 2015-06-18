@@ -10,18 +10,36 @@ import astropy.units as u
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
 def run_plot_fit_all():
-    cubefit( region='L1455', blorder=1, do_plot=True, snr_min=3, multicore=1, vmax=6.7, vmin=3.5)
-    plot_cubefit( region='L1455', distance=250*u.pc, dvmin=0.05, dvmax=0.45, vcmin=4.5, vcmax=6.0)
+    """
+    Run the functions for fitting the NH3 line profile and plotting the 
+    results for all regions
+    """
+    cubefit(region='L1455', blorder=1, do_plot=True, snr_min=3, multicore=1, 
+            vmax=6.7, vmin=3.5)
+    plot_cubefit(region='L1455', distance=250*u.pc, dvmin=0.05, dvmax=0.45, 
+                 vcmin=4.5, vcmax=6.0)
 
-    cubefit_test( region='B18', vmin=4.5, vmax=7.5, do_plot=False, snr_min=3.0, multicore=1)
-    plot_cubefit( region='B18', distance=137*u.pc, dvmin=0.05, dvmax=0.3, vcmin=5.7, vcmax=6.7)
+    cubefit(region='NGC1333', blorder=1, do_plot=True, snr_min=3, multicore=1,
+            vmax=9.5, vmin=4.2)
 
-    cubefit_test( region='L1688', vmin=5.5, vmax=10.5, do_plot=False, snr_min=3.0, multicore=1)
-    plot_cubefit( region='L1688', distance=120*u.pc, dvmin=0.05, dvmax=0.7, vcmin=2.7, vcmax=4.8)
+    cubefit(region='B18', vmin=4.5, vmax=7.5, do_plot=False, snr_min=3.0, 
+            multicore=1)
+    plot_cubefit(region='B18', distance=137*u.pc, dvmin=0.05, dvmax=0.3, 
+                 vcmin=5.7, vcmax=6.7)
+
+    cubefit(region='L1688', vmin=5.5, vmax=10.5, do_plot=False, snr_min=3.0, 
+            multicore=1)
+    plot_cubefit(region='L1688', distance=120*u.pc, dvmin=0.05, dvmax=0.7, 
+                 vcmin=2.7, vcmax=4.8)
+
+    cubefit(region='OrionA', vmin=5.6, vmax=13.7, do_plot=False, snr_min=3.0, 
+            multicore=1)
+    plot_cubefit(region='OrionA', distance=120*u.pc, dvmin=0.05, dvmax=0.7, 
+                 vcmin=5.7, vcmax=12.7)
 
 
 
-def add_plot_text( fig, region, blorder, distance):
+def _add_plot_text( fig, region, blorder, distance):
     # set nan color and beam size color
     fig.set_nan_color('0.8')
     fig.add_beam()
@@ -38,8 +56,35 @@ def add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
-def plot_cubefit( region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, dvmax=None, vcmin=None, vcmax=None):
+def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, 
+                 dvmax=None, vcmin=None, vcmax=None):
+    """
+    Plot fit parameters of NH3 map for the region. It masks poorly 
+    constrained fits. Extra parameters to improve images of centroid velocity
+    and velocity dispersion.
+    It creates 4 PDF files: Tkin, Tex, Vlsr, and sigma_v.
+    
+    Parameters
+    ----------
+    region : str
+        Name of region to reduce
+    blorder : int
+        order of baseline removed
+    distance : astropy.units
+        distance to the observed region. Used for scalebar. Default 145*u.pc.
+    dvmin : numpy.float
+        Minimum velocity dispersion to plot, in km/s. Default 0.05
+    dvmax : numpy.float
+        Maximum velocity dispersion to plot, in km/s.
+    vcmin : numpy.float
+        Minimum centroid velocity to plot, in km/s.
+    vcmax : numpy.float
+        Maximum centroid velocity to plot, in km/s.
+    """
+    import matplotlib
+    matplotlib.use('Agg')
     import aplpy
+
     data_file = "{0}_parameter_maps.fits".format(region)
     w11_file='{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,blorder)
 
@@ -78,16 +123,17 @@ def plot_cubefit( region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, dv
     tex[ etex > 1.0] = np.nan
     tex[ tex == 0.0] = np.nan
     hdu_tex = fits.PrimaryHDU(tex, header)
-
-
+    
+    c_levs=np.arange(0.3,5,0.5)
     #
     # Centroid velocity
     #
     color_table='RdYlBu_r'
     fig0=aplpy.FITSFigure(hdu_vc, hdu=0)
     fig0.show_colorscale( cmap=color_table, vmin=vcmin, vmax=vcmax)
-    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=np.arange(0.3,5,0.5), zorder=34)
-    add_plot_text( fig0, region, blorder, distance)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
     # Colorbar 
     fig0.add_colorbar()
     fig0.colorbar.set_location('right')
@@ -101,8 +147,9 @@ def plot_cubefit( region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, dv
     color_table='Blues'
     fig0=aplpy.FITSFigure(hdu_dv, hdu=0)
     fig0.show_colorscale( cmap=color_table, vmin=dvmin, vmax=dvmax)
-    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=np.arange(0.3,5,0.5), zorder=34)
-    add_plot_text( fig0, region, blorder, distance)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
     # Colorbar 
     fig0.add_colorbar()
     fig0.colorbar.set_location('right')
@@ -116,8 +163,9 @@ def plot_cubefit( region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, dv
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(hdu_tk, hdu=0)
     fig0.show_colorscale( cmap=color_table)
-    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=np.arange(0.3,5,0.5), zorder=34)
-    add_plot_text( fig0, region, blorder, distance)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
     # Colorbar 
     fig0.add_colorbar()
     fig0.colorbar.set_location('right')
@@ -131,8 +179,9 @@ def plot_cubefit( region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, dv
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(hdu_tex, hdu=0)
     fig0.show_colorscale( cmap=color_table)
-    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=np.arange(0.3,5,0.5), zorder=34)
-    add_plot_text( fig0, region, blorder, distance)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
     # Colorbar 
     fig0.add_colorbar()
     fig0.colorbar.set_location('right')
@@ -141,6 +190,72 @@ def plot_cubefit( region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, dv
     fig0.save("{0}_Tex.pdf".format(region))
     fig0.close()
 
+
+
+def update_cubefit(region='NGC1333'):
+    """
+    Updates the fit parameters storage format from cube (v0, one channel per 
+    parameter) into hdu (v1, one hdu per parameter). 
+    """
+    file_out="{0}_parameter_maps_v1.fits".format(region)
+    hdu=fits.open("{0}_parameter_maps.fits".format(region))
+    hd=hdu[0].header
+    cube=hdu[0].data
+    hdu.close()
+
+    rm_key=['NAXIS3','CRPIX3','CDELT3', 'CUNIT3', 'CTYPE3', 'CRVAL3']
+    for key_i in rm_key:
+        hd.remove(key_i)
+    hd['NAXIS']= 2
+    hd['WCSAXES']= 2
+    
+    hd['BUNIT']='K'
+    tkin=cube[0,:,:]
+    fits.writeto(file_out, tkin, hd, clobber=True)
+
+    hd['BUNIT']='K'
+    tex=cube[1,:,:]
+    fits.append(file_out, tex, hd)
+
+    hd['BUNIT']='cm-2'
+    column=cube[2,:,:]
+    fits.append(file_out, column, hd)
+
+    hd['BUNIT']='km/s'
+    sigma=cube[3,:,:]
+    fits.append(file_out, sigma, hd)
+
+    hd['BUNIT']='km/s'
+    velocity=cube[4,:,:]
+    fits.append(file_out, velocity, hd)
+
+    hd['BUNIT']=''
+    fortho=cube[5,:,:]
+    fits.append(file_out, fortho, hd)
+
+    hd['BUNIT']='K'
+    etkin=cube[6,:,:]
+    fits.append(file_out, etkin, hd)
+
+    hd['BUNIT']='K'
+    etex=cube[7,:,:]
+    fits.append(file_out, etex, hd)
+
+    hd['BUNIT']='cm-2'
+    ecolumn=cube[8,:,:]
+    fits.append(file_out, ecolumn, hd)
+
+    hd['BUNIT']='km/s'
+    esigma=cube[9,:,:]
+    fits.append(file_out, esigma, hd)
+
+    hd['BUNIT']='km/s'
+    evelocity=cube[10,:,:]
+    fits.append(file_out, evelocity, hd)
+
+    hd['BUNIT']=''
+    efortho=cube[11,:,:]
+    fits.append(file_out, efortho, hd)
 
 def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False, snr_min=5.0, multicore=1):
 
