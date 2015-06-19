@@ -21,6 +21,8 @@ def run_plot_fit_all():
 
     cubefit(region='NGC1333', blorder=1, do_plot=True, snr_min=3, multicore=1,
             vmax=9.5, vmin=4.2)
+    plot_cubefit(region='NGC1333', distance=250*u.pc, dvmin=0.05, dvmax=0.6, 
+                 vcmin=6.4, vcmax=9.3)
 
     cubefit(region='B18', vmin=4.5, vmax=7.5, do_plot=False, snr_min=3.0, 
             multicore=1)
@@ -257,7 +259,38 @@ def update_cubefit(region='NGC1333'):
     efortho=cube[11,:,:]
     fits.append(file_out, efortho, hd)
 
-def cubefit(region = 'NGC1333',blorder=1,vmin=5,vmax=15, do_plot=False, snr_min=5.0, multicore=1):
+def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False, 
+            snr_min=5.0, multicore=1):
+    """
+    Fit NH3(1,1), (2,2) and (3,3) cubes for the requested region. 
+    It fits all pixels with SNR larger than requested. 
+    Initial guess is based on moment maps and neighboring pixels. 
+    The fitting can be done in parallel mode using several cores, 
+    however, this is dangerous for large regions, where using a 
+    good initial guess is important. 
+    It stores the result in a FITS cube. 
+
+    TODO:
+    -Store results in hdu list
+    -Improve initial guess
+    
+    Parameters
+    ----------
+    region : str
+        Name of region to reduce
+    blorder : int
+        order of baseline removed
+    vmin : numpy.float
+        Minimum centroid velocity to plot, in km/s.
+    vmax : numpy.float
+        Maximum centroid velocity to plot, in km/s.
+    do_plot : bool
+        If True, then a map of the region to map is shown.
+    snr_min : numpy.float
+        Minimum signal to noise ratio of the spectrum to be fitted.
+    multicore : int
+        Numbers of cores to use for parallel processing. 
+    """
 
     OneOneIntegrated = '{0}/{0}_NH3_11_mom0.fits'.format(region,blorder)
     OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
