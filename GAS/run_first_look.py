@@ -384,9 +384,9 @@ def FirstLook_NGC1333():
     # index_peak=np.arange(410,540)
     # file_in='NGC1333/NGC1333_NH3_33.fits'
     # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    # file_out=file_in.replace('.fits','_base1.fits')
+    # file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    # first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
     vsys = 8.5*u.km/u.s
     throw = 8*u.km/u.s
