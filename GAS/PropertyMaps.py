@@ -36,7 +36,7 @@ def run_plot_fit_all():
 
     cubefit(region='OrionA', vmin=5.6, vmax=13.7, do_plot=False, snr_min=3.0, 
             multicore=1)
-    plot_cubefit(region='OrionA', distance=120*u.pc, dvmin=0.05, dvmax=0.7, 
+    plot_cubefit(region='OrionA', distance=450*u.pc, dvmin=0.05, dvmax=0.7, 
                  vcmin=5.7, vcmax=12.7)
 
 
@@ -141,7 +141,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('V$_{LSR}$ (km s$^{-1}$)')
     # Save file
-    fig0.save("{0}_Vc.pdf".format(region))
+    fig0.save("{0}_Vc.pdf".format(region),dpi=300)
     fig0.close()
     #
     # Sigma
@@ -157,7 +157,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('$\sigma_{v}$ (km s$^{-1}$)')
     # Save file
-    fig0.save("{0}_sigmaV.pdf".format(region))
+    fig0.save("{0}_sigmaV.pdf".format(region),dpi=300)
     fig0.close()
     #
     # Tkin
@@ -173,7 +173,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('T$_{kin}$ (K)')
     # Save file
-    fig0.save("{0}_Tkin.pdf".format(region))
+    fig0.save("{0}_Tkin.pdf".format(region),dpi=300)
     fig0.close()
     #
     # Tkin
@@ -189,7 +189,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('T$_{ex}$ (K)')
     # Save file
-    fig0.save("{0}_Tex.pdf".format(region))
+    fig0.save("{0}_Tex.pdf".format(region),dpi=300)
     fig0.close()
 
 
@@ -197,9 +197,8 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
 def update_cubefit(region='NGC1333'):
     """
     Updates the fit parameters storage format from cube (v0, one channel per 
-    parameter) into hdu (v1, one hdu per parameter). 
+    parameter) into a set of files (v1, one FITS per parameter). 
     """
-    file_out="{0}_parameter_maps_v1.fits".format(region)
     hdu=fits.open("{0}_parameter_maps.fits".format(region))
     hd=hdu[0].header
     cube=hdu[0].data
@@ -210,54 +209,66 @@ def update_cubefit(region='NGC1333'):
         hd.remove(key_i)
     hd['NAXIS']= 2
     hd['WCSAXES']= 2
-    
+    # Tkin
     hd['BUNIT']='K'
-    tkin=cube[0,:,:]
-    fits.writeto(file_out, tkin, hd, clobber=True)
-
+    param=cube[0,:,:]
+    file_out="{0}_Tkin_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    #Tex
     hd['BUNIT']='K'
-    tex=cube[1,:,:]
-    fits.append(file_out, tex, hd)
-
+    param=cube[1,:,:]
+    file_out="{0}_Tex_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # N_NH3
     hd['BUNIT']='cm-2'
-    column=cube[2,:,:]
-    fits.append(file_out, column, hd)
-
+    param=cube[2,:,:]
+    file_out="{0}_N_NH3_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # sigma
     hd['BUNIT']='km/s'
-    sigma=cube[3,:,:]
-    fits.append(file_out, sigma, hd)
-
+    param=cube[3,:,:]
+    file_out="{0}_Sigma_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # Vlsr
     hd['BUNIT']='km/s'
-    velocity=cube[4,:,:]
-    fits.append(file_out, velocity, hd)
-
+    param=cube[4,:,:]
+    file_out="{0}_Vlsr_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # Fortho
     hd['BUNIT']=''
-    fortho=cube[5,:,:]
-    fits.append(file_out, fortho, hd)
-
+    param=cube[5,:,:]
+    file_out="{0}_Fortho_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # eTkin
     hd['BUNIT']='K'
-    etkin=cube[6,:,:]
-    fits.append(file_out, etkin, hd)
-
+    param=cube[6,:,:]
+    file_out="{0}_eTkin_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # eTex
     hd['BUNIT']='K'
-    etex=cube[7,:,:]
-    fits.append(file_out, etex, hd)
-
+    param=cube[7,:,:]
+    file_out="{0}_eTex_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # eN_NH3
     hd['BUNIT']='cm-2'
-    ecolumn=cube[8,:,:]
-    fits.append(file_out, ecolumn, hd)
-
+    param=cube[8,:,:]
+    file_out="{0}_eN_NH3_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # eSigma
     hd['BUNIT']='km/s'
-    esigma=cube[9,:,:]
-    fits.append(file_out, esigma, hd)
-
+    param=cube[9,:,:]
+    file_out="{0}_eSigma_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # eVlsr
     hd['BUNIT']='km/s'
-    evelocity=cube[10,:,:]
-    fits.append(file_out, evelocity, hd)
-
+    param=cube[10,:,:]
+    file_out="{0}_eVlsr_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # eFortho
     hd['BUNIT']=''
-    efortho=cube[11,:,:]
-    fits.append(file_out, efortho, hd)
+    param=cube[11,:,:]
+    file_out="{0}_eFortho_v1.fits".format(region)
+    fits.writeto(file_out, param, hd, clobber=True)
 
 def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False, 
             snr_min=5.0, multicore=1):
