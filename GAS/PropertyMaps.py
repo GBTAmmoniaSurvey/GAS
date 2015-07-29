@@ -110,13 +110,14 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     dv = data[3,:,:] 
     edv = data[9,:,:] 
     dv[ edv > 0.2*dv] = np.nan
-    dv[ edv > 0.1] = np.nan
+    #dv[ edv > 0.1] = np.nan
+    dv[ evc > 0.1] = np.nan
     dv[ dv == 0.0] = np.nan
     hdu_dv = fits.PrimaryHDU(dv, header)
     # Create masked Kinetic Temperature map
     tk = data[0,:,:] 
     etk = data[6,:,:] 
-    tk[ etk > 0.5] = np.nan
+    tk[ etk > 3] = np.nan
     tk[ tk == 0.0] = np.nan
     hdu_tk = fits.PrimaryHDU(tk, header)
     # Create masked Excitation Temperature map
@@ -125,6 +126,12 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     tex[ etex > 1.0] = np.nan
     tex[ tex == 0.0] = np.nan
     hdu_tex = fits.PrimaryHDU(tex, header)
+    # Create masked N(NH3) map
+    nnh3 = data[2,:,:]
+    ennh3 = data[8,:,:]
+    nnh3[ ennh3 > 0.3*nnh3] = np.nan
+    nnh3[ nnh3 == 0] = np.nan
+    hdu_nnh3 = fits.PrimaryHDU(nnh3, header)
     
     c_levs=np.arange(0.3,5,0.5)
     #
@@ -176,7 +183,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.save("{0}_Tkin.pdf".format(region),dpi=300)
     fig0.close()
     #
-    # Tkin
+    # Tex
     # 
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(hdu_tex, hdu=0)
@@ -191,7 +198,22 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     # Save file
     fig0.save("{0}_Tex.pdf".format(region),dpi=300)
     fig0.close()
-
+    #
+    # N(NH3)
+    # 
+    color_table='YlOrBr'
+    fig0=aplpy.FITSFigure(hdu_tex, hdu=0)
+    fig0.show_colorscale( cmap=color_table)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('N(NH$_3$) (cm$^{-2}$)')
+    # Save file
+    fig0.save("{0}_NNH3.pdf".format(region),dpi=300)
+    fig0.close()
 
 
 def update_cubefit(region='NGC1333'):
