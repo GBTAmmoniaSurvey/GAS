@@ -7,6 +7,8 @@ import signal_id
 from radio_beam import Beam
 import astropy.constants as con
 import astropy.units as u
+import matplotlib.pyplot as plt
+import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
 def run_plot_fit_all():
@@ -73,6 +75,9 @@ def flag_all_data(region='OrionA',blorder='1',version='v1'):
     version : str
         data release version
     '''
+    import matplotlib.pyplot as plt
+    import aplpy
+
     flagMinTex = 2.8
     flagMaxeTex = 3.0
 
@@ -320,7 +325,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.save("{0}_NNH3.pdf".format(region),dpi=300)
     fig0.close()
 
-def plot_all_flagged(region='OrionA', blorder=1, distance=145*u.pc, 
+def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc, 
                      version='v1',dvmin=None, 
                      dvmax=None, vcmin=None, vcmax=None):
     '''
@@ -348,7 +353,7 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=145*u.pc,
     """
     '''
     # Assume moment map in same dir
-    w11_file = "{0}_NH3_11_base{1}_mom0.fits".format(region,blorder)
+    w11_file = "{0}/{0}_NH3_11_base{1}_mom0.fits".format(region,blorder)
     c_levs=np.arange(0.3,5,0.5)
     #
     # Centroid velocity
