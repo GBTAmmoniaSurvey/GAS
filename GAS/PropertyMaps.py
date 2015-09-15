@@ -352,7 +352,7 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
         Maximum centroid velocity to plot, in km/s. No default.
     """
     '''
-    # Assume moment map in same dir
+    # Assume moment map in different dir
     w11_file = "{0}/{0}_NH3_11_base{1}_mom0.fits".format(region,blorder)
     c_levs=np.arange(0.3,5,0.5)
     #
