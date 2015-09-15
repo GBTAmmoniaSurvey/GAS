@@ -58,6 +58,111 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
+def flag_all_data(region='OrionA',blorder='1',version='v1'):
+    '''
+    Flag cubefit results based on S/N in integrated intensity. 
+    Also flag poorly constrained fits (where Tk, Tex hit minimum values)
+    Outputs five .pdf files: Tkin, Tex, Vc, sigmaV, NNH3
+
+    Parameters
+    ----------
+    region : str
+        Name of region to reduce
+    blorder : int
+        order of baseline removed
+    version : str
+        data release version
+    '''
+    flagMinTex = 2.8
+    flagMaxeTex = 3.0
+
+    flagMinTk = 5.0
+    flagMaxeTk = 3.0
+
+    flagSN22 = 3.0
+    flagSN11 = 3.0
+
+    hdu=fits.open("{0}_parameter_maps.fits".format(region))
+    hd=hdu[0].header
+    cube=hdu[0].data
+    hdu.close()
+
+    rms11hdu = fits.open("{0}/{0}_NH3_11_base{1}_rms.fits".format(region,blorder))
+    rms11data = rms11hdu[0].data
+    rms11hdu.close()
+    m0_11 = fits.open("{0}/{0}_NH3_11_base{1}_mom0.fits".format(region,blorder))
+    m0_11data = m0_11[0].data
+    m0_11.close()
+    rms22hdu = fits.open("{0}/{0}_NH3_22_base{1}_rms.fits".format(region,blorder))
+    rms22data = rms22hdu[0].data
+    rms22hdu.close()
+    m0_22 = fits.open("{0}/{0}_NH3_22_base{1}_mom0.fits".format(region,blorder))
+    m0_22data = m0_22[0].data
+    m0_22.close()
+
+    sn11 = m0_11data/rms11data
+    sn22 = m0_22data/rms22data
+
+    # Get Tex, Tk files for mask
+    tex  = np.copy(cube[1,:,:])
+    tk   = np.copy(cube[0,:,:])
+    etk  = np.copy(cube[6,:,:])
+
+    rm_key=['NAXIS3','CRPIX3','CDELT3', 'CUNIT3', 'CTYPE3', 'CRVAL3']
+    for key_i in rm_key:
+        hd.remove(key_i)
+    hd['NAXIS']= 2
+    hd['WCSAXES']= 2
+    # Tkin
+    hd['BUNIT']='K'
+    param=cube[0,:,:]
+    eparam = cube[6,:,:]
+    param[ sn22 <= flagSN22 ] = np.nan
+    param[ param == 0 ] = np.nan
+    param[ tex <= flagMinTex ] = np.nan
+    param[ param <= flagMinTk ] = np.nan
+    param[ eparam > flagMaxeTk ] = np.nan
+    file_out="{0}_Tkin_{1}_flag.fits".format(region,version)
+    fits.writeto(file_out, param, hd, clobber=True)
+    #Tex
+    hd['BUNIT']='K'
+    param=cube[1,:,:]
+    param[ param == 0 ] = np.nan
+    param[ sn11 <= flagSN11 ] = np.nan
+    param[ tex <= flagMinTex ] = np.nan
+    param[ tk == flagMinTk ] = np.nan
+    param[ eparam > flagMaxeTk ] = np.nan
+    file_out="{0}_Tex_{1}_flag.fits".format(region,version)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # N_NH3
+    hd['BUNIT']='cm-2'
+    param=cube[2,:,:]
+    eparam=cube[8,:,:]
+    param[ param == 0 ] = np.nan
+    param[ sn22 <= flagSN22 ] = np.nan
+    param[ tex <= flagMinTex ] = np.nan
+    param[ tk <= flagMinTk ] = np.nan
+    param[ etk > flagMaxeTk ] = np.nan
+    file_out="{0}_N_NH3_{1}_flag.fits".format(region,version)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # sigma
+    # Use same flags for Vlsr, sigma
+    hd['BUNIT']='km/s'
+    param=cube[3,:,:]
+    eparam=cube[9,:,:]
+    param[ param == 0 ] = np.nan
+    param[ sn11 <= flagSN11 ] = np.nan
+    file_out="{0}_Sigma_{1}_flag.fits".format(region,version)
+    fits.writeto(file_out, param, hd, clobber=True)
+    # Vlsr
+    hd['BUNIT']='km/s'
+    param=cube[4,:,:]
+    eparam=cube[10,:,:]
+    param[ param == 0 ] = np.nan
+    param[ sn11 <= flagSN11 ] = np.nan
+    file_out="{0}_Vlsr_{1}_flag.fits".format(region,version)
+    fits.writeto(file_out, param, hd, clobber=True)
+
 def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, 
                  dvmax=None, vcmin=None, vcmax=None):
     """
@@ -215,6 +320,157 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.save("{0}_NNH3.pdf".format(region),dpi=300)
     fig0.close()
 
+def plot_all_flagged(region='OrionA', blorder=1, distance=145*u.pc, 
+                     version='v1',dvmin=None, 
+                     dvmax=None, vcmin=None, vcmax=None):
+    '''
+    Plot from flagged fits files rather than from cubefit output multi-HDU 
+    file. Side-by-side plots for v_lsr, sigma
+    Parameters
+    ----------
+    region : str
+        Name of region to reduce
+    blorder : int
+        order of baseline removed
+    distance : astropy.units
+        distance to the observed region. Used for scalebar. Default 145*u.pc.
+    version : str
+        flagged data will have 'v1', 'v2', etc. 
+    dvmin : numpy.float
+        Minimum velocity dispersion to plot, in km/s. No default. If flagged
+        well, shouldn't need this or other parameters below.
+    dvmax : numpy.float
+        Maximum velocity dispersion to plot, in km/s. No default.
+    vcmin : numpy.float
+        Minimum centroid velocity to plot, in km/s. No default.
+    vcmax : numpy.float
+        Maximum centroid velocity to plot, in km/s. No default.
+    """
+    '''
+    # Assume moment map in same dir
+    w11_file = "{0}_NH3_11_base{1}_mom0.fits".format(region,blorder)
+    c_levs=np.arange(0.3,5,0.5)
+    #
+    # Centroid velocity
+    #
+    # First, unmasked file
+    dataFile = "{0}_Vlsr_{1}.fits".format(region,version)
+    color_table='RdYlBu_r'
+    fig = plt.figure()
+    fig0=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.1,0.1,0.4,0.8])
+    fig0.show_colorscale( cmap=color_table, vmin=vcmin, vmax=vcmax)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
+    fig0.tick_labels.set_style('colons')
+    fig0.tick_labels.set_yformat('dd:mm')
+    fig0.tick_labels.set_xformat('hh:mm')
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('V$_\mathrm{LSR}$ (km s$^{-1}$)')    
+    # Save file
+    # Masked file
+    dataFile = "{0}_Vlsr_{1}_flag.fits".format(region,version)
+    fig1=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.53,0.1,0.4,0.8])
+    fig1.show_colorscale( cmap=color_table, vmin=vcmin, vmax=vcmax)
+    fig1.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    fig1.tick_labels.set_style('colons')
+    fig1.tick_labels.set_yformat('dd:mm')    
+    fig1.tick_labels.set_xformat('hh:mm')
+    # Colorbar
+    fig1.add_colorbar()
+    fig1.colorbar.set_location('right')
+    fig1.colorbar.set_axis_label_text('V$_\mathrm{LSR}$ (km s$^{-1}$)')    
+    # Save file
+    fig.savefig("{0}_Vc.pdf".format(region),dpi=300)
+    plt.close(fig)
+    #
+    # Sigma
+    #
+    # First, unmasked file
+    dataFile = "{0}_Sigma_{1}.fits".format(region,version)
+    color_table='Blues'
+    fig = plt.figure()
+    fig0=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.1,0.1,0.4,0.8])
+    fig0.show_colorscale( cmap=color_table, vmin=dvmin, vmax=dvmax)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
+    fig0.tick_labels.set_style('colons')
+    fig0.tick_labels.set_yformat('dd:mm')
+    fig0.tick_labels.set_xformat('hh:mm')
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('$\sigma_\mathrm{v}$ (km s$^{-1}$)')
+    # Masked file
+    dataFile = "{0}_Sigma_{1}_flag.fits".format(region,version)
+    fig1=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.53,0.1,0.4,0.8])
+    fig1.show_colorscale( cmap=color_table, vmin=dvmin, vmax=dvmax)
+    fig1.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    fig1.tick_labels.set_style('colons')
+    fig1.tick_labels.set_yformat('dd:mm')
+    fig1.tick_labels.set_xformat('hh:mm')    
+    # Colorbar 
+    fig1.add_colorbar()
+    fig1.colorbar.set_location('right')
+    fig1.colorbar.set_axis_label_text('$\sigma_\mathrm{v}$ (km s$^{-1}$)')
+    # Save file
+    fig.savefig("{0}_sigmaV.pdf".format(region),dpi=300)
+    plt.close(fig)
+    #
+    # Tkin
+    # 
+    dataFile = "{0}_Tkin_{1}_flag.fits".format(region,version)
+    color_table='YlOrBr'
+    fig0=aplpy.FITSFigure(dataFile)
+    fig0.show_colorscale( cmap=color_table)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('T$_\mathrm{kin}$ (K)')
+    # Save file
+    fig0.save("{0}_Tkin.pdf".format(region),dpi=300)
+    fig0.close()
+    #
+    # Tex
+    # 
+    dataFile = "{0}_Tex_{1}_flag.fits".format(region,version)
+    color_table='YlOrBr'
+    fig0=aplpy.FITSFigure(dataFile)
+    fig0.show_colorscale( cmap=color_table)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('T$_\mathrm{ex}$ (K)')
+    # Save file
+    fig0.save("{0}_Tex.pdf".format(region),dpi=300)
+    fig0.close()
+    #
+    # N(NH3)
+    # 
+    dataFile = "{0}_N_NH3_{1}_flag.fits".format(region,version)
+    color_table='YlOrBr'
+    fig0=aplpy.FITSFigure(dataFile)
+    fig0.show_colorscale( cmap=color_table)
+    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
+                      zorder=34)
+    _add_plot_text( fig0, region, blorder, distance)
+    # Colorbar 
+    fig0.add_colorbar()
+    fig0.colorbar.set_location('right')
+    fig0.colorbar.set_axis_label_text('N(NH$_3$) (cm$^{-2}$)')
+    # Save file
+    fig0.save("{0}_NNH3.pdf".format(region),dpi=300)
+    fig0.close()
 
 def update_cubefit(region='NGC1333'):
     """
