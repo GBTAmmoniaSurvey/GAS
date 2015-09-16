@@ -7,6 +7,8 @@ import signal_id
 from radio_beam import Beam
 import astropy.constants as con
 import astropy.units as u
+import matplotlib.pyplot as plt
+import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
 def run_plot_fit_all():
@@ -58,11 +60,12 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
-def flag_all_data(region='OrionA',blorder='1',version='v1'):
+def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
     '''
     Flag cubefit results based on S/N in integrated intensity. 
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
     Outputs five .pdf files: Tkin, Tex, Vc, sigmaV, NNH3
+    Update: flag moment maps while at it. Outputs mom0_flagged.fits
 
     Parameters
     ----------
@@ -73,6 +76,9 @@ def flag_all_data(region='OrionA',blorder='1',version='v1'):
     version : str
         data release version
     '''
+    import matplotlib.pyplot as plt
+    import aplpy
+
     flagMinTex = 2.8
     flagMaxeTex = 3.0
 
@@ -92,16 +98,32 @@ def flag_all_data(region='OrionA',blorder='1',version='v1'):
     rms11hdu.close()
     m0_11 = fits.open("{0}/{0}_NH3_11_base{1}_mom0.fits".format(region,blorder))
     m0_11data = m0_11[0].data
+    hd11 = m0_11[0].header
     m0_11.close()
     rms22hdu = fits.open("{0}/{0}_NH3_22_base{1}_rms.fits".format(region,blorder))
     rms22data = rms22hdu[0].data
     rms22hdu.close()
     m0_22 = fits.open("{0}/{0}_NH3_22_base{1}_mom0.fits".format(region,blorder))
     m0_22data = m0_22[0].data
+    hd22 = m0_22[0].header
     m0_22.close()
 
     sn11 = m0_11data/rms11data
     sn22 = m0_22data/rms22data
+
+    # Flag and write out moment files
+    # Want a much less strict flag here; focus on getting rid of edge effects
+    # Best to base on rms
+    # Set as parameter here? Is the best place to do this? 
+    rmsFlag = rmsLim
+    m0_11data[ rms11data > rmsFlag ] = np.nan
+    m0_11data[ m0_11data == 0. ] = np.nan
+    m0_22data[ rms22data > rmsFlag ] = np.nan
+    m0_22data[ m0_22data == 0. ] = np.nan
+    fits.writeto("{0}/{0}_NH3_11_base{1}_mom0_flag.fits".format(region,blorder),
+                 m0_11data,hd11,clobber=True)
+    fits.writeto("{0}/{0}_NH3_22_base{1}_mom0_flag.fits".format(region,blorder),
+                 m0_22data,hd22,clobber=True)
 
     # Get Tex, Tk files for mask
     tex  = np.copy(cube[1,:,:])
@@ -117,7 +139,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1'):
     hd['BUNIT']='K'
     param=cube[0,:,:]
     eparam = cube[6,:,:]
-    param[ sn22 <= flagSN22 ] = np.nan
+    param[ sn22 < flagSN22 ] = np.nan
     param[ param == 0 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
     param[ param <= flagMinTk ] = np.nan
@@ -128,7 +150,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1'):
     hd['BUNIT']='K'
     param=cube[1,:,:]
     param[ param == 0 ] = np.nan
-    param[ sn11 <= flagSN11 ] = np.nan
+    param[ sn11 < flagSN11 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
     param[ tk == flagMinTk ] = np.nan
     param[ eparam > flagMaxeTk ] = np.nan
@@ -139,7 +161,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1'):
     param=cube[2,:,:]
     eparam=cube[8,:,:]
     param[ param == 0 ] = np.nan
-    param[ sn22 <= flagSN22 ] = np.nan
+    param[ sn22 < flagSN22 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
     param[ tk <= flagMinTk ] = np.nan
     param[ etk > flagMaxeTk ] = np.nan
@@ -151,7 +173,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1'):
     param=cube[3,:,:]
     eparam=cube[9,:,:]
     param[ param == 0 ] = np.nan
-    param[ sn11 <= flagSN11 ] = np.nan
+    param[ sn11 < flagSN11 ] = np.nan
     file_out="{0}_Sigma_{1}_flag.fits".format(region,version)
     fits.writeto(file_out, param, hd, clobber=True)
     # Vlsr
@@ -159,7 +181,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1'):
     param=cube[4,:,:]
     eparam=cube[10,:,:]
     param[ param == 0 ] = np.nan
-    param[ sn11 <= flagSN11 ] = np.nan
+    param[ sn11 < flagSN11 ] = np.nan
     file_out="{0}_Vlsr_{1}_flag.fits".format(region,version)
     fits.writeto(file_out, param, hd, clobber=True)
 
@@ -320,8 +342,8 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.save("{0}_NNH3.pdf".format(region),dpi=300)
     fig0.close()
 
-def plot_all_flagged(region='OrionA', blorder=1, distance=145*u.pc, 
-                     version='v1',dvmin=None, 
+def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc, 
+                     version='v1',dvmin=0, 
                      dvmax=None, vcmin=None, vcmax=None):
     '''
     Plot from flagged fits files rather than from cubefit output multi-HDU 
@@ -347,8 +369,8 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=145*u.pc,
         Maximum centroid velocity to plot, in km/s. No default.
     """
     '''
-    # Assume moment map in same dir
-    w11_file = "{0}_NH3_11_base{1}_mom0.fits".format(region,blorder)
+    # Assume moment map in different dir, assume has been flagged?
+    w11_file = "{0}/{0}_NH3_11_base{1}_mom0_flag.fits".format(region,blorder)
     c_levs=np.arange(0.3,5,0.5)
     #
     # Centroid velocity
@@ -666,177 +688,3 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     fitcubefile.header.update('CRPIX3',1)
     fitcubefile.writeto("{0}_parameter_maps.fits".format(region),clobber=True)
 
-def cubefit_2(region='NGC1333', blorder=1,
-              dtkMask=3.0,dtexMask=3.0,
-              do_plot=False, 
-              snr_min=3.0, multicore=1):
-    """
-    Second round of fitting for NH3(1,1), (2,2) and (3,3) cubes 
-    for the requested region. 
-    Take results from first round of fitting and mask where fits are
-    not good:
-    - parameters hitting minimum values: Tex = 2.8, Tk = 5.0
-    - uncertainties in parameters are zero
-    Set constant Tk, take initial guesses for parameters from previous
-    fit. 
-    Still fitting where S/N greater than value set. 
-    The fitting can be done in parallel mode using several cores, 
-    however, this is dangerous for large regions, where using a 
-    good initial guess is important. 
-    It stores the result in a FITS cube. 
-
-    TODO:
-    - test parameter flags
-    - best value for constant Tk
-    
-    Parameters
-    ----------
-    region : str
-        Name of region to reduce
-    blorder : int
-        order of baseline removed
-    vmin : numpy.float
-        Minimum centroid velocity to plot, in km/s.
-    vmax : numpy.float
-        Maximum centroid velocity to plot, in km/s.
-    do_plot : bool
-        If True, then a map of the region to map is shown.
-    snr_min : numpy.float
-        Minimum signal to noise ratio of the spectrum to be fitted.
-    multicore : int
-        Numbers of cores to use for parallel processing. 
-    """
-
-    OneOneIntegrated = '{0}/{0}_NH3_11_mom0.fits'.format(region,blorder)
-    OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
-    RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,blorder)
-    TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,blorder)
-    ThreeThreeFile = '{0}/{0}_NH3_33_base{1}.fits'.format(region,blorder)
-    FirstFit  = '{0}/{0}_parameter_maps.fits'.format(region)
-        
-    beam11 = Beam.from_fits_header(fits.getheader(OneOneFile))
-    cube11sc = SpectralCube.read(OneOneFile)
-    cube22sc = SpectralCube.read(TwoTwoFile)
-    errmap11 = fits.getdata(RMSFile)
-    snr = cube11sc.filled_data[:].value/errmap11
-    peaksnr = np.max(snr,axis=0)
-    rms = np.nanmedian(errmap11)
-    planemask = (peaksnr>snr_min) # *(errmap11 < 0.15)
-    planemask = remove_small_objects(planemask,min_size=40)
-    planemask = opening(planemask,disk(1))
-    #planemask = (peaksnr>20) * (errmap11 < 0.2)
-
-    mask = (snr>3)*planemask
-    # Additional masking parameters
-    # Read in previous fit run
-    hdu=fits.open(FirstFit)
-    hd=hdu[0].header
-    cube=hdu[0].data
-    hdu.close()
-    # esigFit = np.copy(cube[9,:,:])
-    # Flag values
-    # If min values change in first run, have to edit hard-coded #s here
-    flagMinTex = 2.8
-    flagMaxeTex = dtexMask
-    flagMinTk = 5.0
-    flagMaxeTk = dtkMask
-    # Set flag for v_lsr, sigma_v to one velocity channel. 
-    # Can include as parameter above or not. 
-    flagMaxeVc = 0.15
-    flagMaxeSig = 0.15
-    # New masks
-    # First mask to determine second guesses
-    maskGuess = (cube[7,:,:] < flagMaxeTex)*mask
-    maskGuess = (cube[6,:,:] < flagMaxeTk)*maskGuess
-    maskGuess = (cube[1,:,:] <= flagMinTex)*maskGuess
-    maskGuess = (cube[0,:,:] <= flagMinTk)*maskGuess
-    maskCubeGuess = cube11sc.with_mask(maskGuess.astype(bool))
-    maskCubeGuess = maskCubeGuess.with_spectra_unit(u.km/u.s,
-                                                    velocity_convention='radio')
-    slab = maskCubeGuess.spectral_slab(vmax*u.km/u.s,vmin*u.km/u.s)
-    w11 = slab.moment(order=0,axis=0).value
-    peakloc = np.nanargmax(w11)
-    ymax,xmax = np.unravel_index(peakloc,w11.shape)
-    moment1 = slab.moment(order=1,axis=0).value
-    moment2 = (slab.moment(order=2,axis=0).value)**0.5
-    maskTk = cube[0,:,:].with_mask(maskGuess.astype(bool))
-    meanTk = np.nanmean(maskTk)
-   # Guesses
-    guesses = np.zeros((6,)+cubes.cube.shape[1:])
-    guesses[0,:,:] = meanTk                # Kinetic temperature 
-    guesses[1,:,:] = 3                     # Excitation  Temp
-    guesses[2,:,:] = 14.5                  # log(column)
-    guesses[3,:,:] = moment2               # Line width        
-    guesses[4,:,:] = moment1               # Line centroid              
-    guesses[5,:,:] = 0.5 
-    # Next mask where S/N > min value, also where parameters determined 
-    # to better than min uncertainties
-    maskFit = (cube[7,:,:] >= flagMaxeTex)*mask
-    maskFit = (cube[6,:,:] >= flagMaxeTk)*maskFit
-    maskFit = (cube[1,:,:] > flagMinTex)*maskFit
-    maskFit = (cube[0,:,:] > flagMinTk)*maskFit
-    maskcubeFit = cube11sc.with_mask(maskFit.astype(bool))
-    maskcubeFit = maskcubeFit.with_spectra_unit(u.km/u.s,
-                                                velocity_convention='radio')
-    '''
-    # Original masking
-    maskcube = cube11sc.with_mask(mask.astype(bool))
-    maskcube = maskcube.with_spectral_unit(u.km/u.s,velocity_convention='radio')
-    slab = maskcube.spectral_slab( vmax*u.km/u.s, vmin*u.km/u.s)
-    w11=slab.moment( order=0, axis=0).value
-    peakloc = np.nanargmax(w11)
-    ymax,xmax = np.unravel_index(peakloc,w11.shape)
-    moment1 = slab.moment( order=1, axis=0).value
-    moment2 = (slab.moment( order=2, axis=0).value)**0.5
-    moment2[np.isnan(moment2)]=0.2
-    moment2[moment2<0.2]=0.2
-    maskmap = w11>0.5
-    cube11 = pyspeckit.Cube(OneOneFile,maskmap=planemask)
-    cube11.unit="K"
-    cube22 = pyspeckit.Cube(TwoTwoFile,maskmap=planemask)
-    cube22.unit="K"
-    cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=planemask)
-    cube33.unit="K"
-    cubes = pyspeckit.CubeStack([cube11,cube22,cube33],maskmap=planemask)
-    cubes.unit="K"
-    guesses = np.zeros((6,)+cubes.cube.shape[1:])
-    moment1[moment1<vmin] = vmin+0.2
-    moment1[moment1>vmax] = vmax-0.2
-    '''
-    if do_plot:
-        import matplotlib.pyplot as plt
-        plt.imshow( w11, origin='lower')
-        plt.show()
-    F=False
-    T=True
-    print('start fit')
-    cubes.fiteach(fittype='ammonia',  guesses=guesses,
-                  integral=False, verbose_level=3, 
-                  fixed=[T,F,F,F,F,T], signal_cut=2,
-                  limitedmax=[T,F,F,F,T,T],
-                  maxpars=[0,0,0,0,vmax,1],
-                  limitedmin=[T,T,T,T,T,T],
-                  minpars=[5,2.8,12.0,0.04,vmin,0],
-                  start_from_point=(xmax,ymax),
-                  use_neighbor_as_guess=True, 
-                  position_order = 1/peaksnr,
-                  errmap=errmap11, multicore=multicore)
-
-    fitcubefile = fits.PrimaryHDU(data=np.concatenate([cubes.parcube,cubes.errcube]), header=cubes.header)
-    fitcubefile.header.update('PLANE1','TKIN')
-    fitcubefile.header.update('PLANE2','TEX')
-    fitcubefile.header.update('PLANE3','COLUMN')
-    fitcubefile.header.update('PLANE4','SIGMA')
-    fitcubefile.header.update('PLANE5','VELOCITY')
-    fitcubefile.header.update('PLANE6','FORTHO')
-    fitcubefile.header.update('PLANE7','eTKIN')
-    fitcubefile.header.update('PLANE8','eTEX')
-    fitcubefile.header.update('PLANE9','eCOLUMN')
-    fitcubefile.header.update('PLANE10','eSIGMA')
-    fitcubefile.header.update('PLANE11','eVELOCITY')
-    fitcubefile.header.update('PLANE12','eFORTHO')
-    fitcubefile.header.update('CDELT3',1)
-    fitcubefile.header.update('CTYPE3','FITPAR')
-    fitcubefile.header.update('CRVAL3',0)
-    fitcubefile.header.update('CRPIX3',1)
-    fitcubefile.writeto("{0}/{0}_parameter_maps_fit2.fits".format(region),clobber=True)
