@@ -24,14 +24,14 @@ receiver    = 'RcvrArray18_26'
 beam        = 'all'
 obstype     = 'Spectroscopy'
 backend     = 'VEGAS'
-restfreq    = [
-			{''restfreq'':23694.4955,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':23722.6336,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':23870.1296,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':23963.9010,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':23687.8974,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':24815.8772,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':22344.03,''beam'':''-1''}]
+restfreq    = [[
+			{'restfreq':23694.4955,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':23722.6336,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':23870.1296,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':23963.9010,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':23687.8974,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':24815.8772,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':22344.03,  'beam':'-1'}]]
 deltafreq   = 0
 dopplertrackfreq = 23694.4955
 bandwidth   = 23.44
@@ -58,13 +58,13 @@ beam        = 'all'
 obstype     = 'Spectroscopy'
 backend     = 'VEGAS'
 restfreq    = [
-			{''restfreq'':23694.4955,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':23722.6336,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':23870.1296,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':23963.9010,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':23687.8974,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':24815.8772,''beam'':''1,2,3,4,5,6,7''},
-			{''restfreq'':22344.03,''beam'':''-1''}]
+			{'restfreq':23694.4955,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':23722.6336,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':23870.1296,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':23963.9010,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':23687.8974,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':24815.8772,'beam':'1,2,3,4,5,6,7'},
+			{'restfreq':22344.03,  'beam':'-1'}]
 deltafreq   = 0
 dopplertrackfreq = 23694.4955
 bandwidth   = 23.44
