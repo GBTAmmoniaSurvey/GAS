@@ -1,10 +1,8 @@
 # GAS KFPA VEGAS setup (Mode 20 in VEGAS manual)
 # configuration definition for spectral line observations
 # with the KFPA
-# Frequency-switched observations with a throw of 4.11 MHz, which translates to >51km/s at these frequencies.
-#
-# Frequency switched with noise diodes need a sw period of 0.348 s, 
-# we use 3 samples per integration => t_int=1.044 s 
+# Configured for nod observations of calibrator sources (i.e. Jupiter)
+# Need total power for these data
 #
 # Need to set rest frequencies of desired lines (all beams)
 # Script uses configuration tool dictionary for assigning frequencies
@@ -19,26 +17,24 @@
 #    spw 6= HC7N J=22-21 , 24815.8772 MHz
 #    spw 7= CCS N=1-0, J= 2- 1 , 22344.03 MHz
 
-vegas_GAS_config="""
+vegas_nod_config="""
 receiver    = 'RcvrArray18_26'
 beam        = 'all'
 obstype     = 'Spectroscopy'
 backend     = 'VEGAS'
-restfreq    = [[
-                        {'restfreq':23694.4955,'beam':'1,2,3,4,5,6,7'},
-                        {'restfreq':23722.6336,'beam':'1,2,3,4,5,6,7'},
-                        {'restfreq':23870.1296,'beam':'1,2,3,4,5,6,7'},
-                        {'restfreq':23963.9010,'beam':'1,2,3,4,5,6,7'},
-                        {'restfreq':23687.8974,'beam':'1,2,3,4,5,6,7'},
-                        {'restfreq':24815.8772,'beam':'1,2,3,4,5,6,7'},
-                        {'restfreq':22344.03,'beam':'-1'}]]
+restfreq    = [{"restfreq":23694.4955,"beam":"1,2,3,4,5,6,7"},
+               {"restfreq":23722.6336,"beam":"1,2,3,4,5,6,7"},
+               {"restfreq":23870.1296,"beam":"1,2,3,4,5,6,7"},
+               {"restfreq":23963.9010,"beam":"1,2,3,4,5,6,7"},
+               {"restfreq":23687.8974,"beam":"1,2,3,4,5,6,7"},
+               {"restfreq":24815.8772,"beam":"1,2,3,4,5,6,7"},
+               {"restfreq":22344.03,"beam":"-1"}]
 deltafreq   = 0
 dopplertrackfreq = 23694.4955
 bandwidth   = 23.44
-swmode      = 'sp'
-swtype      = 'fsw'
+swmode      = 'tp'
+swtype      = 'none'
 swper       = 0.348
-swfreq      = 0.0, 4.11
 tint        = 1.044
 vlow        = 0
 vhigh       = 0
@@ -50,4 +46,4 @@ nchan       = 'low'
 vegas.vpol  = 'self'
 """
 
-Configure(vegas_GAS_config)                                                 
+Configure(vegas_nod_config)
