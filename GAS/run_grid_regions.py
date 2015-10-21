@@ -267,7 +267,7 @@ def grid_Cepheus():
 def grid_IC5146():
     print("You will image the GBT Ammonia Survey data for IC5146")
     data_dir='/lustre/pipeline/scratch/GAS'
-    region_name='Cepheus'
+    region_name='IC5146'
     startChannel = 1024 + 655 # default 1024
     endChannel = 1024 + 1418  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11',
