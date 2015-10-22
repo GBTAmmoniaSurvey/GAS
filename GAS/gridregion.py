@@ -9,6 +9,7 @@ import pdb
 import numpy.fft as fft
 import astropy.utils.console as console
 import numpy.polynomial.legendre as legendre
+import warnings
 
 def baselineSpectrum(spectrum,order=1,baselineIndex=()):
     x=np.arange(len(spectrum))
@@ -116,6 +117,9 @@ def griddata(pixPerBeam = 3.0,
              baselineRegion = [slice(512,1024,1),slice(3072,3584,1)]):
 
     filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
+    if len(filelist) == 0:
+        warnings.warn('There are no FITS files to process in '+rootdir+'/'+region+'/'+dirname)
+        return
     #pull a test structure
     s = fits.getdata(filelist[0])
 
