@@ -152,7 +152,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                     command = 'gbtpipeline-test -i '+InputFile
                     for key in OptionDict:
                         command = command+' '+key+' '+OptionDict[key]
-                    command = command+' --feed '+feed
+                    command = command+' --feed '+feed+' --pol '+pol
                     print(command)
                     subprocess.call(command,shell=True)
 
