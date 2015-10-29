@@ -156,7 +156,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                     print(command)
                     subprocess.call(command,shell=True)
 
-                    indexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
+                    indexname    = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
                         format(StartScan,EndScan,Window,feed,pol) 
                     outindexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.index'.\
                         format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
@@ -164,7 +164,8 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                         os.rename(indexname,OutputDirectory+'/'+outindexname)
                     except:
                         pass
-                    filename = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
+                    
+                    filename   = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
                         format(StartScan,EndScan,Window,feed,pol) 
                     outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
                         format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
