@@ -234,50 +234,38 @@ def FirstLook_SerAqu():
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    # #
+    # print("Now NH3(2,2)")
+    # a_rms = [  0, 230, 460, 665]
+    # b_rms = [150, 380, 610, 820]
+    # index_rms=first_look.create_index( a_rms, b_rms)
+    # index_peak=np.arange(380,460)
+    # file_in='Serpens_Aquila/Serpens_Aquila_NH3_22.fits'
+    # # 1st order polynomial
+    # file_out=file_in.replace('.fits','_base1.fits')
+    # file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    # first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     #
-    print("Now NH3(2,2)")
-    a_rms = [  0, 230, 460, 665]
-    b_rms = [150, 380, 610, 820]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(380,460)
-    file_in='Serpens_Aquila/Serpens_Aquila_NH3_22.fits'
-    # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    #
-    print("Now NH3(3,3)")
-    a_rms = [  0, 300]
-    b_rms = [220, 490]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(380,460)
-    file_in='Serpens_Aquila/Serpens_Aquila_NH3_33.fits'
-    # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    #
-    print("Now CCS")
-    a_rms = [  0, 260]
-    b_rms = [200, 490]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(220,250)
-    file_in='Serpens_Aquila/Serpens_Aquila_C2S.fits'
-    # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    #
-    print("Now HC5N")
-    a_rms = [  0, 260]
-    b_rms = [200, 490]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(220,250)
-    file_in='Serpens_Aquila/Serpens_Aquila_HC5N.fits'
-    # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    vsys = 6.35*u.km/u.s
+    throw = 8*u.km/u.s
+    for line in linelist:
+        file_in = 'Serpens_Aquila/Serpens_Aquila_{0}.fits'.format(line)
+        s = SpectralCube.read(file_in)
+        s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+        a_rms = [s.closest_spectral_channel(vsys+2*throw),
+                 s.closest_spectral_channel(vsys-throw)]
+        b_rms = [s.closest_spectral_channel(vsys+throw),
+                 s.closest_spectral_channel(vsys-2*throw)]
+        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                              s.closest_spectral_channel(vsys-3*u.km/u.s))
+        index_rms=first_look.create_index( a_rms, b_rms)
+
+        file_out=file_in.replace('.fits','_base1.fits')
+        file_new=first_look.baseline( file_in, file_out, 
+                                      index_clean=index_rms, polyorder=1)
+        first_look.peak_rms( file_new, index_rms=index_rms, 
+                             index_peak=index_peak)
 
 def FirstLook_L1455():
     print("Now NH3(1,1)")
