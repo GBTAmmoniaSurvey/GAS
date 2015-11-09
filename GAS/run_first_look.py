@@ -463,3 +463,38 @@ def FirstLook_IC348():
         first_look.peak_rms( file_new, index_rms=index_rms, 
                              index_peak=index_peak)
         
+
+
+def FirstLook_B59():
+    print("Now NH3(1,1)")
+    a_rms = [  0, 130, 290, 400, 500, 660]
+    b_rms = [ 70, 240, 340, 440, 620, 740]
+    index_rms=first_look.create_index( a_rms, b_rms)
+    index_peak=np.arange(340,400)
+    file_in='B59/B59_NH3_11.fits'
+    # 1st order polynomial
+    file_out=file_in.replace('.fits','_base1.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+    print("Now NH3(2,2)")
+    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    vsys = 3.5*u.km/u.s
+    throw = 2.0*u.km/u.s
+    for line in linelist:
+        file_in = 'B59/B59_{0}.fits'.format(line)
+        s = SpectralCube.read(file_in)
+        s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+        a_rms = [s.closest_spectral_channel(vsys+3*throw),
+                 s.closest_spectral_channel(vsys-throw)]
+        b_rms = [s.closest_spectral_channel(vsys+throw),
+                 s.closest_spectral_channel(vsys-3*throw)]
+        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                              s.closest_spectral_channel(vsys-3*u.km/u.s))
+        index_rms=first_look.create_index( a_rms, b_rms)
+
+        file_out=file_in.replace('.fits','_base1.fits')
+        file_new=first_look.baseline( file_in, file_out, 
+                                      index_clean=index_rms, polyorder=1)
+        first_look.peak_rms( file_new, index_rms=index_rms, 
+                             index_peak=index_peak)
+        
