@@ -7,7 +7,7 @@ def FirstLook_OrionA():
     a_rms = [  0, 158, 315, 428, 530, 693]
     b_rms = [ 60, 230, 327, 438, 604, 735]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(326,430)
+    index_peak=np.arange(326,470)
     file_in='OrionA/OrionA_NH3_11.fits'
     # 1st order polynomial
     file_out=file_in.replace('.fits','_base1.fits')
