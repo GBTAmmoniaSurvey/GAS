@@ -53,6 +53,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
 
     t = parseLog(logfile=logfile)
     for observation in t:
+        print(observation['Date'])
         ObsDate = Time(observation['Date'])
         if (region == observation['Region name']) & \
         (ObsDate > StartDate) & (ObsDate < EndDate):
