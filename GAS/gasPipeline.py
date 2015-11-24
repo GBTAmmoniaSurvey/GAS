@@ -133,46 +133,44 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
             raise
 
     for bank in BankNames:
-        # First check to see if a pipeline call is necessary. 
-        FilesIntact = True
-        if not overwrite:
-            for feed in ['0','1','2','3','4','5','6']:
-                for pol in ['0','1']:
+        # Loop over each feed and polarization
+        # we check if a pipeline call is necessary. 
+        for feed in ['0','1','2','3','4','5','6']:
+            for pol in ['0','1']:
+                FilesIntact = True
+                if not overwrite:
                     outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
                         format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
                     FilesIntact = FilesIntact and os.path.exists(OutputDirectory+'/'+outputfile)
                     if FilesIntact:
                         print('Data for Polarization {0} of Feed {1} appear on disk... skipping'.format(pol,feed))
+                #
+                if (not FilesIntact) or (overwrite):
+                    InputFile = RawDataDir+SessionDir+'AGBT15A_430_'+\
+                        str(SessionNumber).zfill(2)+\
+                        '.raw.vegas.{0}.fits'.format(bank)
+                    command = 'gbtpipeline-test -i '+InputFile
+                    for key in OptionDict:
+                        command = command+' '+key+' '+OptionDict[key]
+                    command = command+' --feed '+feed+' --pol '+pol
+                    print(command)
+                    subprocess.call(command,shell=True)
+
+                    indexname    = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
+                        format(StartScan,EndScan,Window,feed,pol) 
+                    outindexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.index'.\
+                        format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
+                    try:
+                        os.rename(indexname,OutputDirectory+'/'+outindexname)
+                    except:
+                        pass
                     
-        if (not FilesIntact) or (overwrite):
-            InputFile = RawDataDir+SessionDir+'AGBT15A_430_'+\
-                str(SessionNumber).zfill(2)+\
-                '.raw.vegas.{0}.fits'.format(bank)
-
-            command = 'gbtpipeline-test -i '+InputFile
-            for key in OptionDict:
-                command = command+' '+key+' '+OptionDict[key]
-            print(command)
-            subprocess.call(command,shell=True)
-
-        # Pipeline outputs into master directory for region.
-        for feed in ['0','1','2','3','4','5','6']:
-            for pol in ['0','1']:
-                indexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
-                    format(StartScan,EndScan,Window,feed,pol) 
-                outindexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.index'.\
-                    format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
-                try:
-                    os.rename(indexname,OutputDirectory+'/'+outindexname)
-                except:
-                    pass
-                filename = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
-                    format(StartScan,EndScan,Window,feed,pol) 
-                outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
-                    format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
-                try:
-                    os.rename(filename,OutputDirectory+'/'+outputfile)
-                    os.chown(OutputDirectory+'/'+outputfile,0774)
-                except:
-                    pass
-
+                    filename   = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
+                        format(StartScan,EndScan,Window,feed,pol) 
+                    outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
+                        format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
+                    try:
+                        os.rename(filename,OutputDirectory+'/'+outputfile)
+                        os.chown(OutputDirectory+'/'+outputfile,0774)
+                    except:
+                        pass
