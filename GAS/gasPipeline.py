@@ -3,6 +3,7 @@ import os
 import subprocess
 import glob
 import warnings
+from astropy.time import Time
 
 def reduceAll(overwrite=False):
     updateLogs()
@@ -19,32 +20,42 @@ def reduceAll(overwrite=False):
         os.chdir(cwd)
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
-            window=['0','1','2','3','4','5','6'],overwrite=False):
+            window=['0','1','2','3','4','5','6'],
+            overwrite=False,startdate = '2015-01-1',enddate='2020-12-31'):
     """
     This is the GAS pipeline which chomps the observation logs and
     then batch calibrates the data.  It requires AstroPy because
     their tables are pretty nifty.
-
-    Usage from iPython prompt: In the directory you want to produce
-    calibrated data in source this file execfile() and then run the
-    script wrapper:
-
-    execfile('/users/erosolow/GAS/mapping/gasPipeline.py')
+    
     wrapper(logfile='../ObservationLog.csv',region='NGC1333',window=['3'])
 
     region -- Region name as given in logs
+
     window -- List of spectral windows to calibrate (as strings)
+
     logfile -- Full path to CSV version of the logfile (optional)
-    overwrite -- boolean.  If True, carries out calibration for files already present on disk.
+
+    overwrite -- boolean.  If True, carries out calibration
+    for files already present on disk.
+
+    startdate -- string representation of date in format YYYY-MM-DD
+    for beginning calibration 
+
+    enddate -- string representation of date in format YYYY-MM-DD
+    for ending calibration 
+
     If a logfile isn't specified, program will get it from Google.
     """
-
+    StartDate = Time(startdate)
+    EndDate = Time(enddate)
     if not os.access(logfile,os.R_OK):
         updateLogs()
 
     t = parseLog(logfile=logfile)
     for observation in t:
-        if region == observation['Region name']:
+        ObsDate = Time(observation['Date'])
+        if (region == observation['Region name']) & \
+        (ObsDate > StartDate) & (ObsDate < EndDate):
             for thisWindow in window:
                 if str(observation['Beam Gains']) == '--':
                     Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
