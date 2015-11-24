@@ -56,7 +56,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
         print(observation['Date'])
         ObsDate = Time(observation['Date'])
         if (region == observation['Region name']) & \
-        (ObsDate > StartDate) & (ObsDate < EndDate):
+        (ObsDate >= StartDate) & (ObsDate <= EndDate):
             for thisWindow in window:
                 if str(observation['Beam Gains']) == '--':
                     Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
