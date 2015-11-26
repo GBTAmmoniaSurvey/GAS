@@ -208,7 +208,10 @@ def peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440)
     #rms   = cube[index_rms].std(axis=0)
     print(file_in+'  Median rms='+ str(np.nanmedian(rms)))
     SNR=Tpeak.value/rms.value
-    print(file_in+'  Median rms for SNR>5=' + str(np.median(rms[np.where(SNR>5)])))
+    if np.sum(SNR>5) > 3:
+        print(file_in+'  Median rms for SNR>5=' + str(np.median(rms[np.where(SNR>5)])))
+    else:
+        print('not enough pixels with SNR>5 to estimate median rms')
     mom_0.write( file_in.replace('.fits', '_mom0.fits'), overwrite=overwrite)
     mom_1.write( file_in.replace('.fits', '_mom1.fits'), overwrite=overwrite)
     rms.write(   file_in.replace('.fits', '_rms.fits'), overwrite=overwrite)
