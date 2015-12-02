@@ -256,7 +256,7 @@ def griddata(pixPerBeam = 3.0,
     hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
     # Adds history message
     hdr.add_history(history_message)
-    hdr.add_history('Using GAS pipeline version {0}'.format(GAS.__version__))
+    hdr.add_history('Using GAS pipeline version ')
     
     #
     hdu = fits.PrimaryHDU(outCube,header=hdr)
