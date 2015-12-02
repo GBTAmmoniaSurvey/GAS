@@ -11,6 +11,8 @@ import astropy.utils.console as console
 import numpy.polynomial.legendre as legendre
 import warnings
 
+from . import __version__
+
 def baselineSpectrum(spectrum,order=1,baselineIndex=()):
     x=np.arange(len(spectrum))
     coeffs = legendre.legfit(x[baselineIndex],spectrum[baselineIndex],order)
@@ -114,9 +116,28 @@ def griddata(pixPerBeam = 3.0,
              dirname = 'NGC1333_NH3_11',
              startChannel = 1024, endChannel = 3072,
              doBaseline = True,
-             baselineRegion = [slice(512,1024,1),slice(3072,3584,1)]):
+             baselineRegion = [slice(512,1024,1),slice(3072,3584,1)],
+             Sessions = None):
+    if not Sessions:
+        filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
+        file_extension='_all'
+        history_message='Gridding of data using all sessions'
+    else:
+        filelist = []
+        for scan_i in Sessions:
+                filelist.extend(glob.glob(rootdir+'/'+region+'/'+dirname+'/*_sess'+str(scan_i)+'.fits'))
+        if isinstance(Sessions, list):
+            file_extension='_sess{0}-sess{1}'.format(Sessions[0],Sessions[-1])
+            if (Sessions[-1]+1.-Sessions[0])/len(Sessions) == 1.0:
+                history_message='Gridding of data using sessions between {0} and {1}'.format(Sessions[0],Sessions[-1])
+            else:
+                history_message='Gridding of data using sessions: '
+                for scan_i in Sessions:
+                    history_message += '{0}, '.format(scan_i)
+        else:
+            file_extension='_sess{0}'.format(Sessions)
+            history_message='Gridding of data using session {0}'.format(Sessions)
 
-    filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
     if len(filelist) == 0:
         warnings.warn('There are no FITS files to process in '+rootdir+'/'+region+'/'+dirname)
         return
@@ -225,7 +246,7 @@ def griddata(pixPerBeam = 3.0,
         hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
         #
         hdu = fits.PrimaryHDU(outCubeTemp,header=hdr)
-        hdu.writeto(dirname+'.fits',clobber=True)
+        hdu.writeto(dirname+file_extension+'.fits',clobber=True)
 
     outWts.shape = (1,)+outWts.shape
     outCube /= outWts
@@ -235,12 +256,15 @@ def griddata(pixPerBeam = 3.0,
     hdr = fits.Header(w.to_header())
     # Add non standard fits keyword
     hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
+    # Adds history message
+    hdr.add_history(history_message)
+    hdr.add_history('Using GAS pipeline version {0}'.format(__version__))    
     #
     hdu = fits.PrimaryHDU(outCube,header=hdr)
-    hdu.writeto(dirname+'.fits',clobber=True)
+    hdu.writeto(dirname+file_extension+'.fits',clobber=True)
 
 
     w2 = w.dropaxis(2)
     hdr2 = fits.Header(w2.to_header())
     hdu2 = fits.PrimaryHDU(outWts,header=hdr2)
-    hdu2.writeto(dirname+'_wts.fits',clobber=True)
+    hdu2.writeto(dirname+file_extension+'_wts.fits',clobber=True)
