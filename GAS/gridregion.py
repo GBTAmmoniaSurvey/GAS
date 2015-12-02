@@ -119,14 +119,22 @@ def griddata(pixPerBeam = 3.0,
     if not Sessions:
         filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
         file_extension='_all'
+        history_message='Gridding of data using all sessions'
     else:
         filelist = []
         for scan_i in Sessions:
                 filelist.extend(glob.glob(rootdir+'/'+region+'/'+dirname+'/*_sess'+str(scan_i)+'.fits'))
         if isinstance(Sessions, list):
             file_extension='_sess{0}-sess{1}'.format(Sessions[0],Sessions[-1])
+            if (Sessions[-1]+1.-Sessions[0])/len(Sessions) == 1.0:
+                history_message='Gridding of data using sessions between {0} and {1}'.format(Sessions[0],Sessions[-1])
+            else:
+                history_message='Gridding of data using sessions: '
+                for scan_i in Sessions:
+                    history_message += '{0}, '.format(scan_i)
         else:
             file_extension='_sess{0}'.format(Sessions)
+            history_message='Gridding of data using session {0}'.format(Sessions)
 
     if len(filelist) == 0:
         warnings.warn('There are no FITS files to process in '+rootdir+'/'+region+'/'+dirname)
@@ -246,6 +254,10 @@ def griddata(pixPerBeam = 3.0,
     hdr = fits.Header(w.to_header())
     # Add non standard fits keyword
     hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
+    # Adds history message
+    hdr.add_history(history_message)
+    hdr.add_history('Using GAS pipeline version {0}'.format(GAS.__version__))
+    
     #
     hdu = fits.PrimaryHDU(outCube,header=hdr)
     hdu.writeto(dirname+file_extension+'.fits',clobber=True)
