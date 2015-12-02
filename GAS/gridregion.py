@@ -115,13 +115,18 @@ def griddata(pixPerBeam = 3.0,
              startChannel = 1024, endChannel = 3072,
              doBaseline = True,
              baselineRegion = [slice(512,1024,1),slice(3072,3584,1)],
-             startSession = None, endSession = 100):
-    if (startSession is None):
+             startSession = 1, endSession = 100):
+    if (startSession == 1) and (endSession == 100):
         filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
+        file_extension='_all'
     else:
         filelist = []
         for scan_i in range(startSession, endSession+1):
             filelist.extend(glob.glob(rootdir+'/'+region+'/'+dirname+'/*_sess'+str(scan_i)+'.fits'))
+        if startSession == endSession:
+            file_extension='_sess'+str(startSession)
+        else:
+            file_extension='_sess'+str(startSession)+'-sess'+str(endSession)
 
     if len(filelist) == 0:
         warnings.warn('There are no FITS files to process in '+rootdir+'/'+region+'/'+dirname)
@@ -231,7 +236,7 @@ def griddata(pixPerBeam = 3.0,
         hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
         #
         hdu = fits.PrimaryHDU(outCubeTemp,header=hdr)
-        hdu.writeto(dirname+'.fits',clobber=True)
+        hdu.writeto(dirname+file_extension+'.fits',clobber=True)
 
     outWts.shape = (1,)+outWts.shape
     outCube /= outWts
@@ -243,10 +248,10 @@ def griddata(pixPerBeam = 3.0,
     hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
     #
     hdu = fits.PrimaryHDU(outCube,header=hdr)
-    hdu.writeto(dirname+'.fits',clobber=True)
+    hdu.writeto(dirname+file_extension+'.fits',clobber=True)
 
 
     w2 = w.dropaxis(2)
     hdr2 = fits.Header(w2.to_header())
     hdu2 = fits.PrimaryHDU(outWts,header=hdr2)
-    hdu2.writeto(dirname+'_wts.fits',clobber=True)
+    hdu2.writeto(dirname+file_extension+'_wts.fits',clobber=True)
