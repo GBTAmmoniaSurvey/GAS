@@ -11,6 +11,8 @@ import astropy.utils.console as console
 import numpy.polynomial.legendre as legendre
 import warnings
 
+from . import __version__
+
 def baselineSpectrum(spectrum,order=1,baselineIndex=()):
     x=np.arange(len(spectrum))
     coeffs = legendre.legfit(x[baselineIndex],spectrum[baselineIndex],order)
@@ -256,8 +258,7 @@ def griddata(pixPerBeam = 3.0,
     hdr = addHeader_nonStd( hdr, beamSize, Data_Unit)
     # Adds history message
     hdr.add_history(history_message)
-    hdr.add_history('Using GAS pipeline version ')
-    
+    hdr.add_history('Using GAS pipeline version {0}'.format(__version__))    
     #
     hdu = fits.PrimaryHDU(outCube,header=hdr)
     hdu.writeto(dirname+file_extension+'.fits',clobber=True)
