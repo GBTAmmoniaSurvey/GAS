@@ -115,18 +115,18 @@ def griddata(pixPerBeam = 3.0,
              startChannel = 1024, endChannel = 3072,
              doBaseline = True,
              baselineRegion = [slice(512,1024,1),slice(3072,3584,1)],
-             startSession = 1, endSession = 100):
-    if (startSession == 1) and (endSession == 100):
+             Sessions = None):
+    if not Sessions:
         filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
         file_extension='_all'
     else:
         filelist = []
-        for scan_i in range(startSession, endSession+1):
-            filelist.extend(glob.glob(rootdir+'/'+region+'/'+dirname+'/*_sess'+str(scan_i)+'.fits'))
-        if startSession == endSession:
-            file_extension='_sess'+str(startSession)
+        for scan_i in Sessions:
+                filelist.extend(glob.glob(rootdir+'/'+region+'/'+dirname+'/*_sess'+str(scan_i)+'.fits'))
+        if isinstance(Sessions, list):
+            file_extension='_sess{0}-sess{1}'.format(Sessions[0],Sessions[-1])
         else:
-            file_extension='_sess'+str(startSession)+'-sess'+str(endSession)
+            file_extension='_sess{0}'.format(Sessions)
 
     if len(filelist) == 0:
         warnings.warn('There are no FITS files to process in '+rootdir+'/'+region+'/'+dirname)
