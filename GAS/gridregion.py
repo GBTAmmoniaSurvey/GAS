@@ -114,9 +114,15 @@ def griddata(pixPerBeam = 3.0,
              dirname = 'NGC1333_NH3_11',
              startChannel = 1024, endChannel = 3072,
              doBaseline = True,
-             baselineRegion = [slice(512,1024,1),slice(3072,3584,1)]):
+             baselineRegion = [slice(512,1024,1),slice(3072,3584,1)],
+             startSession = None, endSession = 100):
+    if (startSession is None):
+        filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
+    else:
+        filelist = []
+        for scan_i in range(startSession, endSession+1):
+            filelist.extend(glob.glob(rootdir+'/'+region+'/'+dirname+'/*_sess'+str(scan_i)+'.fits'))
 
-    filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
     if len(filelist) == 0:
         warnings.warn('There are no FITS files to process in '+rootdir+'/'+region+'/'+dirname)
         return
