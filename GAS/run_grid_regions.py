@@ -108,7 +108,7 @@ def grid_L1455():
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
 
-def grid_L1455():
+def grid_L1451():
     print("You will image the GBT Ammonia Survey data for L1451")
     data_dir='/lustre/pipeline/scratch/GAS'
     region_name='L1451'
