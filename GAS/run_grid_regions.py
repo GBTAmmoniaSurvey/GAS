@@ -108,6 +108,41 @@ def grid_L1455():
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21',
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
 
+def grid_L1455():
+    print("You will image the GBT Ammonia Survey data for L1451")
+    data_dir='/lustre/pipeline/scratch/GAS'
+    region_name='L1451'
+    startChannel = 1024 + 630
+    endChannel = 1024 + 1380
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11', 
+        startChannel = startChannel, endChannel = endChannel)
+    
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 700 # No lines. Using the same as NH3_22 
+    endChannel = 1024 + 1350 # No lines. Using the same as NH3_22
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 700 
+    endChannel = 1024 + 1350
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 700 # No Lines. Using the same as previous
+    endChannel = 1024 + 1350 # No Lines. Using the same as previous
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 700 + 180 # No Lines. Reduce channel range to avoid absorption from frequency switching
+    endChannel   = 1024 + 700 + 460 # No Lines. Reduce channel range to avoid absorption from frequency switching
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 700 # No Lines. Using the same as previous
+    endChannel = 1024 + 1350 # No Lines. Using the same as previous
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+
 def grid_L1688():
     print("You will image the GBT Ammonia Survey data for L1688")
     data_dir='/lustre/pipeline/scratch/GAS'
