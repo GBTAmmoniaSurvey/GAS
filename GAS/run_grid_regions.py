@@ -14,7 +14,7 @@ info_message="You will image the GBT Ammonia Survey data for NGC1333"
 
 gbt_dir='/lustre/pipeline/scratch/GAS'
 #dr1_dir=os.getcwd()+'/lustre/pipeline/scratch/GAS'
-dr1_dir=os.getcwd()+'/lustre/pipeline/scratch/GAS'
+dr1_dir='/lustre/pipeline/scratch/GAS'
 
 def grid_SerAqu():
     print("You will image the GBT Ammonia Survey data for Serpens_Aquila")
