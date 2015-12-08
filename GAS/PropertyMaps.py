@@ -328,7 +328,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     #
     # N(NH3)
     # 
-    color_table='YlOrBr'
+    color_table='viridis'
     fig0=aplpy.FITSFigure(hdu_tex, hdu=0)
     fig0.show_colorscale( cmap=color_table)
     fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,

@@ -1,7 +1,20 @@
 
 from . import gridregion
+import textwrap
+import sys
+import os
 
 from astropy.io import fits
+
+quit_message=textwrap.dedent("""\
+    Release parameters not defined. This region is either not
+    processed in this release or it is not yet implemented.""")
+
+info_message="You will image the GBT Ammonia Survey data for NGC1333"
+
+gbt_dir='/lustre/pipeline/scratch/GAS'
+#dr1_dir=os.getcwd()+'/lustre/pipeline/scratch/GAS'
+dr1_dir=os.getcwd()+'/lustre/pipeline/scratch/GAS'
 
 def grid_SerAqu():
     print("You will image the GBT Ammonia Survey data for Serpens_Aquila")
@@ -38,40 +51,75 @@ def grid_SerAqu():
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21', 
         startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
 
-def grid_NGC1333():
-    print("You will image the GBT Ammonia Survey data for NGC1333")
-    data_dir='/lustre/pipeline/scratch/GAS'
+def grid_NGC1333(release=None):
+    """
+    Function to image the NGC1333 data. The release parameter is used to 
+    select the proper sessions to be imaged and the pre-defined 
+    file extension.
+    """
+    if not release:
+        file_extension='_all'
+        mySessions=None
+        data_dir=gbt_dir
+    elif release == 'DR1':
+        file_extension='_DR1'
+        mySessions = None
+        data_dir=dr1_dir
+    else:
+        sys.exit(quit_message)
+    # data_dir='/lustre/pipeline/scratch/GAS'
     region_name='NGC1333'
+    print(info_message+region_name)
     startChannel = 1024 + 655 # default 1024
     endChannel = 1024 + 1418  # default 3072
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11', 
-        startChannel = startChannel, endChannel = endChannel)
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_11', 
+        startChannel = startChannel, endChannel = endChannel, 
+        Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',
-        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_22',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',
-        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_33',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S', 
-        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_C2S', 
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N', 
-        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC5N', 
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
     startChannel = 1024 + 880
     endChannel = 1024 + 1160
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20', 
-        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC7N_21_20', 
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
-    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21', 
-        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC7N_22_21', 
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
 
 def grid_L1455():
     print("You will image the GBT Ammonia Survey data for L1455")
