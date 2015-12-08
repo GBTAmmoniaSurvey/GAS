@@ -10,7 +10,7 @@ quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
     processed in this release or it is not yet implemented.""")
 
-info_message="You will image the GBT Ammonia Survey data for NGC1333"
+info_message="You will image the GBT Ammonia Survey data for "
 
 gbt_dir='/lustre/pipeline/scratch/GAS'
 #dr1_dir=os.getcwd()+'/lustre/pipeline/scratch/GAS'
