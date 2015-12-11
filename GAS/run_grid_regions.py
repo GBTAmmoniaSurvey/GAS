@@ -264,7 +264,7 @@ def grid_L1451(release=None):
     #
     startChannel = 1024 + 630
     endChannel = 1024 + 1380
-        gridregion.griddata( rootdir=data_dir, region=region_name, 
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_11', 
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
@@ -495,7 +495,6 @@ def grid_OrionB(release=None):
         dirname=region_name+'_NH3_11', 
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
-
     
     hd_temp=fits.getheader(region_name+'_NH3_11.fits')
 
