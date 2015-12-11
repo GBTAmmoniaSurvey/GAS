@@ -117,17 +117,20 @@ def griddata(pixPerBeam = 3.0,
              startChannel = 1024, endChannel = 3072,
              doBaseline = True,
              baselineRegion = [slice(512,1024,1),slice(3072,3584,1)],
-             Sessions = None):
+             Sessions = None,
+             file_extension = None):
     if not Sessions:
         filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
-        file_extension='_all'
+        if not file_extension:
+            file_extension='_all'
         history_message='Gridding of data using all sessions'
     else:
         filelist = []
         for scan_i in Sessions:
                 filelist.extend(glob.glob(rootdir+'/'+region+'/'+dirname+'/*_sess'+str(scan_i)+'.fits'))
         if isinstance(Sessions, list):
-            file_extension='_sess{0}-sess{1}'.format(Sessions[0],Sessions[-1])
+            if not file_extension:
+                file_extension='_sess{0}-sess{1}'.format(Sessions[0],Sessions[-1])
             if (Sessions[-1]+1.-Sessions[0])/len(Sessions) == 1.0:
                 history_message='Gridding of data using sessions between {0} and {1}'.format(Sessions[0],Sessions[-1])
             else:
@@ -135,7 +138,8 @@ def griddata(pixPerBeam = 3.0,
                 for scan_i in Sessions:
                     history_message += '{0}, '.format(scan_i)
         else:
-            file_extension='_sess{0}'.format(Sessions)
+            if not file_extension:
+                file_extension='_sess{0}'.format(Sessions)
             history_message='Gridding of data using session {0}'.format(Sessions)
 
     if len(filelist) == 0:
@@ -251,7 +255,6 @@ def griddata(pixPerBeam = 3.0,
     outWts.shape = (1,)+outWts.shape
     outCube /= outWts
 
-
     # Create basic fits header from WCS structure
     hdr = fits.Header(w.to_header())
     # Add non standard fits keyword
@@ -262,7 +265,6 @@ def griddata(pixPerBeam = 3.0,
     #
     hdu = fits.PrimaryHDU(outCube,header=hdr)
     hdu.writeto(dirname+file_extension+'.fits',clobber=True)
-
 
     w2 = w.dropaxis(2)
     hdr2 = fits.Header(w2.to_header())
