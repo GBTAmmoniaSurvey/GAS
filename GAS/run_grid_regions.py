@@ -189,7 +189,7 @@ def grid_L1455(release=None):
     #
     startChannel = 1024 + 630
     endChannel = 1024 + 1380
-        gridregion.griddata( rootdir=data_dir, region=region_name, 
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_11', 
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
