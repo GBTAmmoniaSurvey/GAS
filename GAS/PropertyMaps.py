@@ -608,7 +608,7 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
         Numbers of cores to use for parallel processing. 
     """
 
-    OneOneIntegrated = '{0}/{0}_NH3_11_mom0.fits'.format(region,blorder)
+    OneOneIntegrated = '{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,blorder)
     OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
     RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,blorder)
     TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,blorder)
