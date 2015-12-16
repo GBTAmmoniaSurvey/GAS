@@ -1,7 +1,9 @@
 from . import first_look
+import os
 import numpy as np
 from spectral_cube import SpectralCube
 import astropy.units as u
+
 def FirstLook_OrionA():
     print("Now NH3(1,1)")
     a_rms = [  0, 158, 315, 428, 530, 693]
@@ -339,81 +341,68 @@ def FirstLook_L1455():
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
 
 
-def FirstLook_NGC1333():
+def FirstLook_NGC1333(file_extension='_all'):
+    """
+    Function to create First Look products for NGC1333. The file_extension 
+    parameter is used to select the proper files to be processed. 
+    """
     print("Now NH3(1,1)")
+    file_in='NGC1333/NGC1333_NH3_11'+file_extension+'.fits'
+    file_out=file_in.replace(file_extension+'.fits',
+                             '_base'+file_extension+'.fits')
     a_rms = [  0, 158, 315, 428, 530, 693, 751]
     b_rms = [ 60, 230, 327, 438, 604, 735, 760]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(326,430)
-    file_in='NGC1333/NGC1333_NH3_11.fits'
-    # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, 
+                                  polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    print("Now NH3(2,2)")
-    a_rms = [  0, 190, 360, 600]
-    b_rms = [70, 300, 470, 640]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(380,520)
-    # file_in='NGC1333/NGC1333_NH3_22.fits'
-    # # 1st order polynomial
-    # file_out=file_in.replace('.fits','_base1.fits')
-    # file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    # first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    ## 2nd order polynomial
-    #file_out=file_in.replace('.fits','_base2.fits')
-    #file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=2)
-    #first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    #
-    # print("Now NH3(3,3)")
-    # a_rms = [ 10, 190, 420]
-    # b_rms = [70, 360, 500]
-    # index_rms=first_look.create_index( a_rms, b_rms)
-    # index_peak=np.arange(410,540)
-    # file_in='NGC1333/NGC1333_NH3_33.fits'
-    # 1st order polynomial
-    # file_out=file_in.replace('.fits','_base1.fits')
-    # file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    # first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
+
     linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
-    vsys = 8.5*u.km/u.s
-    throw = 8*u.km/u.s
+    vsys = 7.9*u.km/u.s
+    throw = 2.0*u.km/u.s
     for line in linelist:
-        file_in = 'NGC1333/NGC1333_{0}.fits'.format(line)
+        file_in = 'NGC1333/NGC1333_{0}{1}.fits'.format(line,file_extension)
         s = SpectralCube.read(file_in)
         s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
-        a_rms = [s.closest_spectral_channel(vsys+2*throw),
-                 s.closest_spectral_channel(vsys-throw)]
-        b_rms = [s.closest_spectral_channel(vsys+throw),
+        a_rms = [s.closest_spectral_channel(vsys+20*throw),
+                 s.closest_spectral_channel(vsys-20*throw)]
+        b_rms = [s.closest_spectral_channel(vsys+2*throw),
                  s.closest_spectral_channel(vsys-2*throw)]
-        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
-                              s.closest_spectral_channel(vsys-3*u.km/u.s))
+        index_peak = np.arange(s.closest_spectral_channel(vsys+throw),
+                              s.closest_spectral_channel(vsys-throw))
         index_rms=first_look.create_index( a_rms, b_rms)
-
-        file_out=file_in.replace('.fits','_base1.fits')
+        #
+        file_out=file_in.replace(file_extension+'.fits',
+                                 '_base'+file_extension+'.fits')
         file_new=first_look.baseline( file_in, file_out, 
                                       index_clean=index_rms, polyorder=1)
         first_look.peak_rms( file_new, index_rms=index_rms, 
                              index_peak=index_peak)
-        
 
-def FirstLook_B1():
+def FirstLook_B1(file_extension='_all'):
+    """
+    Function to create First Look products for B1. The file_extension 
+    parameter is used to select the proper files to be processed. 
+    """
     print("Now NH3(1,1)")
     a_rms = [  0, 130, 290, 400, 500, 660]
     b_rms = [ 70, 240, 340, 440, 620, 740]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(340,400)
-    file_in='B1/B1_NH3_11.fits'
-    # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    file_in='B1/B1_NH3_11'+file_extension+'.fits'
+    file_out=file_in.replace(file_extension+'.fits',
+                             '_base'+file_extension+'.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, 
+                                  polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
-    print("Now NH3(2,2)")
+
+    print("Now the rest")
     linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
     vsys = 6.6*u.km/u.s
     throw = 2.0*u.km/u.s
     for line in linelist:
-        file_in = 'B1/B1_{0}.fits'.format(line)
+        file_in = 'B1/B1_{0}{1}.fits'.format(line,file_extension)
         s = SpectralCube.read(file_in)
         s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
         a_rms = [s.closest_spectral_channel(vsys+3*throw),
@@ -424,29 +413,35 @@ def FirstLook_B1():
                               s.closest_spectral_channel(vsys-3*u.km/u.s))
         index_rms=first_look.create_index( a_rms, b_rms)
 
-        file_out=file_in.replace('.fits','_base1.fits')
+        file_out=file_in.replace(file_extension+'.fits',
+                                 '_base'+file_extension+'.fits')
         file_new=first_look.baseline( file_in, file_out, 
                                       index_clean=index_rms, polyorder=1)
         first_look.peak_rms( file_new, index_rms=index_rms, 
                              index_peak=index_peak)
         
-def FirstLook_IC348():
+def FirstLook_IC348(file_extension='_all'):
+    """
+    Function to create First Look products for IC348. The file_extension 
+    parameter is used to select the proper files to be processed. 
+    """
     print("Now NH3(1,1)")
     a_rms = [  0, 130, 290, 400, 500, 660]
     b_rms = [ 70, 240, 340, 440, 620, 740]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(340,400)
-    file_in='IC348/IC348_NH3_11.fits'
-    # 1st order polynomial
-    file_out=file_in.replace('.fits','_base1.fits')
-    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    file_in='IC348/IC348_NH3_11'+file_extension+'.fits'
+    file_out=file_in.replace(file_extension+'.fits',
+                             '_base'+file_extension+'.fits')
+    file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, 
+                                  polyorder=1)
     first_look.peak_rms( file_new, index_rms=index_rms, index_peak=index_peak)
     print("Now NH3(2,2)")
     linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
     vsys = 9.0*u.km/u.s
     throw = 2.0*u.km/u.s
     for line in linelist:
-        file_in = 'IC348/IC348_{0}.fits'.format(line)
+        file_in = 'IC348/IC348_{0}{1}.fits'.format(line,file_extension)
         s = SpectralCube.read(file_in)
         s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
         a_rms = [s.closest_spectral_channel(vsys+3*throw),
@@ -462,8 +457,6 @@ def FirstLook_IC348():
                                       index_clean=index_rms, polyorder=1)
         first_look.peak_rms( file_new, index_rms=index_rms, 
                              index_peak=index_peak)
-        
-
 
 def FirstLook_B59():
     print("Now NH3(1,1)")
