@@ -151,7 +151,8 @@ def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100), trim
     """  baseline: Function that reads in a cube and removes a baseline. 
     The baseline is a polynomial of order 'polyorder' (default=1), and it is fitted 
     on the channels clean of line emission, 'index_clean' (default=[0:100]).
-    trim_edge
+
+    trim_edge: If True then cube edges will be removed. Default: True
     """
     # 
     cube, hd = fits.getdata(file_in, 0, header=True)
