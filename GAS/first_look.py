@@ -7,7 +7,7 @@ import pyspeckit
 from pyspeckit.parallel_map import parallel_map
 from astropy import log
 from spectral_cube import SpectralCube
-from skimage.morphology import disk,dilation
+from skimage.morphology import disk,erosion
 
 def create_index( a, b):
     """ create_index takes two arrays and it creates an array that covers all indices 
