@@ -43,7 +43,7 @@ def grid_SerAqu(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 630 # default 1024
     endChannel = 1024 + 1452  # default 3072
@@ -196,7 +196,7 @@ def grid_L1455(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 
@@ -272,7 +272,7 @@ def grid_L1451(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 
@@ -347,7 +347,7 @@ def grid_L1688(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
 
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
@@ -423,7 +423,7 @@ def grid_OrionA(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -494,7 +494,7 @@ def grid_OrionB(release=None):
     #
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11')
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',     templateHeader=hd_temp)
     gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',        templateHeader=hd_temp)
@@ -528,7 +528,7 @@ def grid_B18(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -604,7 +604,7 @@ def grid_Cepheus(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -680,7 +680,7 @@ def grid_IC5146(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -756,7 +756,7 @@ def grid_B1(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -832,7 +832,7 @@ def grid_IC348(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -909,7 +909,7 @@ def grid_B59(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -985,7 +985,7 @@ def grid_TMC1(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -1061,7 +1061,7 @@ def grid_HC1(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
@@ -1137,7 +1137,7 @@ def grid_L1689(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
-    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
