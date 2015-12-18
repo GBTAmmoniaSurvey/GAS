@@ -7,6 +7,7 @@ import pyspeckit
 from pyspeckit.parallel_map import parallel_map
 from astropy import log
 from spectral_cube import SpectralCube
+from skimage.morphology import disk,erosion
 
 def create_index( a, b):
     """ create_index takes two arrays and it creates an array that covers all indices 
@@ -125,14 +126,40 @@ def baseline_cube(cube, polyorder=None, cubemask=None, splineorder=None,
     blcube = baselined.T.reshape(cube.shape)
     return blcube
 
+def trim_edge_cube( cube):
+    """  trim_edge_cube: Function that reads in a cube and removes the edges 
+    in the cube. 
+    It runs the erode function to make sure that pixels within 3 pixels away 
+    from the edges are blanked. 
+    This is useful to remove very noisy pixels due to lower coverage by KFPA.
+    ----------------------------------------
+    Warning: This function modifies the cube.
+    """
+    # 
+    mask=np.isfinite(cube)
+    mask_2d=mask[0,:,:]
+    # remove image edges
+    mask_2d[:,0] = mask_2d[:,-1] = False
+    mask_2d[0,:] = mask_2d[-1,:] = False
+    # now erode image (using disk) and convert back to 3D mask
+    # then replace all voxels with NaN
+    mask &= erosion(mask_2d,disk(3))
+    cube[~mask]=np.nan
+    # cube[~ (mask*erosion(mask_2d,disk(3)))]=np.nan
 
-def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100)):
+
+def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100), trim_edge=True):
     """  baseline: Function that reads in a cube and removes a baseline. 
     The baseline is a polynomial of order 'polyorder' (default=1), and it is fitted 
     on the channels clean of line emission, 'index_clean' (default=[0:100]).
+
+    trim_edge: If True then cube edges will be removed. Default: True
     """
     # 
     cube, hd = fits.getdata(file_in, 0, header=True)
+    # blank edges
+    if trim_edge:
+        trim_edge_cube(cube_bl)
     # 
     # Create mask with data, then mask out channels without emission (index_clean)
     # and remove channels with NaNs
@@ -145,7 +172,6 @@ def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100)):
     hdu = fits.PrimaryHDU(cube_bl, header=hd)
     hdu.writeto(file_out, clobber=True)
     return file_out
-
 
 def peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440), overwrite=True):
     """ Calculate rms, integrated intensity and peak intensity maps.
