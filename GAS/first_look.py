@@ -139,13 +139,14 @@ def trim_edge_cube( cube):
     mask=np.isfinite(cube)
     mask_2d=mask[0,:,:]
     # remove image edges
-    mask_2d[:,0]=False
-    mask_2d[:,-1]=False
-    mask_2d[0,:]=False
-    mask_2d[-1,:]=False
+    mask_2d[:,0] = mask_2d[:,-1] = False
+    mask_2d[0,:] = mask_2d[-1,:] = False
     # now erode image (using disk) and convert back to 3D mask
     # then replace all voxels with NaN
-    cube[~ (mask*erosion(mask_2d,disk(3)))]=np.nan
+    mask &= erosion(mask_2d,disk(3))
+    cube[~mask]=np.nan
+    # cube[~ (mask*erosion(mask_2d,disk(3)))]=np.nan
+
 
 def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100), trim_edge=True):
     """  baseline: Function that reads in a cube and removes a baseline. 
@@ -156,6 +157,9 @@ def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100), trim
     """
     # 
     cube, hd = fits.getdata(file_in, 0, header=True)
+    # blank edges
+    if trim_edge:
+        trim_edge_cube(cube_bl)
     # 
     # Create mask with data, then mask out channels without emission (index_clean)
     # and remove channels with NaNs
@@ -164,8 +168,6 @@ def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100), trim
     cubemask = (cubemask) | (np.isnan(cube))
     # Remove a line
     cube_bl = baseline_cube( cube, polyorder=polyorder, cubemask=cubemask, numcores=None, sampling=1)
-    if trim_edge:
-        trim_edge_cube(cube_bl)
     # Save cube
     hdu = fits.PrimaryHDU(cube_bl, header=hd)
     hdu.writeto(file_out, clobber=True)
