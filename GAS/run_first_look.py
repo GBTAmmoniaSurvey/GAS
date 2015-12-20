@@ -3,6 +3,11 @@ import os
 import numpy as np
 from spectral_cube import SpectralCube
 import astropy.units as u
+import textwrap
+
+quit_message=textwrap.dedent("""\
+    Release parameters not defined. This region is either not
+    processed in this release or it is not yet implemented.""")
 
 def FirstLook_OrionA():
     print("Now NH3(1,1)")
@@ -524,13 +529,20 @@ def FirstLook_Cepheus():
         first_look.peak_rms( file_new, index_rms=index_rms, 
                              index_peak=index_peak)
 
-def FirstLook_B1E():
+def FirstLook_B1E(release=None):
+    if not release:
+        file_extension='_all'
+    elif release == 'DR2':
+        file_extension='_DR2'
+    else:
+        sys.exit(quit_message)
+    region_name = 'B1E'
     print("Now NH3(1,1)")
     a_rms = [  0, 135, 290, 405, 505, 665]
     b_rms = [ 70, 245, 350, 455, 625, 740]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(350,410)
-    file_in='B1E/B1E_NH3_11.fits'
+    file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
     # 1st order polynomial
     file_out=file_in.replace('.fits','_base1.fits')
     file_new=first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
@@ -540,7 +552,7 @@ def FirstLook_B1E():
     vsys = 7.3*u.km/u.s
     throw = 2.0*u.km/u.s
     for line in linelist:
-        file_in = 'B1E/B1E_{0}.fits'.format(line)
+        file_in = 'B1E/B1E_{0}{1}.fits'.format(line,file_extension)
         s = SpectralCube.read(file_in)
         s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
         a_rms = [s.closest_spectral_channel(vsys+3*throw),
