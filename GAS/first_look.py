@@ -159,7 +159,7 @@ def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100), trim
     cube, hd = fits.getdata(file_in, 0, header=True)
     # blank edges
     if trim_edge:
-        trim_edge_cube(cube_bl)
+        trim_edge_cube(cube)
     # 
     # Create mask with data, then mask out channels without emission (index_clean)
     # and remove channels with NaNs
