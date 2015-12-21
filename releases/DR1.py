@@ -18,16 +18,56 @@ install_and_import('GAS', 'git+https://github.com/GBTAmmoniaSurvey/GAS.git@c9b5a
 # Check that the appropriate version has been installed
 assert GAS.__version__ == dr_id, "Wrong GAS version installed: {0} instead of {1}".format(GAS.__version__, dr_id)
 
-GAS.run_grid_region.grid_B1()
-GAS.run_grid_region.grid_B18()
-GAS.run_grid_region.grid_B59()
-GAS.run_grid_region.grid_Cepheus()
-GAS.run_grid_region.grid_IC348()
-GAS.run_grid_region.grid_IC5146()
-GAS.run_grid_region.grid_L1451()
-GAS.run_grid_region.grid_L1455()
-GAS.run_grid_region.grid_L1688()
-GAS.run_grid_region.grid_NGC1333()
-GAS.run_grid_region.grid_OrionA()
-GAS.run_grid_region.grid_OrionB()
-GAS.run_grid_region.grid_SerAqu()
+release_version = 'DR1'
+file_extension = '_{0}'.format(release_version)
+#
+if GAS.run_grid_region.grid_B1(release=release_version):
+    GAS.run_first_look.FirstLook_B1(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_B1E(release=release_version):
+    GAS.run_first_look.FirstLook_B1E(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_B18(release=release_version):
+    GAS.run_first_look.FirstLook_B18(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_B59(release=release_version):
+    GAS.run_first_look.FirstLook_B59(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_Cepheus(release=release_version):
+    GAS.run_first_look.FirstLook_Cepheus(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_IC348(release=release_version):
+    GAS.run_first_look.FirstLook_IC348(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_IC5146(release=release_version):
+    GAS.run_first_look.FirstLook_IC5146(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_L1451(release=release_version):
+    GAS.run_first_look.FirstLook_L1451(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_L1455(release=release_version):
+    GAS.run_first_look.FirstLook_L1455(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_L1688(release=release_version):
+    GAS.run_first_look.FirstLook_L1688(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_L1689(release=release_version):
+    GAS.run_first_look.FirstLook_L1689(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_NGC1333(release=release_version):
+    GAS.run_first_look.FirstLook_NGC1333(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_OrionA(release=release_version):
+    GAS.run_first_look.FirstLook_OrionA(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_OrionB(release=release_version):
+    GAS.run_first_look.FirstLook_OrionB(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_SerAqu(release=release_version):
+    GAS.run_first_look.FirstLook_SerAqu(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_TMC1(release=release_version):
+    GAS.run_first_look.FirstLook_TMC1(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_HC2(release=release_version):
+    GAS.run_first_look.FirstLook_HC2(file_extension=file_extension)
