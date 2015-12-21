@@ -136,17 +136,15 @@ def trim_edge_cube( cube):
     Warning: This function modifies the cube.
     """
     # 
-    mask=np.isfinite(cube)
-    mask_2d=mask[0,:,:]
+    mask = np.isfinite(cube)
+    mask_2d = mask[0,:,:]
     # remove image edges
     mask_2d[:,0] = mask_2d[:,-1] = False
     mask_2d[0,:] = mask_2d[-1,:] = False
     # now erode image (using disk) and convert back to 3D mask
     # then replace all voxels with NaN
     mask &= erosion(mask_2d,disk(3))
-    cube[~mask]=np.nan
-    # cube[~ (mask*erosion(mask_2d,disk(3)))]=np.nan
-
+    cube[~mask] = np.nan
 
 def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100), trim_edge=True):
     """  baseline: Function that reads in a cube and removes a baseline. 
@@ -171,7 +169,6 @@ def baseline( file_in, file_out, polyorder=1, index_clean=np.arange(0,100), trim
     # Save cube
     hdu = fits.PrimaryHDU(cube_bl, header=hd)
     hdu.writeto(file_out, clobber=True)
-    return file_out
 
 def peak_rms( file_in, index_rms=np.arange(0,100), index_peak=np.arange(380,440), overwrite=True):
     """ Calculate rms, integrated intensity and peak intensity maps.
