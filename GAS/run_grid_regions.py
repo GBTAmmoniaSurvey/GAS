@@ -1035,7 +1035,7 @@ def grid_TMC1(release=None):
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension)
 
-def grid_HC1(release=None):
+def grid_HC2(release=None):
     """
     Function to image the Heiles Cloud1 data. The release parameter is used 
     to select the proper sessions to be imaged and the pre-defined 
@@ -1051,7 +1051,7 @@ def grid_HC1(release=None):
         data_dir=dr2_dir
     else:
         sys.exit(quit_message)
-    region_name = 'HC1'
+    region_name = 'HC2'
     print(info_message+region_name)
     #
     startChannel = 1024 + 655 # default 1024
