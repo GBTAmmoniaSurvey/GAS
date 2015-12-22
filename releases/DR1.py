@@ -60,8 +60,11 @@ if GAS.run_grid_region.grid_NGC1333(release=release_version):
 if GAS.run_grid_region.grid_OrionA(release=release_version):
     GAS.run_first_look.FirstLook_OrionA(file_extension=file_extension)
 #
-if GAS.run_grid_region.grid_OrionB(release=release_version):
-    GAS.run_first_look.FirstLook_OrionB(file_extension=file_extension)
+if GAS.run_grid_region.grid_OrionB_NGC2023_2024(release=release_version):
+    GAS.run_first_look.FirstLook_OrionB_NGC2023_2024(file_extension=file_extension)
+#
+if GAS.run_grid_region.grid_OrionB_NGC2068_2071(release=release_version):
+    GAS.run_first_look.FirstLook_OrionB_NGC2068_2071(file_extension=file_extension)
 #
 if GAS.run_grid_region.grid_SerAqu(release=release_version):
     GAS.run_first_look.FirstLook_SerAqu(file_extension=file_extension)
