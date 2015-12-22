@@ -776,10 +776,10 @@ def FirstLook_OrionB_NGC2068_2071(file_extension='_all'):
     """
     region_name = 'OrionB_NGC2068-2071'
     print("Now NH3(1,1)")
-    a_rms = [  0, 135, 290, 405, 505, 665]
-    b_rms = [ 70, 245, 350, 455, 625, 740]
+    a_rms = [  0, 120, 270, 390, 480, 640]
+    b_rms = [ 60, 230, 330, 440, 600, 740]
     index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(350,410)
+    index_peak=np.arange(330,390)
     file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
     file_out=file_in.replace(file_extension+'.fits',
                              '_base'+file_extension+'.fits')
