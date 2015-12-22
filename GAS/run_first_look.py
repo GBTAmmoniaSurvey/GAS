@@ -52,7 +52,7 @@ def FirstLook_OrionA(file_extension='_all'):
     b_rms = [210, 310, 930]
     index_rms=first_look.create_index( a_rms, b_rms)
     index_peak=np.arange(410,540)
-    line='NH3_22'
+    line='NH3_33'
     file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
     file_out=file_in.replace(file_extension+'.fits',
                                  '_base'+file_extension+'.fits')
