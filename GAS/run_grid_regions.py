@@ -245,6 +245,83 @@ def grid_L1455(release=None):
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension)
 
+
+def grid_L1448(release=None):
+    """
+    Function to image the L1448 data. The release parameter is 
+    used to select the proper sessions to be imaged and the pre-defined 
+    file extension.
+    """
+    if not release:
+        file_extension='_all'
+        mySessions=None
+        data_dir=gbt_dir
+    elif release == 'DR2':
+        file_extension='_DR2'
+        mySessions = None
+        data_dir=dr1_dir
+    else:
+        sys.exit(quit_message)
+    region_name = 'L1448'
+    print(info_message+region_name)
+    #
+    startChannel = 1024 + 630
+    endChannel = 1024 + 1380
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_11', 
+        startChannel = startChannel, endChannel = endChannel, 
+        Sessions=mySessions, file_extension=file_extension)
+    
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_22',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+
+    startChannel = 1024 + 700 # No lines. Using the same as NH3_22 
+    endChannel = 1024 + 1350 # No lines. Using the same as NH3_22
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_33',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+
+    startChannel = 1024 + 700 
+    endChannel = 1024 + 1350
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_C2S',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+    
+    startChannel = 1024 + 700 # No Lines. Using the same as previous
+    endChannel = 1024 + 1350 # No Lines. Using the same as previous
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC5N',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+    
+    startChannel = 1024 + 700 + 180 # No Lines. Reduce channel range to avoid absorption from frequency switching
+    endChannel   = 1024 + 700 + 460 # No Lines. Reduce channel range to avoid absorption from frequency switching
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC7N_21_20',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+    
+    startChannel = 1024 + 700 # No Lines. Using the same as previous
+    endChannel = 1024 + 1350 # No Lines. Using the same as previous
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC7N_22_21',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+
+
 def grid_L1451(release=None):
     """
     Function to image the L1451 data. The release parameter is 
