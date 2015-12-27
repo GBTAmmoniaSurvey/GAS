@@ -48,7 +48,7 @@ def grid_SerAqu(release=None):
     startChannel = 1024 + 630 # default 1024
     endChannel = 1024 + 1452  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_33',
+        dirname=region_name+'_NH3_22',
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension)
