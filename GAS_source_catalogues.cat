@@ -4,6 +4,7 @@ coordmode=J2000
 veldef=VRAD-LSR
 # Taurus: Initial selection by Youngmin Seo. TaurusNNN
 # Perseus: Initial selection by Jaime Pineda. L1455, L1451, L1448, NGC1333, B1
+#          Added: IC348 and isolated core in-between B1 and L1455
 # Orion A: Initial selection by Rachel Friesen. 
 # Orion B: Initial selection by Helen Kirk. 
 # Oph: Initial seletion by Hope Chen and Anna Punanova. Modifications by Jaime Pineda.
@@ -20,6 +21,7 @@ Perseus_map_L1451-S    03:25:35.534 +30:12:02.43  4.1
 Perseus_map_L1448-C    03:25:49.101 +30:43:52.62  4.5
 Perseus_map_L1448-W    03:25:02.451 +30:43:51.31  4.5
 Perseus_map_L1448-S    03:26:14.834 +30:34:11.38  4.5
+Perseus_map_1          03:30:25.306 +30:25:18.14  5.9
 Perseus_map_NGC1333-A  03:28:39.967 +30:57:20.11  8.5
 Perseus_map_NGC1333-B  03:28:31.403 +31:07:14.88  8.5
 Perseus_map_NGC1333-C  03:29:18.701 +31:07:15.11  8.5

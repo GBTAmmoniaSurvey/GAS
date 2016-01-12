@@ -24,7 +24,7 @@ Dependencies
 ------------
 
 * astropy
-* pyspeckit (>0.1.17.dev1838)
+* pyspeckit (>0.1.18)
 * spectral_cube
 * signal_id
 * radio_beam

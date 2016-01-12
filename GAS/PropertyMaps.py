@@ -31,7 +31,7 @@ def run_plot_fit_all():
     plot_cubefit(region='B18', distance=137*u.pc, dvmin=0.05, dvmax=0.3, 
                  vcmin=5.7, vcmax=6.7)
 
-    cubefit(region='L1688', vmin=5.5, vmax=10.5, do_plot=False, snr_min=3.0, 
+    cubefit(region='L1688', vmin=2.5, vmax=5.5, do_plot=False, snr_min=3.0, 
             multicore=1)
     plot_cubefit(region='L1688', distance=120*u.pc, dvmin=0.05, dvmax=0.7, 
                  vcmin=2.7, vcmax=4.8)
@@ -328,7 +328,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     #
     # N(NH3)
     # 
-    color_table='YlOrBr'
+    color_table='viridis'
     fig0=aplpy.FITSFigure(hdu_tex, hdu=0)
     fig0.show_colorscale( cmap=color_table)
     fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
@@ -608,7 +608,7 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
         Numbers of cores to use for parallel processing. 
     """
 
-    OneOneIntegrated = '{0}/{0}_NH3_11_mom0.fits'.format(region,blorder)
+    OneOneIntegrated = '{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,blorder)
     OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
     RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,blorder)
     TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,blorder)
@@ -637,7 +637,6 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     moment2 = (slab.moment( order=2, axis=0).value)**0.5
     moment2[np.isnan(moment2)]=0.2
     moment2[moment2<0.2]=0.2
-    maskmap = w11>0.5
     cube11 = pyspeckit.Cube(OneOneFile,maskmap=planemask)
     cube11.unit="K"
     cube22 = pyspeckit.Cube(TwoTwoFile,maskmap=planemask)
