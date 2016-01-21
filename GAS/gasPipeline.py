@@ -8,16 +8,17 @@ from astropy.time import Time
 def reduceAll(overwrite=False):
     updateLogs()
     catalog = parseLog()
-    uniqSrc = set(catalog['Region name'])
+    uniqSrc = set(catalog['Region name'].data.data)
     cwd = os.getcwd()
     for region in uniqSrc:
-        try:
-            os.chdir(cwd+'/'+region)
-        except OSError:
-            os.mkdir(cwd+'/'+region)
-            os.chdir(cwd+'/'+region)
-        wrapper(region=region, overwrite = overwrite)
-        os.chdir(cwd)
+        if region != 'none':
+            try:
+                os.chdir(cwd+'/'+region)
+            except OSError:
+                os.mkdir(cwd+'/'+region)
+                os.chdir(cwd+'/'+region)
+            wrapper(region=region, overwrite = overwrite, logfile='../ObservationLog.csv')
+            os.chdir(cwd)
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
             window=['0','1','2','3','4','5','6'],
@@ -53,7 +54,6 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
 
     t = parseLog(logfile=logfile)
     for observation in t:
-        print(observation['Date'])
         ObsDate = Time(observation['Date'])
         if (region == observation['Region name']) & \
         (ObsDate >= StartDate) & (ObsDate <= EndDate):
