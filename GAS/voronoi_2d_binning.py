@@ -17,6 +17,10 @@ Permission to modify for personal or internal use is granted,
 provided this copyright and disclaimer are included unchanged
 at the beginning of the file. All other rights are reserved.
 
+Sections of code authored by Erik Rosolowsky are released to the public
+domain.
+  
+
 #####################################################################
 
 NAME:
@@ -211,7 +215,9 @@ MODIFICATION HISTORY:
       V3.0.1: Support both Python 2.6/2.7 and Python 3. MC, Oxford, 25 May 2014
       V3.0.2: Avoid potential runtime warning while plotting.
           MC, Oxford, 2 October 2014
-
+      V3.1: Allow generic signal-to-noise functions to be passed in from main
+      level.  Also changed API for _sn_func.
+          EWR, Bleakest Alberta, Jan 2016.
 """
 
 from __future__ import print_function
@@ -223,9 +229,9 @@ from scipy import ndimage
 
 #----------------------------------------------------------------------------
 
-def _sn_func(signal, noise, index):
+def _sn_func(signal, noise):
     """
-    Generic function to calculate the S/N of a bin with spaxels "index".
+    Generic function to calculate the S/N of a bin with spaxels.
     The Voronoi binning algorithm does not require this function to have a
     specific form and this generic one can be changed by the user if needed.
 
@@ -234,12 +240,12 @@ def _sn_func(signal, noise, index):
     Instead this function could return any quantity the user needs to equalize.
 
     For example _sn_func could be a procedure which uses ppxf to measure the
-    velocity dispersion from the coadded spectrum of spaxels "index" and
+    velocity dispersion from the coadded spectrum of spaxels and
     returns the relative error in the dispersion.
     Of course an analytic approximation of S/N speeds up the calculation.
 
     """
-    return  np.sum(signal[index])/np.sqrt(np.sum(noise[index]**2))
+    return  np.sum(signal)/np.sqrt(np.sum(noise**2))
 
 #----------------------------------------------------------------------
 
@@ -331,7 +337,7 @@ def _accretion(x, y, signal, noise, targetSN, pixelSize, quiet, aggregator = _sn
             # the CANDIDATE pixel to the current bin
             #
             SNOld = SN
-            SN = aggregator(signal, noise, nextBin)
+            SN = aggregator(signal[nextBin], noise[nextBin])
 
             # Test whether (1) the CANDIDATE pixel is connected to the
             # current bin, (2) whether the POSSIBLE new bin is round enough
@@ -436,7 +442,7 @@ def _cvt_equal_mass(x, y, signal, noise, xnode, ynode, quiet, wvt, aggregator = 
             index = classe == k   # Find subscripts of pixels in bin k.
             xnode[k], ynode[k] = _weighted_centroid(x[index], y[index], dens[index]**2)
             if wvt:
-                sn = aggregator(signal, noise, index)
+                sn = aggregator(signal[index], noise[index])
                 scale[k] = np.sqrt(index.sum()/sn)  # Eq. (4) of Diehl & Statler (2006)
 
         diff = np.sum((xnode - xnodeOld)**2 + (ynode - ynodeOld)**2)
@@ -482,7 +488,7 @@ def _compute_useful_bin_quantities(x, y, signal, noise, xnode, ynode, scale, agg
     for k in good:
         index = classe == k   # Find subscripts of pixels in bin k.
         xbar[k], ybar[k] = _weighted_centroid(x[index], y[index], signal[index])
-        sn[k] = aggregator(signal, noise, index)
+        sn[k] = aggregator(signal[index], noise[index])
         area[k] = index.sum()
 
     return classe, xbar, ybar, sn, area
