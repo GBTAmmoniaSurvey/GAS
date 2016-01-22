@@ -272,7 +272,7 @@ def _roundness(x, y, pixelSize):
 
 #----------------------------------------------------------------------
 
-def _accretion(x, y, signal, noise, targetSN, pixelSize, quiet):
+def _accretion(x, y, signal, noise, targetSN, pixelSize, quiet, aggregator = _sn_func):
     """
     Implements steps (i)-(v) in section 5.1 of Cappellari & Copin (2003)
 
@@ -331,7 +331,7 @@ def _accretion(x, y, signal, noise, targetSN, pixelSize, quiet):
             # the CANDIDATE pixel to the current bin
             #
             SNOld = SN
-            SN = _sn_func(signal, noise, nextBin)
+            SN = aggregator(signal, noise, nextBin)
 
             # Test whether (1) the CANDIDATE pixel is connected to the
             # current bin, (2) whether the POSSIBLE new bin is round enough
@@ -404,7 +404,7 @@ def _reassign_bad_bins(classe, x, y):
 
 #----------------------------------------------------------------------------
 
-def _cvt_equal_mass(x, y, signal, noise, xnode, ynode, quiet, wvt):
+def _cvt_equal_mass(x, y, signal, noise, xnode, ynode, quiet, wvt, aggregator = _sn_func):
     """
     Implements the modified Lloyd algorithm
     in section 4.1 of Cappellari & Copin (2003).
@@ -436,7 +436,7 @@ def _cvt_equal_mass(x, y, signal, noise, xnode, ynode, quiet, wvt):
             index = classe == k   # Find subscripts of pixels in bin k.
             xnode[k], ynode[k] = _weighted_centroid(x[index], y[index], dens[index]**2)
             if wvt:
-                sn = _sn_func(signal, noise, index)
+                sn = aggregator(signal, noise, index)
                 scale[k] = np.sqrt(index.sum()/sn)  # Eq. (4) of Diehl & Statler (2006)
 
         diff = np.sum((xnode - xnodeOld)**2 + (ynode - ynodeOld)**2)
@@ -459,7 +459,7 @@ def _cvt_equal_mass(x, y, signal, noise, xnode, ynode, quiet, wvt):
 
 #-----------------------------------------------------------------------
 
-def _compute_useful_bin_quantities(x, y, signal, noise, xnode, ynode, scale):
+def _compute_useful_bin_quantities(x, y, signal, noise, xnode, ynode, scale, aggregator = _sn_func):
     """
     Recomputes (Weighted) Voronoi Tessellation of the pixels grid to make sure
     that the class number corresponds to the proper Voronoi generator.
@@ -482,7 +482,7 @@ def _compute_useful_bin_quantities(x, y, signal, noise, xnode, ynode, scale):
     for k in good:
         index = classe == k   # Find subscripts of pixels in bin k.
         xbar[k], ybar[k] = _weighted_centroid(x[index], y[index], signal[index])
-        sn[k] = _sn_func(signal, noise, index)
+        sn[k] = aggregator(signal, noise, index)
         area[k] = index.sum()
 
     return classe, xbar, ybar, sn, area
@@ -512,7 +512,8 @@ def _display_pixels(x, y, counts, pixelSize):
 #----------------------------------------------------------------------
 
 def voronoi_2d_binning(x, y, signal, noise, targetSN, cvt=True,
-                         pixelsize=None, plot=True, quiet=True, wvt=True):
+                         pixelsize=None, plot=True, quiet=True,
+                         wvt=True, aggregator = _sn_func):
     """
     PURPOSE:
           Perform adaptive spatial binning of Integral-Field Spectroscopic
@@ -547,7 +548,7 @@ def voronoi_2d_binning(x, y, signal, noise, targetSN, cvt=True,
     # Perform basic tests to catch common input errors
     #
     if np.sum(signal)/np.sqrt(np.sum(noise**2)) < targetSN:
-       d raise ValueError("""Not enough S/N in the whole set of pixels.
+        raise ValueError("""Not enough S/N in the whole set of pixels.
             Many pixels may have noise but virtually no signal.
             They should not be included in the set to bin,
             or the pixels should be optimally weighted.
@@ -561,18 +562,20 @@ def voronoi_2d_binning(x, y, signal, noise, targetSN, cvt=True,
     noise = noise.clip(np.min(noise[noise > 0])*1e-9)
 
     print('Bin-accretion...')
-    classe, pixelsize = _accretion(x, y, signal, noise, targetSN, pixelsize, quiet)
+    classe, pixelsize = _accretion(x, y, signal, noise, targetSN, pixelsize, quiet, aggregator = aggregator)
     print(np.max(classe), ' initial bins.')
     print('Reassign bad bins...')
     xNode, yNode = _reassign_bad_bins(classe, x, y)
     print(xNode.size, ' good bins.')
     if cvt:
         print('Modified Lloyd algorithm...')
-        xNode, yNode, scale, it = _cvt_equal_mass(x, y, signal, noise, xNode, yNode, quiet, wvt)
+        xNode, yNode, scale, it = _cvt_equal_mass(x, y, signal, noise, xNode, yNode,
+                                                  quiet, wvt, aggregator = aggregator)
         print(it-1, ' iterations.')
     else:
         scale = 1.
-    classe, xBar, yBar, sn, area = _compute_useful_bin_quantities(x, y, signal, noise, xNode, yNode, scale)
+    classe, xBar, yBar, sn, area = _compute_useful_bin_quantities(x, y, signal, noise, xNode, yNode, scale,
+                                                                  aggregator = aggregator)
     w = area == 1
     print('Unbinned pixels: ', np.sum(w), ' / ', x.size)
     print('Fractional S/N scatter (%):', np.std(sn[~w] - targetSN, ddof=1)/targetSN*100)

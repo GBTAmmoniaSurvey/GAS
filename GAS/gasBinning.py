@@ -33,7 +33,7 @@ def BinByLabel(DataCube, CentroidMap, LabelMap,
     return (SpectralCube(data = RawData,wcs = DataCube.wcs))
 
 def SignalBin(IntegratedIntensity, NoiseMap, targetSN = 5,
-              threshold = 0, mask = None):
+              threshold = 0, mask = None, aggregator = None):
     SignalToNoise = IntegratedIntensity/NoiseMap
     if mask is None:
         mask = SignalToNoise > threshold
@@ -44,7 +44,7 @@ def SignalBin(IntegratedIntensity, NoiseMap, targetSN = 5,
     SNmap = np.zeros(IntegratedIntensity.shape)
     voronoi_label, x0, y0, \
         xbar, ybar, sn, npix, scale = v2d.voronoi_2d_binning(
-        x, y, signal, noise, targetSN, plot = False)
+        x, y, signal, noise, targetSN, plot = False, aggregator= aggregator)
     for ThisLabel,SNval in enumerate(sn):
         label_index = np.where(voronoi_label == ThisLabel)
         if SNval > targetSN:
