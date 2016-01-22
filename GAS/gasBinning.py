@@ -12,7 +12,8 @@ def BinByLabel(DataCube, CentroidMap, LabelMap,
     DataCube is a SpectralCube
     """
     UniqLabels = np.unique(LabelMap)
-    ChannelWidth = np.median(DataCube.spectral_axis-np.roll(DataCube.spectral_axis,1))
+    ChannelWidth = np.median(DataCube.spectral_axis-
+                             np.roll(DataCube.spectral_axis,1))
     RawData = DataCube.unmasked_data[:].value
     for ThisLabel in UniqLabels:
         if ThisLabel not in BackgroundLabels:
@@ -21,7 +22,8 @@ def BinByLabel(DataCube, CentroidMap, LabelMap,
             AccumSpec = np.zeros(DataCube.shape[0])
             for ThisX,ThisY in zip(x,y):
                 DeltaV = CentroidMap[ThisY,ThisX] - CentroidValue
-                # Note this assumes the units of the centroid map are km/s
+                # Note this assumes the units of the centroid map
+                # are in same units as the spectral axis of the cube.
                 DeltaChan = DeltaV/ChannelWidth.value
                 AccumSpec += channelShift(DataCube[:,ThisY,ThisX].value,
                                           -DeltaChan)
