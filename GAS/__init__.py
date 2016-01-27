@@ -20,4 +20,6 @@ if not _ASTROPY_SETUP_:
     import first_look
     import run_first_look
     import PropertyMaps
+    import gasBinning
+    import voronoi_2d_binning
     pass
