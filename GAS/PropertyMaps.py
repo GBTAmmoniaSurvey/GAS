@@ -3,7 +3,7 @@ import astropy.io.fits as fits
 import numpy as np
 import os
 from spectral_cube import SpectralCube
-import signal_id
+#import signal_id
 from radio_beam import Beam
 import astropy.constants as con
 import astropy.units as u
@@ -186,7 +186,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
     fits.writeto(file_out, param, hd, clobber=True)
 
 def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, 
-                 dvmax=None, vcmin=None, vcmax=None):
+                 dvmax=None, vcmin=None, vcmax=None, file_extension=None):
     """
     Plot fit parameters of NH3 map for the region. It masks poorly 
     constrained fits. Extra parameters to improve images of centroid velocity
@@ -213,9 +213,14 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     import matplotlib
     matplotlib.use('Agg')
     import aplpy
+    
+    if file_extension:
+        root = file_extension
+    else:
+        root = 'base{0}'.format(blorder)
 
     data_file = "{0}_parameter_maps.fits".format(region)
-    w11_file='{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,blorder)
+    w11_file='{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
 
     hdu   =fits.open(data_file)
     header=hdu[0].header
@@ -576,7 +581,7 @@ def update_cubefit(region='NGC1333'):
     fits.writeto(file_out, param, hd, clobber=True)
 
 def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False, 
-            snr_min=5.0, multicore=1):
+            snr_min=5.0, multicore=1, file_extension=None):
     """
     Fit NH3(1,1), (2,2) and (3,3) cubes for the requested region. 
     It fits all pixels with SNR larger than requested. 
@@ -607,12 +612,17 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     multicore : int
         Numbers of cores to use for parallel processing. 
     """
+    if file_extension:
+        root = file_extension
+    else:
+        root = 'base{0}'.format(blorder)
 
-    OneOneIntegrated = '{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,blorder)
-    OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
-    RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,blorder)
-    TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,blorder)
-    ThreeThreeFile = '{0}/{0}_NH3_33_base{1}.fits'.format(region,blorder)
+
+    OneOneIntegrated = '{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
+    OneOneFile = '{0}/{0}_NH3_11_{1}.fits'.format(region,root)
+    RMSFile = '{0}/{0}_NH3_11_{1}_rms.fits'.format(region,root)
+    TwoTwoFile = '{0}/{0}_NH3_22_{1}.fits'.format(region,root)
+    ThreeThreeFile = '{0}/{0}_NH3_33_{1}.fits'.format(region,root)
         
     beam11 = Beam.from_fits_header(fits.getheader(OneOneFile))
     cube11sc = SpectralCube.read(OneOneFile)
