@@ -580,8 +580,15 @@ def update_cubefit(region='NGC1333'):
     file_out="{0}_eFortho_v1.fits".format(region)
     fits.writeto(file_out, param, hd, clobber=True)
 
+def default_masking(snr,snr_min=5.0):
+    planemask = (snr>snr_min) 
+    planemask = remove_small_objects(planemask,min_size=40)
+    planemask = opening(planemask,disk(1))
+    return(planemask)
+
+
 def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False, 
-            snr_min=5.0, multicore=1, file_extension=None):
+            snr_min=5.0, multicore=1, file_extension=None, mask_function = None):
     """
     Fit NH3(1,1), (2,2) and (3,3) cubes for the requested region. 
     It fits all pixels with SNR larger than requested. 
@@ -592,7 +599,6 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     It stores the result in a FITS cube. 
 
     TODO:
-    -Store results in hdu list
     -Improve initial guess
     
     Parameters
@@ -628,12 +634,15 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     cube11sc = SpectralCube.read(OneOneFile)
     cube22sc = SpectralCube.read(TwoTwoFile)
     errmap11 = fits.getdata(RMSFile)
+    rms = np.nanmedian(errmap11)
+
     snr = cube11sc.filled_data[:].value/errmap11
     peaksnr = np.max(snr,axis=0)
-    rms = np.nanmedian(errmap11)
-    planemask = (peaksnr>snr_min) # *(errmap11 < 0.15)
-    planemask = remove_small_objects(planemask,min_size=40)
-    planemask = opening(planemask,disk(1))
+    if mask_function is None:
+        planemask = default_masking(peaksnr,snr_min = snr_min)
+    else:
+        planemask = mask_function(peaksnr,snr_min = snr_min)
+    
     #planemask = (peaksnr>20) * (errmap11 < 0.2)
 
     mask = (snr>3)*planemask
@@ -674,8 +683,8 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     cubes.fiteach(fittype='ammonia',  guesses=guesses,
                   integral=False, verbose_level=3, 
                   fixed=[F,F,F,F,F,T], signal_cut=2,
-                  limitedmax=[F,F,F,F,T,T],
-                  maxpars=[0,0,0,0,vmax,1],
+                  limitedmax=[F,F,T,F,T,T],
+                  maxpars=[0,0,17.0,0,vmax,1],
                   limitedmin=[T,T,T,T,T,T],
                   minpars=[5,2.8,12.0,0.04,vmin,0],
                   start_from_point=(xmax,ymax),
