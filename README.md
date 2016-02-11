@@ -9,22 +9,26 @@ We have developed a pipeline that automatically reduced the survey data, with ca
 using the gbt-pipeline, imaging carried out with a custom made gridding package, and line-fitting 
 carried out using pyspeckit.
 
+More information is available in the documentation, avaliable [online at readthedocs.org](http://gas.readthedocs.org).
+
 Credits
 -------
 -------
 
 This is developed by:
-* Jaime E Pineda
-* Erik Rosolowsky
-* Rachel Friesen
-* Adam Ginsburg
+* Jaime E Pineda ([@jpinedaf](http://github.com/jpinedaf))
+* Erik Rosolowsky ([@low-sky](http://github.com/low-sky))
+* Rachel Friesen ([@rfriesen](http://github.com/rfriesen))
+* Adam Ginsburg ([@keflavich](http://github.com/keflavich))
 
 Dependencies
 ------------
 ------------
 
-* astropy
-* pyspeckit (>0.1.18)
-* spectral_cube
+* astropy (>=1.1)
+* pyspeckit (>0.1.18.1)
+* matplotlib (>=1.4)
+* aplpy (>=1.0)
+* spectral_cube (>=0.3.0)
 * radio_beam
-* scikit-image
+* scikit-image (>=0.11.3)
