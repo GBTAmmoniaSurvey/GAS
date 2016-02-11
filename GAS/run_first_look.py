@@ -4,18 +4,40 @@ import numpy as np
 from spectral_cube import SpectralCube
 import astropy.units as u
 import textwrap
-from astropy.table import Table
+from astropy.table import Table, join
+from . import gasPipeline
+
 
 quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
     processed in this release or it is not yet implemented.""")
 
+def GenerateRegions():
+#    gasPipeline.updateLogs()
+#    gasPipeline.updateCatalog()
+    obs = Table.read('ObservationLog.csv')
+    cat = Table.read('RegionCatalog.csv')
+
+# This takes out rows that are empty
+# This needs to be done twice for some reason... 
+
+    for idx, row in enumerate(cat):
+        if not row['BoxName']:
+            cat.remove_row(idx)
+
+    for idx, row in enumerate(cat):
+        if not row['BoxName']:
+            cat.remove_row(idx)
+    jt = join(obs,cat,keys='BoxName')
+    obs.rename_column('Source','BoxName')
+    joincat = join(obs,cat,keys='BoxName')
+
+    import pdb; pdb.set_trace()
+            
 def FirstLook(regions=None, file_extension='_all',
               region_parameters='region_parameters.csv'):
     
     if regions is None:
-        
-
 
         linelist = ['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
         region = ['B1','B18','B1E','B59','Cepheus','HC2','IC348','IC5146','L1448',
