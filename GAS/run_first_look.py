@@ -13,9 +13,8 @@ quit_message=textwrap.dedent("""\
     processed in this release or it is not yet implemented.""")
 
 def GenerateRegions():
-
-#    gasPipeline.updateLogs()
-#    gasPipeline.updateCatalog()
+    gasPipeline.updateLogs()
+    gasPipeline.updateCatalog()
     obs = Table.read('ObservationLog.csv')
     cat = Table.read('RegionCatalog.csv')
 
@@ -31,7 +30,14 @@ def GenerateRegions():
     obs.rename_column('Source','BoxName')
     joincat = join(obs,cat,keys='BoxName')
     groupcat = joincat.group_by('Region name')
+    min_values = groupcat.groups.aggregate(np.min)
+    max_values = groupcat.groups.aggregate(np.max)
     mean_values = groupcat.groups.aggregate(np.mean)
+    vavg = 0.5*(min_values['VLSR'] + max_values['VLSR'])
+    vrange = max_values['VLSR']- min_values['VLSR'])
+    mean_values['VAVG'] = vavg
+    mean_values['VRANGE'] = vrange
+
     return(mean_values)
             
 def FirstLook(regions=None, file_extension='_all',
