@@ -3,8 +3,6 @@ import astropy.io.fits as fits
 import numpy as np
 import os
 from spectral_cube import SpectralCube
-#import signal_id
-from radio_beam import Beam
 import astropy.constants as con
 import astropy.units as u
 import matplotlib.pyplot as plt
@@ -616,7 +614,13 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     snr_min : numpy.float
         Minimum signal to noise ratio of the spectrum to be fitted.
     multicore : int
-        Numbers of cores to use for parallel processing. 
+        Numbers of cores to use for parallel processing.
+    file_extension : str
+        File extension of the input maps. Default is 'base#' where # is the 
+        blorder parameter above.
+    mask_function : fun
+        function to create a custom made mask for analysis. Defaults to using 
+        `default_masking`
     """
     if file_extension:
         root = file_extension
@@ -630,7 +634,6 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     TwoTwoFile = '{0}/{0}_NH3_22_{1}.fits'.format(region,root)
     ThreeThreeFile = '{0}/{0}_NH3_33_{1}.fits'.format(region,root)
         
-    beam11 = Beam.from_fits_header(fits.getheader(OneOneFile))
     cube11sc = SpectralCube.read(OneOneFile)
     cube22sc = SpectralCube.read(TwoTwoFile)
     errmap11 = fits.getdata(RMSFile)
@@ -675,7 +678,7 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     guesses[5,:,:] = 0.5                   # F(ortho) - ortho NH3 fraction (fixed)
     if do_plot:
         import matplotlib.pyplot as plt
-        plt.imshow( w11, origin='lower')
+        plt.imshow( w11, origin='lower',interpolation='nearest')
         plt.show()
     F=False
     T=True
@@ -710,4 +713,3 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     fitcubefile.header.update('CRVAL3',0)
     fitcubefile.header.update('CRPIX3',1)
     fitcubefile.writeto("{0}_parameter_maps.fits".format(region),clobber=True)
-
