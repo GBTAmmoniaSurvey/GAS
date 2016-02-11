@@ -20,3 +20,13 @@ fashion. At the moment, the GAS pipeline does the following:
   the proper hyperfine model is used, while for the other lines a single 
   Gaussian model is used.
 
+Getting started
+^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+
+   calibration.rst
+   imaging.rst
+   first_look.rst
+   property_map.rst
