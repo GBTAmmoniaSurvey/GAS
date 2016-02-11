@@ -63,7 +63,7 @@ def FirstLook(regions=None, file_extension='_all',
 
         linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
         vsys = ThisRegion['VAVG']*u.km/u.s
-        throw = 5*u.km/u.s + ThisRegion['VRANGE']*u.km/u.s/2
+        throw = 2*u.km/u.s + ThisRegion['VRANGE']*u.km/u.s/2
         for line in linelist:
             file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
             try:
