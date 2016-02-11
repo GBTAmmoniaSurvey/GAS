@@ -34,7 +34,7 @@ def GenerateRegions():
     max_values = groupcat.groups.aggregate(np.max)
     mean_values = groupcat.groups.aggregate(np.mean)
     vavg = 0.5*(min_values['VLSR'] + max_values['VLSR'])
-    vrange = max_values['VLSR']- min_values['VLSR'])
+    vrange = max_values['VLSR']- min_values['VLSR']
     mean_values['VAVG'] = vavg
     mean_values['VRANGE'] = vrange
 
@@ -49,17 +49,18 @@ def FirstLook(regions=None, file_extension='_all',
         print("Now NH3(1,1)")
         a_rms = [  0, 150, 310, 420, 530, 690]
         b_rms = [ 60, 230, 330, 440, 610, 760]
-        index_rms=first_look.create_index( a_rms, b_rms)
+        index_rms=first_look.create_index(a_rms, b_rms)
         index_peak=np.arange(340,420)
         file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
         file_out=file_in.replace(file_extension+'.fits',
                                  '_base'+file_extension+'.fits')
+
         first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
         first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
     # 
         linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
-        vsys = ThisRegion['VLSR']*u.km/u.s
-        throw = 5*u.km/u.s
+        vsys = ThisRegion['VAVG']*u.km/u.s
+        throw = 5*u.km/u.s + ThisRegion['VRANGE']*u.km/u.s/2
         for line in linelist:
             file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
             s = SpectralCube.read(file_in)
