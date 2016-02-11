@@ -1,38 +1,48 @@
 # Region file format: DS9 version 4.1
 global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
 fk5
-box(3:28:03.460,+30:10:00.00,600",600",180) # width=2 text={L1455-E}
-box(3:27:17.300,+30:11:30.40,600",600",180) # width=2 text={L1455-N}
-box(3:27:17.300,+30:01:30.40,600",600",180) # width=2 text={L1455-S}
+box(3:28:03.460,+30:10:00.00,600",600",180) # color=blue width=2 text={L1455-E}
+box(3:27:17.300,+30:11:30.40,600",600",180) # color=blue width=2 text={L1455-N}
+box(3:27:17.300,+30:01:30.40,600",600",180) # color=blue width=2 text={L1455-S}
 box(3:25:15.635,+30:21:49.22,600",600",180) # color=blue width=2 text={L1451-C}
-box(3:24:34.284,+30:22:10.40,600",600",180) # width=2 text={L1451-W}
-box(3:25:35.534,+30:12:02.43,600",600",180) # width=2 text={L1451-S}
+box(3:24:34.284,+30:22:10.40,600",600",180) # color=blue width=2 text={L1451-W}
+box(3:25:35.534,+30:12:02.43,600",600",180) # color=blue width=2 text={L1451-S}
 box(3:25:49.101,+30:43:52.62,600",600",180) # color=blue width=2 text={L1448-C}
 box(3:25:02.451,+30:43:51.31,600",600",180) # color=blue width=2 text={L1448-W}
 box(3:26:14.834,+30:34:11.38,600",600",180) # color=blue width=2 text={L1448-S}
-box(3:28:39.967,+30:57:20.11,600",600",180) # width=2 text={NGC1333-A}
-box(3:28:31.403,+31:07:14.88,600",600",180) # width=2 text={NGC1333-B}
-box(3:29:18.701,+31:07:15.11,600",600",180) # width=2 text={NGC1333-C}
-box(3:28:34.189,+31:17:09.89,600",600",180) # width=2 text={NGC1333-D}
-box(3:29:21.501,+31:17:10.11,600",600",180) # width=2 text={NGC1333-E}
-box(3:28:48.643,+31:27:04.95,600",600",180) # width=2 text={NGC1333-F}
-box(3:29:35.968,+31:27:05.12,600",600",180) # width=2 text={NGC1333-G}
-box(3:29:37.368,+31:36:53.11,600",600",180) # width=2 text={NGC1333-H}
-box(3:30:04.434,+31:43:32.12,600",600",180) # width=2 text={NGC1333-I}
-box(3:33:10.186,+31:08:41.92,600",600",180) # width=2 text={B1-A}
-box(3:33:30.491,+31:02:42.09,600",600",180) # width=2 text={B1-B}
-box(3:32:42.586,+31:00:11.16,600",600",180) # width=2 text={B1-C}
-box(3:32:14.408,+30:50:44.64,600",600",180) # width=2 text={B1-D}
-box(3:31:27.473,+30:44:44.96,600",600",180) # width=2 text={B1-E}
-box(3:33:38.471,+31:18:45.24,600",600",180) # width=2 text={B1-F}
-box(3:32:51.443,+31:18:45.30,600",600",180) # width=2 text={B1-G}
-box(3:36:02.698,+31:12:29.61,600",600",180) # width=2 text={B1E-A}
+box(3:28:39.967,+30:57:20.11,600",600",180) # color=blue width=2 text={NGC1333-A}
+box(3:28:31.403,+31:07:14.88,600",600",180) # color=blue width=2 text={NGC1333-B}
+box(3:29:18.701,+31:07:15.11,600",600",180) # color=blue width=2 text={NGC1333-C}
+box(3:28:34.189,+31:17:09.89,600",600",180) # color=blue width=2 text={NGC1333-D}
+box(3:29:21.501,+31:17:10.11,600",600",180) # color=blue width=2 text={NGC1333-E}
+box(3:28:48.643,+31:27:04.95,600",600",180) # color=blue width=2 text={NGC1333-F}
+box(3:29:35.968,+31:27:05.12,600",600",180) # color=blue width=2 text={NGC1333-G}
+box(3:29:37.368,+31:36:53.11,600",600",180) # color=blue width=2 text={NGC1333-H}
+box(3:30:04.434,+31:43:32.12,600",600",180) # color=blue width=2 text={NGC1333-I}
+box(3:33:10.186,+31:08:41.92,600",600",180) # color=blue width=2 text={B1-A}
+box(3:33:30.491,+31:02:42.09,600",600",180) # color=blue width=2 text={B1-B}
+box(3:32:42.586,+31:00:11.16,600",600",180) # color=blue width=2 text={B1-C}
+box(3:32:14.408,+30:50:44.64,600",600",180) # color=blue width=2 text={B1-D}
+box(3:31:27.473,+30:44:44.96,600",600",180) # color=blue width=2 text={B1-E}
+box(3:33:11.761,+31:18:37.97,600",600",180) # color=blue width=2 text={B1-G}
+box(3:36:02.698,+31:12:29.61,600",600",180) # color=blue width=2 text={B1E-A}
 #
-box(3:45:08.843,+32:04:22.51,600",600",180) # width=2 text={IC348-A}
-box(3:44:33.298,+32:11:07.22,600",600",180) # width=2 text={IC348-B}
-box(3:44:25.031,+32:01:05.83,600",600",180) # width=2 text={IC348-C}
-box(3:43:38.949,+32:01:18.44,600",600",180) # width=2 text={IC348-D}
-box(3:42:51.779,+31:56:36.68,600",600",180) # width=2 text={IC348-E}
+box(3:30:25.306,+30:25:18.14,600",600",180) # color=yellow width=2 text={map_1}
+box(3:45:08.843,+32:04:22.51,600",600",180) # color=blue width=2 text={IC348-A}
+box(3:44:33.298,+32:11:07.22,600",600",180) # color=blue width=2 text={IC348-B}
+box(3:44:25.031,+32:01:05.83,600",600",180) # color=blue width=2 text={IC348-C}
+box(3:43:38.949,+32:01:18.44,600",600",180) # color=blue width=2 text={IC348-D}
+box(3:42:51.779,+31:56:36.68,600",600",180) # color=blue width=2 text={IC348-E}
+#v2
+box(3:41:34.378,+31:47:44.66,1320",300",180) # color=red width=2 text={IC348-G}
+box(3:41:51.252,+31:57:31.74,600",300",180) # color=red width=2 text={IC348-F}
+box(3:40:12.281,+32:01:38.59,600",300",50) # color=red width=2 text={IC348-H}
+box(3:47:35.814,+32:52:39.79,600",600",180) # color=red width=2 text={B5-main}
+box(3:47:29.132,+33:02:36.81,600",300",90) # color=red width=2 text={B5-North}
+box(3:47:09.483,+32:43:50.45,600",300",150) # color=red width=2 text={B5-South}
+box(3:26:30.787,+30:14:50.49,600",600",180) # color=red  width=2 text={L1455-NW}
+box(3:33:58.772,+31:20:09.84,600",600",180) # color=red width=2 text={B1-F}
+box(3:32:25.203,+31:19:42.41,600",600",180) # color=red width=2 text={B1-H}
 #
 # Sources observed by MASSES
 #  
