@@ -4,10 +4,25 @@ import numpy as np
 from spectral_cube import SpectralCube
 import astropy.units as u
 import textwrap
+from astropy.table import Table
 
 quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
     processed in this release or it is not yet implemented.""")
+
+def FirstLook(regions=None, file_extension='_all',
+              region_parameters='region_parameters.csv'):
+    
+    if regions is None:
+        
+
+
+        linelist = ['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+        region = ['B1','B18','B1E','B59','Cepheus','HC2','IC348','IC5146','L1448',
+                  'L1451','L1455','L1688','L1689','NGC1333','OrionA','OrionB',
+                  'OrionB_NGC2023-2024','OrionB_NGC2068-2071', 'Serpens_Aquila','TMC1']
+
+    
 
 def FirstLook_OrionA(file_extension='_all'):
     """

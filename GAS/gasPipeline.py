@@ -98,6 +98,11 @@ def updateLogs(output='ObservationLog.csv'):
     command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheet/ccc?key=1F6MnXjK1Y1VyM8zWW3R5VvLAFF2Hkc85SGBRBxQ24JY&output=csv'"
     subprocess.call(command,shell=True)
 
+def updateCatalog(output='RegionCatalog.csv'):
+    command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheets/d/140SUALscsm4Lco2WU3jDaREtUnf4jA9ZEBrMg4VAdKw/export?gid=1599734490&format=csv'"
+    subprocess.call(command,shell=True)
+
+
 def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58, 
                Source='Perseus_map_NGC1333-A', Window='0', 
                Region = 'NGC1333', OptionDict = None,
