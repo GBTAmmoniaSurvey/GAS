@@ -49,8 +49,10 @@ def FirstLook(regions=None, file_extension='_all'):
     if regions is None:
         RegionCatalog = GenerateRegions()
     else:
-        RegionCatalog = GenerageRegions()
-        
+        RegionCatalog = GenerateRegions()
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
+
     for ThisRegion in RegionCatalog:
         region_name=ThisRegion['Region name']
         print("Now NH3(1,1)")
