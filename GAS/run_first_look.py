@@ -1,13 +1,111 @@
-from . import first_look
 import os
-import numpy as np
-from spectral_cube import SpectralCube
-import astropy.units as u
 import textwrap
+import warnings
+import numpy as np
+from astropy.table import Table, join
+import astropy.units as u
+from spectral_cube import SpectralCube
+from pyspeckit.spectrum.models.ammonia_constants import voff_lines_dict
+from . import first_look
+from . import gasPipeline
 
 quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
     processed in this release or it is not yet implemented.""")
+
+def GenerateRegions(refresh=False):
+
+    if refresh:
+        gasPipeline.updateLogs()
+        gasPipeline.updateCatalog()
+
+    obs = Table.read('ObservationLog.csv')
+    cat = Table.read('RegionCatalog.csv')
+
+# This takes out rows that are empty
+# This needs to be done twice for some reason... 
+    for idx, row in enumerate(cat):
+        if not row['BoxName']:
+            cat.remove_row(idx)
+
+    for idx, row in enumerate(cat):
+        if not row['BoxName']:
+            cat.remove_row(idx)
+    obs.rename_column('Source','BoxName')
+    joincat = join(obs,cat,keys='BoxName')
+    groupcat = joincat.group_by('Region name')
+    min_values = groupcat.groups.aggregate(np.min)
+    max_values = groupcat.groups.aggregate(np.max)
+    mean_values = groupcat.groups.aggregate(np.mean)
+    vavg = 0.5*(min_values['VLSR'] + max_values['VLSR'])
+    vrange = max_values['VLSR']- min_values['VLSR']
+    mean_values['VAVG'] = vavg
+    mean_values['VRANGE'] = vrange
+
+    return(mean_values)
+            
+def FirstLook(regions=None, file_extension='_all'):
+
+    RegionCatalog = GenerateRegions()
+    if regions is None:
+        RegionCatalog = GenerateRegions()
+    else:
+        RegionCatalog = GenerateRegions()
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
+
+    for ThisRegion in RegionCatalog:
+        region_name=ThisRegion['Region name']
+        print("Now NH3(1,1)")
+
+        vsys = ThisRegion['VAVG']*u.km/u.s
+        throw = 2*u.km/u.s + ThisRegion['VRANGE']*u.km/u.s/2
+
+        file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
+        file_out=file_in.replace(file_extension+'.fits',
+                                 '_base'+file_extension+'.fits')
+
+        voff11 = voff_lines_dict['oneone']
+        try:
+            s = SpectralCube.read(file_in)
+            s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+            mask = np.ones(s.shape[0],dtype=np.bool)
+            for deltav in voff11:
+                mask*=(np.abs(s.spectral_axis-deltav*u.km/u.s) > throw)
+            a_rms = (np.where(mask != np.roll(mask,1)))[0]
+            b_rms = (np.where(mask != np.roll(mask,-1)))[0]
+            index_rms=first_look.create_index(a_rms, b_rms)
+            index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                                   s.closest_spectral_channel(vsys-3*u.km/u.s))
+            first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+            first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+
+        except IOError:
+            warnings.warn("File not found: {0}".format(file_in))
+
+        linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+
+        for line in linelist:
+            file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+            try:
+                s = SpectralCube.read(file_in)
+                s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+                a_rms = [s.closest_spectral_channel(vsys+2*throw),
+                         s.closest_spectral_channel(vsys-throw)]
+                b_rms = [s.closest_spectral_channel(vsys+throw),
+                         s.closest_spectral_channel(vsys-2*throw)]
+                index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                                       s.closest_spectral_channel(vsys-3*u.km/u.s))
+                index_rms=first_look.create_index( a_rms, b_rms)
+
+                file_out=file_in.replace(file_extension+'.fits',
+                                         '_base'+file_extension+'.fits')
+                first_look.baseline( file_in, file_out, 
+                                     index_clean=index_rms, polyorder=1)
+                first_look.peak_rms( file_out, index_rms=index_rms, 
+                                     index_peak=index_peak)
+            except IOError:
+                warnings.warn("File not found {0}".format(file_in))
 
 def FirstLook_OrionA(file_extension='_all'):
     """
