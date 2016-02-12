@@ -1,12 +1,13 @@
-from . import first_look
 import os
-import numpy as np
-from spectral_cube import SpectralCube
-import astropy.units as u
 import textwrap
-from astropy.table import Table, join
-from . import gasPipeline
 import warnings
+import numpy as np
+from astropy.table import Table, join
+import astropy.units as u
+from spectral_cube import SpectralCube
+from pyspeckit.spectrum.models.ammonia_constants import voff_lines_dict
+from . import first_look
+from . import gasPipeline
 
 quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
@@ -56,23 +57,34 @@ def FirstLook(regions=None, file_extension='_all'):
     for ThisRegion in RegionCatalog:
         region_name=ThisRegion['Region name']
         print("Now NH3(1,1)")
-        a_rms = [  0, 150, 310, 420, 530, 690]
-        b_rms = [ 60, 230, 330, 440, 610, 760]
-        index_rms=first_look.create_index(a_rms, b_rms)
-        index_peak=np.arange(340,420)
+
+        vsys = ThisRegion['VAVG']*u.km/u.s
+        throw = 2*u.km/u.s + ThisRegion['VRANGE']*u.km/u.s/2
+
         file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
         file_out=file_in.replace(file_extension+'.fits',
                                  '_base'+file_extension+'.fits')
 
+        voff11 = voff_lines_dict['oneone']
         try:
+            nh3_11 = SpectralCube.read(file_in)
+            nh3_11 = nh3_11.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+            mask = np.ones(nh3_11.shape[0],dtype=np.bool)
+            for deltav in voff11:
+                mask*=(np.abs(nh3_11.spectral_axis-deltav*u.km/u.s) > throw)
+            a_rms = (np.where(mask != np.roll(mask,1)))[0]
+            b_rms = (np.where(mask != np.roll(mask,-1)))[0]
+            index_rms=first_look.create_index(a_rms, b_rms)
+            index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                                   s.closest_spectral_channel(vsys-3*u.km/u.s))
             first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
             first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+
         except IOError:
             warnings.warn("File not found: {0}".format(file_in))
 
         linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
-        vsys = ThisRegion['VAVG']*u.km/u.s
-        throw = 2*u.km/u.s + ThisRegion['VRANGE']*u.km/u.s/2
+
         for line in linelist:
             file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
             try:
