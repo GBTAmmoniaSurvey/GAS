@@ -43,7 +43,7 @@ def GenerateRegions(refresh=False):
 
     return(mean_values)
             
-def FirstLook(regions=None, file_extension='_all')
+def FirstLook(regions=None, file_extension='_all'):
 
     RegionCatalog = GenerateRegions()
     if regions is None:
