@@ -5,6 +5,40 @@ import glob
 import warnings
 from astropy.time import Time
 
+def fillAll(overwrite=False):
+
+    RawDir = '/lustre/pipeline/scratch/GAS/rawdata/'
+    try:
+        os.chdir(RawDir)
+    except OSError:
+        warnings.warn("fillAll() must be run on GB machines with access to lustre")
+        return
+
+    updateLogs()
+    catalog = parseLog()
+    uniqSess = set(catalog['Session'].data.data)
+    for session in uniqSess:
+        if not overwrite:
+            SessionName = 'AGBT15A_430_{0}'.format(session)
+            OutputDir = SessionName+'.raw.vegas'
+            if not os.access(OutputDir,os.W_OK):
+                command = 'sdfits -backends=vegas AGBT15A_430_{0}'.format(session)
+                subprocess.call(command,shell=True)
+                groupchange = 'chgrp gas -R '+OutputDir
+                subprocess.call(groupchange,shell=True)
+                permissions = 'chmod g+rw -R '+OutputDir
+                subprocess.call(permissions,shell=True)
+        else:
+            SessionName = 'AGBT15A_430_{0}'.format(session)
+            OutputDir = SessionName+'.raw.vegas'
+            subprocess.call('rm -rf '+OutputDir,shell=True)
+            command = 'sdfits -backends=vegas AGBT15A_430_{0}'.format(session)
+            subprocess.call(command,shell=True)
+            groupchange = 'chgrp gas -R '+OutputDir
+            subprocess.call(groupchange,shell=True)
+            permissions = 'chmod g+rw -R '+OutputDir
+            subprocess.call(permissions,shell=True)
+
 def reduceAll(overwrite=False):
     updateLogs()
     catalog = parseLog()
