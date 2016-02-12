@@ -39,7 +39,7 @@ def fillAll(overwrite=False):
             permissions = 'chmod g+rw -R '+OutputDir
             subprocess.call(permissions,shell=True)
 
-def reduceAll(overwrite=False):
+def reduceAll(overwrite=False, release = 'all'):
     updateLogs()
     catalog = parseLog()
     uniqSrc = set(catalog['Region name'].data.data)
@@ -51,12 +51,13 @@ def reduceAll(overwrite=False):
             except OSError:
                 os.mkdir(cwd+'/'+region)
                 os.chdir(cwd+'/'+region)
-            wrapper(region=region, overwrite = overwrite, logfile='../ObservationLog.csv')
+            wrapper(region=region, overwrite = overwrite, 
+                    logfile='../ObservationLog.csv',release=release)
             os.chdir(cwd)
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
             window=['0','1','2','3','4','5','6'],
-            overwrite=False,startdate = '2015-01-1',enddate='2020-12-31'):
+            overwrite=False,startdate = '2015-01-1',enddate='2020-12-31',release='all'):
     """
     This is the GAS pipeline which chomps the observation logs and
     then batch calibrates the data.  It requires AstroPy because
@@ -79,6 +80,10 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     enddate -- string representation of date in format YYYY-MM-DD
     for ending calibration 
 
+    release -- column in the catalog file that is filled with boolean
+    values indicating whether a given set of scans belongs to the data
+    release.
+
     If a logfile isn't specified, program will get it from Google.
     """
     StartDate = Time(startdate)
@@ -90,7 +95,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     for observation in t:
         ObsDate = Time(observation['Date'])
         if (region == observation['Region name']) & \
-        (ObsDate >= StartDate) & (ObsDate <= EndDate):
+                (ObsDate >= StartDate) & (ObsDate <= EndDate) & (observation[release]):
             for thisWindow in window:
                 if str(observation['Beam Gains']) == '--':
                     Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
