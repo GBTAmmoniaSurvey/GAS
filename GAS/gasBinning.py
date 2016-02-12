@@ -5,7 +5,7 @@ import astropy.units as u
 from spectral_cube import SpectralCube
 from GAS import voronoi_2d_binning as v2d
 
-def BinByLabel(DataCube, CentroidMap, LabelMap,
+def BinByLabel(DataCube, LabelMap, CentroidMap = None,
                CentroidAggregator = np.nanmean, BackgroundLabels = [0]):
     """
     Bin a data cube by a label mask, aligning the data to a common centroid.
@@ -14,11 +14,11 @@ def BinByLabel(DataCube, CentroidMap, LabelMap,
     ----------
     DataCube : SpectralCube
         The original spectral cube with spatial dimensions Nx, Ny and spectral dimension Nv
+    LabelMap : 2D numpy.ndarray
+        A 2D map containing integer labels for each pixel into objects defining the stacking.
     CentroidMap : 2D numpy.ndarray
         A 2D map of the centroid velocities for the lines to stack of dimensions Nx, Ny.
         Note that DataCube and Centroid map must have the same spectral units (e.g., km/s)
-    LabelMap : 2D numpy.ndarray
-        A 2D map containing integer labels for each pixel into objects defining the stacking.
     CentroidAggregator : numpy.ufunc
         Operates on a vector of centroid data and returns the value summarizing that object.
     BackgroundLabels : list
@@ -28,7 +28,8 @@ def BinByLabel(DataCube, CentroidMap, LabelMap,
     Returns
     -------
     OutputCube : SpectralCube
-        A SpectralCube instance matching the input but with spectra aligned in velocity and averaged.
+        A SpectralCube instance matching the input but with spectra aligned 
+        in velocity and averaged.
 
     """
     UniqLabels = np.unique(LabelMap)
@@ -38,14 +39,18 @@ def BinByLabel(DataCube, CentroidMap, LabelMap,
     for ThisLabel in UniqLabels:
         if ThisLabel not in BackgroundLabels:
             y,x= np.where(ThisLabel == LabelMap)
-            CentroidValue = CentroidAggregator(CentroidMap[y,x])
             AccumSpec = np.zeros(DataCube.shape[0])
-            for ThisX,ThisY in zip(x,y):
-                DeltaV = CentroidMap[ThisY,ThisX] - CentroidValue
-                # Note this assumes the units of the centroid map
-                # are in same units as the spectral axis of the cube.
-                DeltaChan = DeltaV/ChannelWidth.value
-                AccumSpec += channelShift(DataCube[:,ThisY,ThisX].value,
+            if CentroidMap is None:
+                for ThisX,ThisY in zip(x,y):
+                    AccumSpec += DataCube[:,ThisY,ThisX].value
+            else:
+                CentroidValue = CentroidAggregator(CentroidMap[y,x])
+                for ThisX,ThisY in zip(x,y):
+                    DeltaV = CentroidMap[ThisY,ThisX] - CentroidValue
+                    # Note this assumes the units of the centroid map
+                    # are in same units as the spectral axis of the cube.
+                    DeltaChan = DeltaV/ChannelWidth.value
+                    AccumSpec += channelShift(DataCube[:,ThisY,ThisX].value,
                                           -DeltaChan)
             AccumSpec /= x.size
             AccumSpec.shape = AccumSpec.shape+ (1,)
