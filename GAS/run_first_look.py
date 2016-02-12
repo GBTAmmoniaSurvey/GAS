@@ -67,11 +67,11 @@ def FirstLook(regions=None, file_extension='_all'):
 
         voff11 = voff_lines_dict['oneone']
         try:
-            nh3_11 = SpectralCube.read(file_in)
-            nh3_11 = nh3_11.with_spectral_unit(u.km/u.s,velocity_convention='radio')
-            mask = np.ones(nh3_11.shape[0],dtype=np.bool)
+            s = SpectralCube.read(file_in)
+            s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+            mask = np.ones(s.shape[0],dtype=np.bool)
             for deltav in voff11:
-                mask*=(np.abs(nh3_11.spectral_axis-deltav*u.km/u.s) > throw)
+                mask*=(np.abs(s.spectral_axis-deltav*u.km/u.s) > throw)
             a_rms = (np.where(mask != np.roll(mask,1)))[0]
             b_rms = (np.where(mask != np.roll(mask,-1)))[0]
             index_rms=first_look.create_index(a_rms, b_rms)
