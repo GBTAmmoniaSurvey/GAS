@@ -6,15 +6,18 @@ import astropy.units as u
 import textwrap
 from astropy.table import Table, join
 from . import gasPipeline
-
+import warnings
 
 quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
     processed in this release or it is not yet implemented.""")
 
-def GenerateRegions():
-    gasPipeline.updateLogs()
-    gasPipeline.updateCatalog()
+def GenerateRegions(refresh=False):
+
+    if refresh:
+        gasPipeline.updateLogs()
+        gasPipeline.updateCatalog()
+
     obs = Table.read('ObservationLog.csv')
     cat = Table.read('RegionCatalog.csv')
 
@@ -40,10 +43,14 @@ def GenerateRegions():
 
     return(mean_values)
             
-def FirstLook(regions=None, file_extension='_all',
-              region_parameters='region_parameters.csv'):
+def FirstLook(regions=None, file_extension='_all')
 
     RegionCatalog = GenerateRegions()
+    if regions is None:
+        RegionCatalog = GenerateRegions()
+    else:
+        RegionCatalog = GenerageRegions()
+        
     for ThisRegion in RegionCatalog:
         region_name=ThisRegion['Region name']
         print("Now NH3(1,1)")
@@ -68,7 +75,6 @@ def FirstLook(regions=None, file_extension='_all',
             file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
             try:
                 s = SpectralCube.read(file_in)
-
                 s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
                 a_rms = [s.closest_spectral_channel(vsys+2*throw),
                          s.closest_spectral_channel(vsys-throw)]
@@ -85,9 +91,7 @@ def FirstLook(regions=None, file_extension='_all',
                 first_look.peak_rms( file_out, index_rms=index_rms, 
                                      index_peak=index_peak)
             except IOError:
-                warnings.warn("File not found {0}".format(file_in)
-
-    
+                warnings.warn("File not found {0}".format(file_in))
 
 def FirstLook_OrionA(file_extension='_all'):
     """
