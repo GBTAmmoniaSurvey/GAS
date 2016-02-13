@@ -1,0 +1,220 @@
+Region,BoxName,RA,Dec,VLSR,Priority
+Perseus,Perseus_map_L1455-E,03:28:03.460,30:10:00.00,4.9,3
+Perseus,Perseus_map_L1455-N,03:27:17.300,30:11:30.40,4.9,3
+Perseus,Perseus_map_L1455-S,03:27:17.300,30:01:30.40,4.9,3
+Perseus,Perseus_map_L1451-C,03:25:15.635,30:21:49.22 ,4.1,1
+Perseus,Perseus_map_L1451-W,03:24:34.284 ,30:22:10.40,4.1,1
+Perseus,Perseus_map_L1451-S,03:25:35.534 ,30:12:02.43,4.1,2
+Perseus,Perseus_map_NGC1333-A,03:28:39.967,30:57:20.11,8.5,1
+Perseus,Perseus_map_NGC1333-B,03:28:31.403 ,31:07:14.88,8.5,1
+Perseus,Perseus_map_NGC1333-C,03:29:18.701 ,31:07:15.11,8.5,1
+Perseus,Perseus_map_NGC1333-D,03:28:34.189 ,31:17:09.89,8.5,1
+Perseus,Perseus_map_NGC1333-E,03:29:21.501 ,31:17:10.11,8.5,1
+Perseus,Perseus_map_NGC1333-F,03:28:48.643,31:27:04.95,8.5,1
+Perseus,Perseus_map_NGC1333-G,03:29:35.968,31:27:05.12,8.5,1
+Perseus,Perseus_map_NGC1333-H,03:29:37.368,31:36:53.11,8.5,1
+Perseus,Perseus_map_NGC1333-I,03:30:04.434,31:43:32.12,8.5,1
+Perseus,Perseus_map_L1448-C,03:25:49.101,30:43:52.62 ,4.5,1
+Perseus,Perseus_map_L1448-W,03:25:02.451,30:43:51.31,4.5,1
+Perseus,Perseus_map_L1448-S,03:26:14.834,30:34:11.38,4.5,1
+Perseus,Perseus_map_1,03:30:25.306,30:25:18.14,5.9,1
+Perseus,Perseus_map_B1-A,03:33:10.186 ,31:08:42,6.6,1
+Perseus,Perseus_map_B1-B,03:32:42.586,31:00:11,6.6,1
+Perseus,Perseus_map_B1-C,03:33:30.491,31:02:42,6.6,1
+Perseus,Perseus_map_B1-D,03:32:14.408,30:50:45,6.6,1
+Perseus,Perseus_map_B1-E,03:31:27.473,30:44:45,6.6,1
+Perseus,Perseus_map_B1-F,03:33:58.772,31:20:10,6.6,0
+Perseus,Perseus_map_B1-G,03:33:11.761,31:18:38,6.6,1
+Perseus,Perseus_map_B1-H,03:32:25.203,31:19:42,6.6,0
+Perseus,Perseus_map_B1E-A,03:36:02.698,31:12:30,7.5,1
+Perseus,Perseus_map_IC348-A,03:45:08.843,32:04:23,8.7,2
+Perseus,Perseus_map_IC348-B,03:44:33.298,32:11:07,8.7,2
+Perseus,Perseus_map_IC348-C,03:44:25.031,32:01:06,8.7,1
+Perseus,Perseus_map_IC348-D,03:43:38.949,32:01:18,8.7,1
+Perseus,Perseus_map_IC348-E,03:42:51.779,31:56:37,8.7,1
+,,,,,
+Taurus,Taurus_map_001,4:35:50.236,24:07:45,6,1
+Taurus,Taurus_map_002,4:35:06.573,24:06:37,6,1
+Taurus,Taurus_map_003,4:32:46.418,24:17:14,6,1
+Taurus,Taurus_map_004,4:32:47.179,24:27:18,6,1
+Taurus,Taurus_map_005,4:30:54.797,24:13:40,6,1
+Taurus,Taurus_map_006,4:32:03.228,24:30:38,6,1
+Taurus,Taurus_map_007,4:30:07.452,24:28:30,6,1
+Taurus,Taurus_map_008,4:29:23.536,24:28:36,6,1
+Taurus,Taurus_map_009,4:29:23.338,24:38:37,6,1
+Taurus,Taurus_map_010,4:27:46.875,24:39:04,6,1
+Taurus,Taurus_map_011,4:26:49.305,24:44:38,6,1
+Taurus,Taurus_map_012,4:26:39.321,24:34:40,6,1
+Taurus,Taurus_map_013,4:17:11.973,28:19:01,6,3
+Taurus,Taurus_map_014,4:17:03.434,28:28:57,6,3
+Taurus,Taurus_map_015,4:15:23.681,28:20:59,6,3
+Taurus,Taurus_map_016,4:14:38.734,28:17:26,6,3
+Taurus,Taurus_map_017,4:14:39.676,28:07:31,6,3
+Taurus,Taurus_map_018,4:13:54.563,28:09:43,6,3
+Taurus,Taurus_map_019,4:13:42.137,28:19:32,6,3
+Taurus,Taurus_map_020,4:34:16.344,22:44:17,6,3
+Taurus,Taurus_map_021,4:33:24.132,22:42:20,6,3
+Taurus,Taurus_map_022,4:32:47.966,22:57:00,6,3
+Taurus,Taurus_map_023,4:23:38.882,25:03:32,6,3
+Taurus,Taurus_map_024,4:22:54.702,25:05:42,6,3
+Taurus,Taurus_map_025,4:21:21.976,25:13:40,6,3
+Taurus,Taurus_map_026,4:18:53.567,25:19:26,6,3
+Taurus,Taurus_map_027,4:41:50.080,25:37:07,6,1
+Taurus,Taurus_map_028,4:41:31.231,25:47:11,6,1
+Taurus,Taurus_map_029,4:40:58.244,25:53:38,6,1
+Taurus,Taurus_map_030,4:41:36.955,26:02:39,6,1
+Taurus,Taurus_map_031,4:40:53.069,26:05:54,6,1
+Taurus,Taurus_map_032,4:40:05.694,26:20:40,6,1
+Taurus,Taurus_map_033,4:39:21.739,26:26:30,6,1
+Taurus,Taurus_map_034,4:41:26.480,25:23:45,6,1
+Taurus,Taurus_map_035,4:40:38.526,25:28:56,6,1
+Taurus,Taurus_map_036,4:39:34.127,25:35:05,6,1
+Taurus,Taurus_map_037,4:39:40.998,25:45:01,6,1
+Taurus,Taurus_map_038,4:39:18.535,25:50:45,6,1
+Taurus,Taurus_map_039,4:39:53.234,26:00:53,6,1
+Taurus,Taurus_map_040,4:39:48.019,26:09:21,6,1
+Taurus,Taurus_map_041,4:38:27.725,26:10:42,6,1
+Taurus,Taurus_map_042,4:37:43.599,26:11:02,6,1
+Taurus,Taurus_map_043,4:37:33.609,26:21:03,6,1
+Taurus,Taurus_map_044,4:33:04.850,26:00:43,6,5
+Taurus,Taurus_map_045,4:33:24.704,26:11:15,6,5
+Taurus,Taurus_map_046,4:29:39.089,26:58:43,6,5
+Taurus,Taurus_map_047,4:28:35.822,26:51:04,6,5
+Taurus,Taurus_map_B217,4:27:55,26:20:00,6,
+Taurus,L1544,05:04:17.200,25:10:43.70,7.1,1
+,,,,,
+Ophiuchus,Ophiuchus_map_L1688-1,16:26:02,-24:20:00,3,-
+Ophiuchus,Ophiuchus_map_L1688-2,16:26:02,-24:30:00,3,-
+Ophiuchus,Ophiuchus_map_L1688-3,16:26:45,-24:20:00,3,1
+Ophiuchus,Ophiuchus_map_L1688-4,16:26:45,-24:30:00,3,-
+Ophiuchus,Ophiuchus_map_L1688-5,16:26:45,-24:40:00,3,-
+Ophiuchus,Ophiuchus_map_L1688-6,16:27:28,-24:23:15,3,1
+Ophiuchus,Ophiuchus_map_L1688-7,16:27:28,-24:33:15,3,-
+Ophiuchus,Ophiuchus_map_L1688-8,16:27:28,-24:43:15,3,-
+Ophiuchus,Ophiuchus_map_L1688-9,16:28:11,-24:35:00,3,1
+Ophiuchus,Ophiuchus_map_L1688-10,16:28:46.5,-24:18:27,3,2
+Ophiuchus,Ophiuchus_map_L1688-11,16:28:11,-24:42:30,3,2
+Ophiuchus,Ophiuchus_map_L1688-12,16:26:45,-24:12:30,3,2
+Ophiuchus,Ophiuchus_map_L1688-13,16:27:28,-24:13:15,3,2
+Ophiuchus,Ophiuchus_map_L1688-14,16:28:54,-24:40:00,3,3
+Ophiuchus,Ophiuchus_map_L1689-1,16:34:48,-24:38:04,3,3
+Ophiuchus,Ophiuchus_map_L1689-2,16:32:26.599,-24:28:35.67,3,3
+Ophiuchus,Ophiuchus_map_L1689-3,16:31:49,-24:49:42,3,5
+Ophiuchus,Ophiuchus_map_L1689-4,16:32:00,-24:59:42,3,5
+Ophiuchus,Ophiuchus_map_L1712-1,16:39:55.2,-24:10:48,3,5
+Ophiuchus,Ophiuchus_map_L1712-2,16:41:48,-24:06:00,3,5
+,,,,,
+,,,,,
+OrionB,OrionB_map_1,5:41:54.580,-1:44:31.0,10,1
+OrionB,OrionB_map_2,5:41:14.580,-1:44:31.0,10,1
+OrionB,OrionB_map_34,5:41:36.2,-1:54:31.0,10,1
+,,,,,
+OrionB,OrionB_map_5,5:41:31.403,-2:14:31.0,10,
+OrionB,OrionB_map_6,5:41:31.403,-2:24:31.0,10,
+OrionB,OrionB_map_7,5:42:05.880,-2:04:31.0,10,
+,,,,,
+OrionB,OrionB_map_8,5:46:07.521,-0:11:20.0,10,
+OrionB,OrionB_map_9,5:46:18.000,-0:01:20.0,10,
+OrionB,OrionB_map_10,5:46:58.000,-0:01:20.0,10,
+OrionB,OrionB_map_11,5:46:18.000,0:08:40.0,10,
+OrionB,OrionB_map_12,5:46:58.000,0:08:40.0,10,
+OrionB,OrionB_map_13,5:46:58.000,0:18:40.0,10,
+OrionB,OrionB_map_14,5:47:38.000,0:18:40.0,10,
+OrionB,OrionB_map_15,5:46:18.000,0:23:40.0,10,
+OrionB,OrionB_map_16,5:46:58.000,0:28:40.0,10,
+OrionB,OrionB_map_17,5:54:20.000,1:46:20.00,10,
+,,,,,
+OrionA,OrionA_map_01,5:35:16,-04:57:00 ,10,1
+OrionA,OrionA_map_02,05:35:26 ,-05:07:00,10,1
+OrionA,OrionA_map_03 ,05:35:43 ,-05:17:00,10,1
+OrionA,OrionA_map_04 ,05:35:03 ,-05:17:00,10,1
+OrionA,OrionA_map_05,05:35:43 ,-05:27:00,10,1
+OrionA,OrionA_map_06 ,05:35:03 ,-05:27:00,10,1
+OrionA,OrionA_map_07,05:35:00 ,-05:37:00,10,
+OrionA,OrionA_map_08 ,05:35:00 ,-05:47:00,10,
+OrionA,OrionA_map_09 ,05:35:16 ,-05:56:00,10,
+OrionA,OrionA_map_10 ,05:35:41 ,-06:06:00,10,
+OrionA,OrionA_map_11 ,05:36:13,-06:14:00,10,
+OrionA,OrionA_map_12,05:34:20,-05:35:00,10,2
+OrionA,OrionA_map_13 ,05:34:20 ,-05:45:00 ,10,2
+OrionA,OrionA_map_14 ,05:35:08 ,-06:14:00 ,10,1
+OrionA,OrionA_map_15 ,05:36:29 ,-06:24:00 ,10,1
+OrionA,OrionA_map_16 ,05:36:59 ,-06:34:00 ,10,2
+OrionA,OrionA_map_17 ,05:36:17 ,-06:47:00 ,10,1
+OrionA,OrionA_map_18,05:38:50 ,-07:01:00 ,10,1
+OrionA,OrionA_map_19,05:39:00 ,-07:11:00 ,10,1
+OrionA,OrionA_map_20,05:39:45 ,-07:28:15 ,10,1
+OrionA,OrionA_map_21,05:39:05 ,-07:23:15 ,10,1
+OrionA,OrionA_map_22,05:40:25,-07:30:15 ,10,1
+OrionA,OrionA_map_23,05:40:27 ,-07:40:15 ,10,1
+OrionA,OrionA_map_24,05:41:20 ,-07:55:00 ,10,1
+OrionA,OrionA_map_25,05:41:30 ,-08:05:00 ,10,1
+OrionA,OrionA_map_26,05:40:50 ,-08:05:00 ,10,1
+Serp Aquila,serpAquila_map_1 ,18:31:15,-2:07:00,7.5,1
+Serp Aquila,serpAquila_map_2 ,18:31:15,-1:57:00,7.5,1
+Serp Aquila,serpAquila_map_3 ,18:31:55,-2:01:00,7.5,1
+Serp Aquila,serpAquila_map_4 ,18:31:20,-2:17:00,7.5,1
+Serp Aquila,serpAquila_map_5 ,18:32:00,-2:19:00,7.5,1
+Serp Aquila,serpAquila_map_6,18:31:55,-1:51:00,7.5,1
+Serp Aquila,serpAquila_map_7,18:30:40,-2:19:00,7.5,2
+Serp Aquila,serpAquila_map_8,18:31:20,-2:27:00,7.5,2
+Serp Aquila,serpAquila_map_9,18:32:25,-1:56:00,7.5,1
+Serp Aquila,serpAquila_map_10,18:31:50,-2:29:00,7.5,2
+Serp Aquila,serpAquila_map_11,18:32:10,-2:34:00,7.5,2
+Serp Aquila,serpAquila_map_12,18:31:15,-1:49:30,7.5,1
+Serp Aquila,serpAquila_map_13,18:29:07,-2:05:30,7.5,3
+Serp Aquila,serpAquila_map_14,18:29:02,-1:41:30,7.5,3
+Serp Aquila,serpAquila_map_15,18:29:42,-1:41:30,7.5,3
+Serp Aquila,serpAquila_map_16,18:29:07,-1:31:30,7.5,3
+Serp Aquila,serpAquila_map_17,18:28:13,-3:49:00,7.5,4
+Serp Aquila,serpAquila_map_18,18:27:49,-3:41:00,7.5,4
+Serp Aquila,serpAquila_map_19,18:29:12,-3:44:00,7.5,4
+Serpens East,serpE_map_1 ,18:37:52,-1:49:00,7.5,6
+Serpens East,serpE_map_2 ,18:37:52,-1:39:00,7.5,6
+Serpens East,serpE_map_3 ,18:38:28,-1:11:00,7.5,6
+Serpens East,serpE_map_4 ,18:36:42,-1:12:00,7.5,6
+Serpens East,serpE_map_5 ,18:36:12,-1:12:00,7.5,6
+Serpens Main,serpM_map_1 ,18:29:00,0:32:00,7.5,7
+Serpens Main,serpM_map_2 ,18:29:40,0:35:30,7.5,7
+Serpens Main,serpM_map_3 ,18:29:30,0:28:00,7.5,7
+Serpens North,serpN_map_1 ,18:38:32,0:34:00,7.5,5
+Serpens North,serpN_map_2 ,18:39:12,0:32:00,7.5,5
+Serpens North,serpN_map_3 ,18:39:17,0:22:00,7.5,5
+Serpens North,serpN_map_4 ,18:39:20,0:14:30,7.5,5
+,,,,,
+Pipe nebula,Pipe_B59,17:11:24,-27:25:34,3.5,1
+Pipe nebula,Pipe_Core40,17:21:06,-26:50:52,3.3,1
+Pipe nebula,B68,17:22:40,-23:49:40,3.35,2
+Pipe nebula,Core 87,17:34:11,-25:50:15,4.47,2
+,,,,,
+Cepheus,L1251_map_1,22:38:49.653,75:11:35.54,-3.8,1
+Cepheus,L1251_map_2,22:36:12.972,75:09:48.57,-3.8,1
+Cepheus,L1251_map_3,22:35:33.730,75:19:50.19,-3.8,1
+Cepheus,L1251_map_4,22:30:53.942,75:13:32.44,-3.8,1
+Cepheus,L1251_map_5,22:28:17.818,75:13:32.44,-3.8,1
+Cepheus,L1251_map_6,22:24:10.141,75:04:50.61,-3.8,1
+Cepheus,L1251_map_7,22:21:34.815,75:04:50.61,-3.8,1
+Cepheus,L1241_map_1,21:59:54.603,76:33:35.70,-3.7,5
+Cepheus,L1228_map_1,20:57:30.038,77:34:07.72,-7.6,2
+Cepheus,L1228_map_2,20:57:26.519,77:44:02.04,-7.6,2
+Cepheus,L1228_map_3,20:54:20.081,77:44:02.04,-7.6,2
+Cepheus,L1228_map_4,21:03:55.189,77:19:29.44,-7.6,3
+Cepheus,L1228_map_5,21:01:26.613,77:05:34.71,-7.6,3
+Cepheus,L1157_map_1,20:43:20.029,67:51:08.40,2.9,3
+Cepheus,L1157_map_2,20:40:47.876,67:23:05.38,2.9,3
+Cepheus,L1157_map_3,20:44:34.424,67:41:08.06,2.9,3
+Cepheus,L1157_map_4,20:39:10.386,68:00:30.34,2.9,3
+Cepheus,L1157_map_5,20:36:05.971,67:54:22.61,2.9,3
+Cepheus,L1157_map_6,20:45:49.671,67:57:22.27,2.9,4
+Cepheus,L1172_map_1,21:02:19.213,67:52:55.57,2.7,4
+Cepheus,L1172_map_2,21:02:19.213,67:42:53.62,2.7,4
+Cepheus,L1172_map_3,21:00:14.946,68:11:11.52,2.7,4
+Cepheus,L1172_map_4,21:02:01.780,68:11:11.52,2.7,4
+Cepheus,L1172_map_5,21:03:48.987,68:11:11.52,2.7,4
+,,,,,
+IC5146,IC5146_filament,21:46:10,47:35:30,3.7,1
+IC5146,IC5146_newbox1,21:47:22,47:32:02,3.7,1
+IC5146,IC5146_newbox2,21:45:26,47:38:00,3.7,1
+,,,,,
+CrA,CrA_East,19:10:18,-37:08:30,5.7,1
+CrA,CrA_West,19:01:48,-36:56:34,5.7,1
