@@ -5,7 +5,41 @@ import glob
 import warnings
 from astropy.time import Time
 
-def reduceAll(overwrite=False):
+def fillAll(overwrite=False):
+
+    RawDir = '/lustre/pipeline/scratch/GAS/rawdata/'
+    try:
+        os.chdir(RawDir)
+    except OSError:
+        warnings.warn("fillAll() must be run on GB machines with access to lustre")
+        return
+
+    updateLogs()
+    catalog = parseLog()
+    uniqSess = set(catalog['Session'].data.data)
+    for session in uniqSess:
+        if not overwrite:
+            SessionName = 'AGBT15A_430_{0}'.format(session)
+            OutputDir = SessionName+'.raw.vegas'
+            if not os.access(OutputDir,os.W_OK):
+                command = 'sdfits -backends=vegas AGBT15A_430_{0}'.format(session)
+                subprocess.call(command,shell=True)
+                groupchange = 'chgrp gas -R '+OutputDir
+                subprocess.call(groupchange,shell=True)
+                permissions = 'chmod g+rw -R '+OutputDir
+                subprocess.call(permissions,shell=True)
+        else:
+            SessionName = 'AGBT15A_430_{0}'.format(session)
+            OutputDir = SessionName+'.raw.vegas'
+            subprocess.call('rm -rf '+OutputDir,shell=True)
+            command = 'sdfits -backends=vegas AGBT15A_430_{0}'.format(session)
+            subprocess.call(command,shell=True)
+            groupchange = 'chgrp gas -R '+OutputDir
+            subprocess.call(groupchange,shell=True)
+            permissions = 'chmod g+rw -R '+OutputDir
+            subprocess.call(permissions,shell=True)
+
+def reduceAll(overwrite=False, release = 'all'):
     updateLogs()
     catalog = parseLog()
     uniqSrc = set(catalog['Region name'].data.data)
@@ -17,12 +51,13 @@ def reduceAll(overwrite=False):
             except OSError:
                 os.mkdir(cwd+'/'+region)
                 os.chdir(cwd+'/'+region)
-            wrapper(region=region, overwrite = overwrite, logfile='../ObservationLog.csv')
+            wrapper(region=region, overwrite = overwrite, 
+                    logfile='../ObservationLog.csv',release=release)
             os.chdir(cwd)
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
             window=['0','1','2','3','4','5','6'],
-            overwrite=False,startdate = '2015-01-1',enddate='2020-12-31'):
+            overwrite=False,startdate = '2015-01-1',enddate='2020-12-31',release='all'):
     """
     This is the GAS pipeline which chomps the observation logs and
     then batch calibrates the data.  It requires AstroPy because
@@ -45,6 +80,10 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     enddate -- string representation of date in format YYYY-MM-DD
     for ending calibration 
 
+    release -- column in the catalog file that is filled with boolean
+    values indicating whether a given set of scans belongs to the data
+    release.
+
     If a logfile isn't specified, program will get it from Google.
     """
     StartDate = Time(startdate)
@@ -56,7 +95,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     for observation in t:
         ObsDate = Time(observation['Date'])
         if (region == observation['Region name']) & \
-        (ObsDate >= StartDate) & (ObsDate <= EndDate):
+                (ObsDate >= StartDate) & (ObsDate <= EndDate) & (observation[release]):
             for thisWindow in window:
                 if str(observation['Beam Gains']) == '--':
                     Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
@@ -94,13 +133,37 @@ def parseLog(logfile='ObservationLog.csv'):
     t = Table.read(logfile)
     return(t)
 
-def updateLogs(output='ObservationLog.csv'):
-    command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheet/ccc?key=1F6MnXjK1Y1VyM8zWW3R5VvLAFF2Hkc85SGBRBxQ24JY&output=csv'"
-    subprocess.call(command,shell=True)
+def updateLogs(output='ObservationLog.csv',release=None):
+    if release is None:
+        command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheet/ccc?key=1F6MnXjK1Y1VyM8zWW3R5VvLAFF2Hkc85SGBRBxQ24JY&output=csv'"
+        # The returns from subprocess are the error codes from the OS
+        # If 0 then it worked so we should return True
+        return not subprocess.call(command,shell=True)
+    if 'DR1' in release:
+        from astropy.utils.data import get_pkg_data_filename
+        filename = get_pkg_data_filename('data/ObservationLog_DR1.csv',
+                                         package='GAS')
+        command = 'cp '+filename+' ./ObservationLog.csv'
+        return not subprocess.call(command,shell=True)
+    else:
+        warnings.warn('Updating logs failed for non-existent data release.')
+        return False
 
-def updateCatalog(output='RegionCatalog.csv'):
-    command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheets/d/140SUALscsm4Lco2WU3jDaREtUnf4jA9ZEBrMg4VAdKw/export?gid=1599734490&format=csv'"
-    subprocess.call(command,shell=True)
+def updateCatalog(output='RegionCatalog.csv',release=None):
+    if release is None:
+        command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheets/d/140SUALscsm4Lco2WU3jDaREtUnf4jA9ZEBrMg4VAdKw/export?gid=1599734490&format=csv'"
+        return not subprocess.call(command,shell=True)
+    if 'DR1' in release:
+        from astropy.utils.data import get_pkg_data_filename
+        filename = get_pkg_data_filename('data/RegionCatalog_DR1.csv',
+                                         package='GAS')
+        command = 'cp '+filename+' ./'+output
+        return not subprocess.call(command,shell=True)
+    else:
+        warnings.warn('Updating logs failed for non-existent data release.')
+        return False
+
+
 
 
 def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58, 
