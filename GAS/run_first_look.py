@@ -23,8 +23,11 @@ def FirstLook(regions=None, file_extension=None, release='all'):
     regions : list
         List of region names (strings) to be included.  If empty, all
         regions in the log file are searched for and reduced.
+    release : string
+        Name of data release.  Must match boolean column name in the 
+        Observation Log.
     file_extension : string
-        Name of file extensions to be searched for.  Defaults of '_all'.  
+        Name of file extensions to be searched for.  Defaults to release name.  
 
     Note: The GAS file naming convention is
     REGION_LINENAME_EXTENSION.fits.  For example, for NGC1333 in
