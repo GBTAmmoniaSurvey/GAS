@@ -16,7 +16,7 @@ def fillAll(overwrite=False):
         return
 
     catalogs.updateLogs(release=release)
-    log = parseLog()
+    log = catalogs.parseLog()
     uniqSess = set(log['Session'].data.data)
     for session in uniqSess:
         if not overwrite:
@@ -44,7 +44,7 @@ def reduceAll(overwrite=False, release = 'all'):
     catalogs.updateLogs(release=release)
     catalogs.updateCatalog(release=release)
     RegionCatalog = catalogs.GenerateRegions()
-    Log = parseLog()
+    Log = catalogs.parseLog()
     uniqSrc = RegionCatalog['Region name']
     cwd = os.getcwd()
     for region in uniqSrc:
@@ -55,7 +55,7 @@ def reduceAll(overwrite=False, release = 'all'):
                 os.mkdir(cwd+'/'+region)
                 os.chdir(cwd+'/'+region)
             wrapper(region=region, overwrite = overwrite, 
-                    release=release, ObsLog = Log)
+                    release=release, obslog = Log)
             os.chdir(cwd)
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
@@ -95,14 +95,14 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
         catalogs.updateLogs(release=release)
 
     if obslog is None:
-        t = parseLog(logfile=logfile)
+        t = catalogs.parseLog(logfile=logfile)
     else:
         t = obslog
 
     for observation in t:
         ObsDate = Time(observation['Date'])
         if (region == observation['Region name']) & \
-                (ObsDate >= StartDate) & (ObsDate <= EndDate) & (observation[release]):
+                (ObsDate >= StartDate) & (ObsDate <= EndDate) & bool(observation[release]):
             for thisWindow in window:
                 if str(observation['Beam Gains']) == '--':
                     Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
