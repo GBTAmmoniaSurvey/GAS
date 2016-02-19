@@ -8,43 +8,13 @@ from spectral_cube import SpectralCube
 from pyspeckit.spectrum.models.ammonia_constants import voff_lines_dict
 from . import first_look
 from . import gasPipeline
+from . import catalogs
 
 quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
     processed in this release or it is not yet implemented.""")
-
-def GenerateRegions(refresh=False,release='all'):
-
-    if refresh:
-        gasPipeline.updateLogs(release=release)
-        gasPipeline.updateCatalog(release=release)
-
-    obs = Table.read('ObservationLog.csv')
-    cat = Table.read('RegionCatalog.csv')
-
-# This takes out rows that are empty
-# This needs to be done twice for some reason... 
-    for idx, row in enumerate(cat):
-        if not row['BoxName']:
-            cat.remove_row(idx)
-
-    for idx, row in enumerate(cat):
-        if not row['BoxName']:
-            cat.remove_row(idx)
-    obs.rename_column('Source','BoxName')
-    joincat = join(obs,cat,keys='BoxName')
-    groupcat = joincat.group_by('Region name')
-    min_values = groupcat.groups.aggregate(np.min)
-    max_values = groupcat.groups.aggregate(np.max)
-    mean_values = groupcat.groups.aggregate(np.mean)
-    vavg = 0.5*(min_values['VLSR'] + max_values['VLSR'])
-    vrange = max_values['VLSR']- min_values['VLSR']
-    mean_values['VAVG'] = vavg
-    mean_values['VRANGE'] = vrange
-
-    return(mean_values)
             
-def FirstLook(regions=None, file_extension='_all'):
+def FirstLook(regions=None, file_extension=None, release='all'):
     """
     This runs through cubes in a directory tree and generates first
     look products for each of them.  This assumes a directory naming
@@ -63,11 +33,14 @@ def FirstLook(regions=None, file_extension='_all'):
     NGC1333_NH3_11_all.fits
     """
 
-    RegionCatalog = GenerateRegions()
+    if file_extension is None:
+        file_extension = '_'+release
+
+    RegionCatalog = catalogs.GenerateRegions(release=release)
     if regions is None:
-        RegionCatalog = GenerateRegions()
+        RegionCatalog = catalogs.GenerateRegions(release=release)
     else:
-        RegionCatalog = GenerateRegions()
+        RegionCatalog = catalogs.GenerateRegions(release=release)
         keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
         RegionCatalog = RegionCatalog[keep]
 
