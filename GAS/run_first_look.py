@@ -13,11 +13,11 @@ quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
     processed in this release or it is not yet implemented.""")
 
-def GenerateRegions(refresh=False):
+def GenerateRegions(refresh=False,release='all'):
 
     if refresh:
-        gasPipeline.updateLogs()
-        gasPipeline.updateCatalog()
+        gasPipeline.updateLogs(release=release)
+        gasPipeline.updateCatalog(release=release)
 
     obs = Table.read('ObservationLog.csv')
     cat = Table.read('RegionCatalog.csv')
