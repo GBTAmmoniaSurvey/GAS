@@ -654,7 +654,7 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     guesses[2,:,:] = 14.5                  # log(column)
     guesses[3,:,:] = moment2  # Line width / 5 (the NH3 moment overestimates linewidth)               
     guesses[4,:,:] = moment1  # Line centroid              
-    guesses[5,:,:] = 0.5                   # F(ortho) - ortho NH3 fraction (fixed)
+    guesses[5,:,:] = 0.0                   # F(ortho) - ortho NH3 fraction (fixed)
     if do_plot:
         import matplotlib.pyplot as plt
         plt.imshow( w11, origin='lower')
