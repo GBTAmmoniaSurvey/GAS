@@ -642,9 +642,9 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     cube11.unit="K"
     cube22 = pyspeckit.Cube(TwoTwoFile,maskmap=planemask)
     cube22.unit="K"
-    cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=planemask)
-    cube33.unit="K"
-    cubes = pyspeckit.CubeStack([cube11,cube22,cube33],maskmap=planemask)
+    #cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=planemask)
+    #cube33.unit="K" # removed as long as we're not modeling OPR
+    cubes = pyspeckit.CubeStack([cube11,cube22],maskmap=planemask)
     cubes.unit="K"
     guesses = np.zeros((6,)+cubes.cube.shape[1:])
     moment1[moment1<vmin] = vmin+0.2
