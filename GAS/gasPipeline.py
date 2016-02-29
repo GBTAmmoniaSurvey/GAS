@@ -95,7 +95,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     for observation in t:
         ObsDate = Time(observation['Date'])
         if (region == observation['Region name']) & \
-                (ObsDate >= StartDate) & (ObsDate <= EndDate) & (observation[release]):
+                (ObsDate >= StartDate) & (ObsDate <= EndDate) & np.bool(observation[release]):
             for thisWindow in window:
                 if str(observation['Beam Gains']) == '--':
                     Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
@@ -118,8 +118,6 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
                            Region=region,
                            RawDataDir=observation['Special RawDir'],
                            Window=str(thisWindow),overwrite=overwrite)
-
-
 
 def parseLog(logfile='ObservationLog.csv'):
     """
@@ -162,9 +160,6 @@ def updateCatalog(output='RegionCatalog.csv',release=None):
     else:
         warnings.warn('Updating logs failed for non-existent data release.')
         return False
-
-
-
 
 def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58, 
                Source='Perseus_map_NGC1333-A', Window='0', 
