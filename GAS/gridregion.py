@@ -211,7 +211,7 @@ def griddata(pixPerBeam = 3.0,
         for spectrum in console.ProgressBar((s[1].data)):            #pre-processing
             specData = spectrum['DATA']
             #baseline fit
-            if doBaseline:
+            if doBaseline & np.all(np.isfinite(specData)):
                 specData = baselineSpectrum(specData,order=1,
                                             baselineIndex=baselineIndex)
 
