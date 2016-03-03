@@ -5,6 +5,37 @@ import glob
 import warnings
 from astropy.time import Time
 
+
+def move_files(region='Cepheus_L1251', session=81, 
+               prefix='Cepheus_L1251_map_1_scan_26_49'):
+    """
+    Sometimes the pipeline fails to move the calibrated files into the proper 
+    folder. 
+    move_files(region='Cepheus_L1251', session='81', prefix='Cepheus_L1251_map_1_scan_26_49')
+
+    region -- Region name. The files will be moved to folders like 
+              region+line_name (eg NGC1333_C2S).
+
+    session -- Integer with session number of the observations. This is 
+               added to the original filename.
+
+    prefix -- String with prefix of files to be searched for. 
+    """
+    folder=[ region+'_NH3_11',
+             region+'_NH3_22',
+             region+'_NH3_33',
+             region+'_C2S',
+             region+'_HC5N',
+             region+'_HC7N_22_21',
+             region+'_HC7N_21_20']
+    window=['0','3','4','2','5','6','1']
+    for i in range(len(folder)):
+        file_list=glob.glob('{0}*window{1}*fits'.format(prefix,window[i]))
+        if len(file_list) > 0:
+            for file_i in file_list:
+                os.rename( file_i, '{0}/{1}'.format( folder[i], 
+                           file_i.replace('.fits', '_sess{0}.fits'.format(i))))
+
 def fillAll(overwrite=False):
 
     RawDir = '/lustre/pipeline/scratch/GAS/rawdata/'
@@ -57,7 +88,8 @@ def reduceAll(overwrite=False, release = 'all'):
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
             window=['0','1','2','3','4','5','6'],
-            overwrite=False,startdate = '2015-01-1',enddate='2020-12-31',release='all'):
+            overwrite=False,startdate = '2015-01-1',enddate='2020-12-31',
+            release='all'):
     """
     This is the GAS pipeline which chomps the observation logs and
     then batch calibrates the data.  It requires AstroPy because
