@@ -4,6 +4,7 @@ import subprocess
 import glob
 import warnings
 from astropy.time import Time
+from . import catalogs
 
 
 def move_files(region='Cepheus_L1251', session=81, 
@@ -45,9 +46,9 @@ def fillAll(overwrite=False):
         warnings.warn("fillAll() must be run on GB machines with access to lustre")
         return
 
-    updateLogs()
-    catalog = parseLog()
-    uniqSess = set(catalog['Session'].data.data)
+    catalogs.updateLogs(release=release)
+    log = catalogs.parseLog()
+    uniqSess = set(log['Session'].data.data)
     for session in uniqSess:
         if not overwrite:
             SessionName = 'AGBT15A_430_{0}'.format(session)
@@ -71,9 +72,11 @@ def fillAll(overwrite=False):
             subprocess.call(permissions,shell=True)
 
 def reduceAll(overwrite=False, release = 'all'):
-    updateLogs()
-    catalog = parseLog()
-    uniqSrc = set(catalog['Region name'].data.data)
+    catalogs.updateLogs(release=release)
+    catalogs.updateCatalog(release=release)
+    RegionCatalog = catalogs.GenerateRegions()
+    Log = catalogs.parseLog()
+    uniqSrc = RegionCatalog['Region name']
     cwd = os.getcwd()
     for region in uniqSrc:
         if region != 'none':
@@ -83,13 +86,13 @@ def reduceAll(overwrite=False, release = 'all'):
                 os.mkdir(cwd+'/'+region)
                 os.chdir(cwd+'/'+region)
             wrapper(region=region, overwrite = overwrite, 
-                    logfile='../ObservationLog.csv',release=release)
+                    release=release, obslog = Log)
             os.chdir(cwd)
 
 def wrapper(logfile='ObservationLog.csv',region='NGC1333',
             window=['0','1','2','3','4','5','6'],
-            overwrite=False,startdate = '2015-01-1',enddate='2020-12-31',
-            release='all'):
+            overwrite=False,startdate = '2015-01-1',
+            enddate='2020-12-31',release='all',obslog = None):
     """
     This is the GAS pipeline which chomps the observation logs and
     then batch calibrates the data.  It requires AstroPy because
@@ -97,37 +100,42 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     
     wrapper(logfile='../ObservationLog.csv',region='NGC1333',window=['3'])
 
-    region -- Region name as given in logs
-
-    window -- List of spectral windows to calibrate (as strings)
-
-    logfile -- Full path to CSV version of the logfile (optional)
-
-    overwrite -- boolean.  If True, carries out calibration
-    for files already present on disk.
-
-    startdate -- string representation of date in format YYYY-MM-DD
-    for beginning calibration 
-
-    enddate -- string representation of date in format YYYY-MM-DD
-    for ending calibration 
-
-    release -- column in the catalog file that is filled with boolean
-    values indicating whether a given set of scans belongs to the data
-    release.
-
-    If a logfile isn't specified, program will get it from Google.
+    region : string 
+        Region name as given in logs
+    window : list of strings
+        List of spectral windows to calibrate
+    logfile : string 
+        Full path to CSV version of the logfile (optional)
+    obslog : astropy.Table
+        Table representing an already parsed observation log
+    overwrite : bool
+        If True, carries out calibration for files already present on disk.
+    startdate : string 
+        representation of date in format YYYY-MM-DD for beginning calibration 
+    enddate : string 
+        date in format YYYY-MM-DD for ending calibration 
+    release : string
+        name of column in the log file that is filled with boolean
+        values indicating whether a given set of scans belongs to the data
+        release.
+    If a logfile or obslog isn't specified, logs will be retrieved from Google.
     """
     StartDate = Time(startdate)
     EndDate = Time(enddate)
     if not os.access(logfile,os.R_OK):
-        updateLogs()
+        catalogs.updateLogs(release=release)
 
-    t = parseLog(logfile=logfile)
+    if obslog is None:
+        t = catalogs.parseLog(logfile=logfile)
+    else:
+        t = obslog
+
     for observation in t:
+        print(observation['Date'])
         ObsDate = Time(observation['Date'])
         if (region == observation['Region name']) & \
-                (ObsDate >= StartDate) & (ObsDate <= EndDate) & (observation[release] == 'TRUE'):
+                (ObsDate >= StartDate) & (ObsDate <= EndDate) & \
+                (observation[release] == 'TRUE'):
             for thisWindow in window:
                 if str(observation['Beam Gains']) == '--':
                     Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
