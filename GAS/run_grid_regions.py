@@ -1178,62 +1178,36 @@ def grid_B59(release=None):
     region_name = 'B59'
     print(info_message+region_name)
     #
-    startChannel = 1024 + 655 # default 1024
+    startChannel = 1024 + 655 # default 1024	# 763 output channels
     endChannel = 1024 + 1418  # default 3072
-    gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_11', 
-        startChannel = startChannel, endChannel = endChannel, 
-        Sessions=mySessions, file_extension=file_extension)
-    
-    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_11',
+        startChannel = startChannel, endChannel = endChannel)
 
-    startChannel = 1024 + 596 # default 1024
-    endChannel = 1024 + 1470  # default 3072
-    gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_22',
-        startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
-
-    startChannel = 1024 + 577 # default 1024
-    endChannel = 1024 + 1540  # default 3072
-    gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_33',
-        startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
-
-    startChannel = 1024 + 790 # default 1024
-    endChannel = 1024 + 1290  # default 3072
-    gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_C2S',
-        startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
-
-    startChannel = 1024 + 600 # default 1024
-    endChannel = 1024 + 1150  # default 3072
-    gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC5N',
-        startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
-
-    startChannel = 1024 + 600 # default 1024
-    endChannel = 1024 + 1150  # default 3072
-    gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC7N_21_20',
-        startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
-
-    startChannel = 1024 + 600 # default 1024
-    endChannel = 1024 + 1150  # default 3072
-    gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC7N_22_21',
-        startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+    hd_temp=fits.getheader(region_name+'_NH3_11.fits')
+    startChannel = 1024 + 851 # default 1024	
+    endChannel = 1024 + 1201  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_22',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 851 # default 1024
+    endChannel = 1024 + 1201  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_NH3_33',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 847 # default 1024
+    endChannel = 1024 + 1197  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_C2S',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 850 # default 1024
+    endChannel = 1024 + 1200  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC5N',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 821 # default 1024
+    endChannel = 1024 + 1171  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_21_20',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
+    startChannel = 1024 + 813 # default 1024
+    endChannel = 1024 + 1163  # default 3072
+    gridregion.griddata( rootdir=data_dir, region=region_name, dirname=region_name+'_HC7N_22_21',
+        startChannel = startChannel, endChannel = endChannel, templateHeader=hd_temp)
 
 def grid_HC2(release=None):
     """
