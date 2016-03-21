@@ -712,4 +712,4 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     fitcubefile.header.update('CTYPE3','FITPAR')
     fitcubefile.header.update('CRVAL3',0)
     fitcubefile.header.update('CRPIX3',1)
-    fitcubefile.writeto("{0}_parameter_maps.fits".format(region),clobber=True)
+    fitcubefile.writeto("{0}_parameter_maps{1}.fits".format(region,root),clobber=True)
