@@ -145,6 +145,14 @@ def griddata(pixPerBeam = 3.0,
     if len(filelist) == 0:
         warnings.warn('There are no FITS files to process in '+rootdir+'/'+region+'/'+dirname)
         return
+    # check that every file in the filelist is valid
+    # If not then remove it and send warning message
+    for file_i in filelist:
+        try:
+            fits.open(file_i)
+        except:
+            warnings.warn('file {0} is corrupted'.format(file_i))
+            filelist.remove(file_i)
     #pull a test structure
     s = fits.getdata(filelist[0])
 
@@ -211,7 +219,7 @@ def griddata(pixPerBeam = 3.0,
         for spectrum in console.ProgressBar((s[1].data)):            #pre-processing
             specData = spectrum['DATA']
             #baseline fit
-            if doBaseline:
+            if doBaseline & np.all(np.isfinite(specData)):
                 specData = baselineSpectrum(specData,order=1,
                                             baselineIndex=baselineIndex)
 

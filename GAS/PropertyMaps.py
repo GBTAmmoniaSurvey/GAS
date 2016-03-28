@@ -3,8 +3,6 @@ import astropy.io.fits as fits
 import numpy as np
 import os
 from spectral_cube import SpectralCube
-import signal_id
-from radio_beam import Beam
 import astropy.constants as con
 import astropy.units as u
 import matplotlib.pyplot as plt
@@ -31,7 +29,7 @@ def run_plot_fit_all():
     plot_cubefit(region='B18', distance=137*u.pc, dvmin=0.05, dvmax=0.3, 
                  vcmin=5.7, vcmax=6.7)
 
-    cubefit(region='L1688', vmin=5.5, vmax=10.5, do_plot=False, snr_min=3.0, 
+    cubefit(region='L1688', vmin=2.5, vmax=5.5, do_plot=False, snr_min=3.0, 
             multicore=1)
     plot_cubefit(region='L1688', distance=120*u.pc, dvmin=0.05, dvmax=0.7, 
                  vcmin=2.7, vcmax=4.8)
@@ -186,7 +184,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
     fits.writeto(file_out, param, hd, clobber=True)
 
 def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, 
-                 dvmax=None, vcmin=None, vcmax=None):
+                 dvmax=None, vcmin=None, vcmax=None, file_extension=None):
     """
     Plot fit parameters of NH3 map for the region. It masks poorly 
     constrained fits. Extra parameters to improve images of centroid velocity
@@ -213,9 +211,14 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     import matplotlib
     matplotlib.use('Agg')
     import aplpy
+    
+    if file_extension:
+        root = file_extension
+    else:
+        root = 'base{0}'.format(blorder)
 
     data_file = "{0}_parameter_maps.fits".format(region)
-    w11_file='{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,blorder)
+    w11_file='{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
 
     hdu   =fits.open(data_file)
     header=hdu[0].header
@@ -575,8 +578,15 @@ def update_cubefit(region='NGC1333'):
     file_out="{0}_eFortho_v1.fits".format(region)
     fits.writeto(file_out, param, hd, clobber=True)
 
+def default_masking(snr,snr_min=5.0):
+    planemask = (snr>snr_min) 
+    planemask = remove_small_objects(planemask,min_size=40)
+    planemask = opening(planemask,disk(1))
+    return(planemask)
+
+
 def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False, 
-            snr_min=5.0, multicore=1):
+            snr_min=5.0, multicore=1, file_extension=None, mask_function = None):
     """
     Fit NH3(1,1), (2,2) and (3,3) cubes for the requested region. 
     It fits all pixels with SNR larger than requested. 
@@ -587,7 +597,6 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     It stores the result in a FITS cube. 
 
     TODO:
-    -Store results in hdu list
     -Improve initial guess
     
     Parameters
@@ -605,25 +614,38 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     snr_min : numpy.float
         Minimum signal to noise ratio of the spectrum to be fitted.
     multicore : int
-        Numbers of cores to use for parallel processing. 
+        Numbers of cores to use for parallel processing.
+    file_extension : str
+        File extension of the input maps. Default is 'base#' where # is the 
+        blorder parameter above.
+    mask_function : fun
+        function to create a custom made mask for analysis. Defaults to using 
+        `default_masking`
     """
+    if file_extension:
+        root = file_extension
+    else:
+        root = 'base{0}'.format(blorder)
 
-    OneOneIntegrated = '{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,blorder)
-    OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,blorder)
-    RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,blorder)
-    TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,blorder)
-    ThreeThreeFile = '{0}/{0}_NH3_33_base{1}.fits'.format(region,blorder)
+
+    OneOneIntegrated = '{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
+    OneOneFile = '{0}/{0}_NH3_11_{1}.fits'.format(region,root)
+    RMSFile = '{0}/{0}_NH3_11_{1}_rms.fits'.format(region,root)
+    TwoTwoFile = '{0}/{0}_NH3_22_{1}.fits'.format(region,root)
+    ThreeThreeFile = '{0}/{0}_NH3_33_{1}.fits'.format(region,root)
         
-    beam11 = Beam.from_fits_header(fits.getheader(OneOneFile))
     cube11sc = SpectralCube.read(OneOneFile)
     cube22sc = SpectralCube.read(TwoTwoFile)
     errmap11 = fits.getdata(RMSFile)
+    rms = np.nanmedian(errmap11)
+
     snr = cube11sc.filled_data[:].value/errmap11
     peaksnr = np.max(snr,axis=0)
-    rms = np.nanmedian(errmap11)
-    planemask = (peaksnr>snr_min) # *(errmap11 < 0.15)
-    planemask = remove_small_objects(planemask,min_size=40)
-    planemask = opening(planemask,disk(1))
+    if mask_function is None:
+        planemask = default_masking(peaksnr,snr_min = snr_min)
+    else:
+        planemask = mask_function(peaksnr,snr_min = snr_min)
+    
     #planemask = (peaksnr>20) * (errmap11 < 0.2)
 
     mask = (snr>3)*planemask
@@ -637,14 +659,13 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     moment2 = (slab.moment( order=2, axis=0).value)**0.5
     moment2[np.isnan(moment2)]=0.2
     moment2[moment2<0.2]=0.2
-    maskmap = w11>0.5
     cube11 = pyspeckit.Cube(OneOneFile,maskmap=planemask)
     cube11.unit="K"
     cube22 = pyspeckit.Cube(TwoTwoFile,maskmap=planemask)
     cube22.unit="K"
-    cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=planemask)
-    cube33.unit="K"
-    cubes = pyspeckit.CubeStack([cube11,cube22,cube33],maskmap=planemask)
+    #cube33 = pyspeckit.Cube(ThreeThreeFile,maskmap=planemask)
+    #cube33.unit="K" # removed as long as we're not modeling OPR
+    cubes = pyspeckit.CubeStack([cube11,cube22],maskmap=planemask)
     cubes.unit="K"
     guesses = np.zeros((6,)+cubes.cube.shape[1:])
     moment1[moment1<vmin] = vmin+0.2
@@ -654,10 +675,10 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     guesses[2,:,:] = 14.5                  # log(column)
     guesses[3,:,:] = moment2  # Line width / 5 (the NH3 moment overestimates linewidth)               
     guesses[4,:,:] = moment1  # Line centroid              
-    guesses[5,:,:] = 0.5                   # F(ortho) - ortho NH3 fraction (fixed)
+    guesses[5,:,:] = 0.0                   # F(ortho) - ortho NH3 fraction (fixed)
     if do_plot:
         import matplotlib.pyplot as plt
-        plt.imshow( w11, origin='lower')
+        plt.imshow( w11, origin='lower',interpolation='nearest')
         plt.show()
     F=False
     T=True
@@ -665,8 +686,8 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     cubes.fiteach(fittype='ammonia',  guesses=guesses,
                   integral=False, verbose_level=3, 
                   fixed=[F,F,F,F,F,T], signal_cut=2,
-                  limitedmax=[F,F,F,F,T,T],
-                  maxpars=[0,0,0,0,vmax,1],
+                  limitedmax=[F,F,T,F,T,T],
+                  maxpars=[0,0,17.0,0,vmax,1],
                   limitedmin=[T,T,T,T,T,T],
                   minpars=[5,2.8,12.0,0.04,vmin,0],
                   start_from_point=(xmax,ymax),
@@ -692,4 +713,3 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     fitcubefile.header.update('CRVAL3',0)
     fitcubefile.header.update('CRPIX3',1)
     fitcubefile.writeto("{0}_parameter_maps.fits".format(region),clobber=True)
-
