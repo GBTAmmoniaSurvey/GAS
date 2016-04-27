@@ -9,6 +9,114 @@ import matplotlib.pyplot as plt
 import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
+def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=None):
+    """
+    Function to update moment calculation based on centroid velocity from line fit.
+    For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
+    and then use those channels as the appropiate channels for integration.
+
+    Based on code provided by Vlas Sokolov
+
+    Parameters
+    ----------
+    region : str
+        Name of region to re-calculate moment map
+    file_extension : str
+        filename extension
+    threshold : float
+        minimum threshold in model cube used to identify channels with emission
+    """
+    file_in ='{0}/{0}_NH3_11_base{1}.fits'.format(region_name,file_extension)
+    fit_file='{0}/{0}_parameter_maps{1}.fits'.format(region_name,file_extension)
+    file_out='{0}/{0}_NH3_11_base{1}_mom0_QA.fits'.format(region_name,file_extension)
+
+    pycube = pyspeckit.Cube(file_in)
+    # pyspeckit BUG:    loading model fits file crashes if not given _temp_fit_loc
+    # In [13]: pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia', _temp_fit_loc=(30,30)  )
+    # INFO: Left region selection unchanged.  xminpix, xmaxpix: 0,763 [pyspeckit.spectrum.interactive]
+    # ERROR: Fitting the pixel at location (30, 30) failed with error: Data are invalid; cannot be fit..  Try setting _temp_fit_loc to a valid pixel [pyspeckit.cubes.SpectralCube]
+    # In [14]: pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia', _temp_fit_loc=(144,80)  )
+    # INFO: Left region selection unchanged.  xminpix, xmaxpix: 0,763 [pyspeckit.spectrum.interactive]
+    if 'FITTYPE' in fits.getheader(fit_file):
+        # 'FITTYPE' is not present in old versions of the parameter files
+        #
+        pycube.load_model_fit( fit_file, npars=6, npeaks=1, _temp_fit_loc=(144,80)  )
+    else:
+        pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia', _temp_fit_loc=(144,80) )
+    # If threshold is not defined, then use the 
+    if threshold == None:
+        threshold=np.finfo(pycube.data.dtype).eps
+    # check if modelcube has been created
+    # pyspeckit BUG
+    #In [15]: %paste
+    #     if pycube._modelcube is None:
+    #         pycube.get_modelcube()
+    # ## -- End pasted text --
+    # ---------------------------------------------------------------------------
+    # ValueError                                Traceback (most recent call last)
+    # <ipython-input-15-8b084518db30> in <module>()
+    #       1 if pycube._modelcube is None:
+    # ----> 2     pycube.get_modelcube()
+    # /Users/jpineda/code/pyspeckit/pyspeckit/cubes/SpectralCube.py in get_modelcube(self, update)
+    #     582             self._modelcube = np.zeros_like(self.cube)
+    #     583             for x,y in zip(xx.flat,yy.flat):
+    # --> 584                 self._modelcube[:,y,x] = self.specfit.get_full_model(pars=self.parcube[:,y,x])
+    #     585 
+    #     586         return self._modelcube
+    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/fitters.pyc in get_full_model(self, debug, **kwargs)
+    #     914     def get_full_model(self, debug=False,**kwargs):
+    #     915         """ compute the model over the full axis """
+    # --> 916         return self.get_model(self.Spectrum.xarr, debug=debug,**kwargs)
+    #     917 
+    #     918     def get_model(self, xarr, pars=None, debug=False, add_baseline=None):
+    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/fitters.pyc in get_model(self, xarr, pars, debug, add_baseline)
+    #     923         else:
+    #     924             return self.get_model_frompars(xarr=xarr, pars=pars,
+    # --> 925                     add_baseline=add_baseline, debug=debug)
+    #     926 
+    #     927     def get_model_frompars(self, xarr, pars, debug=False, add_baseline=None):
+    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/fitters.pyc in get_model_frompars(self, xarr, pars, debug, add_baseline)
+    #     932         else:
+    #     933             return (self.fitter.n_modelfunc(pars,
+    # --> 934                                             **self.fitter.modelfunc_kwargs)(xarr)
+    #     935                     + self.Spectrum.baseline.get_model(np.arange(xarr.size)))
+    #     936 
+    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/models/ammonia.pyc in L(x)
+    #     388                     name = parnames[ii+jj*int(npars)].strip('0123456789').lower()
+    #     389                     modelkwargs.update({name:parvals[ii+jj*int(npars)]})
+    # --> 390                 v += self.modelfunc(x,**modelkwargs)
+    #     391             return v
+    #     392         return L
+    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/models/ammonia.pyc in ammonia(xarr, trot, tex, ntot, width, xoff_v, fortho, tau, fillingfraction, return_tau, background_tb, verbose, return_components, debug, line_names, tkin)
+    #     102         lin_ntot = 10**ntot
+    #     103     else:
+    # --> 104         raise ValueError("ntot, the logarithmic total column density,"
+    #     105                          " must be in the range 5 - 25")
+    #     106 
+    # ValueError: ntot, the logarithmic total column density, must be in the range 5 - 25
+    #     In [24]: pycube.parcube[2,:,:]  = pycube.parcube[2,:,:] > 5.1
+    # In [25]: %paste
+    #     if pycube._modelcube is None:
+    #         pycube.get_modelcube()
+    # ## -- End pasted text --
+    # In [26]: 
+    # pycube.parcube[2,:,:]  = pycube.parcube[2,:,:] > 5.1
+    plt.ion()
+    plt.imshow(pycube.parcube[2,:,:], origin='lower', interpolation='nearest', vmin=5.)
+    pycube.parcube[2,:,:] = np.clip( pycube.parcube[2,:,:], 5.1, 25)
+    if pycube._modelcube is None:
+        pycube.get_modelcube()
+    # Use spectral cube to calculate integrated intensity maps
+    cube_raw = SpectralCube.read(file_in)
+    # in km/s not Hz
+    cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+    # define mask and create masked cube
+    mask3d = pycube._modelcube > threshold
+    cube2 = cube.with_mask(mask3d)
+    # calculate moment map
+    moment_0 = cube2.moment(order=0)
+    moment_0.write( file_out, overwrite=True)
+
 def run_plot_fit_all():
     """
     Run the functions for fitting the NH3 line profile and plotting the 
@@ -59,7 +167,7 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_minor_frequency(4)
 
 def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
-    '''
+    """
     Flag cubefit results based on S/N in integrated intensity. 
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
     Outputs five .pdf files: Tkin, Tex, Vc, sigmaV, NNH3
@@ -73,7 +181,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
         order of baseline removed
     version : str
         data release version
-    '''
+    """
     import matplotlib.pyplot as plt
     import aplpy
 
@@ -348,7 +456,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
 def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc, 
                      version='v1',dvmin=0, 
                      dvmax=None, vcmin=None, vcmax=None):
-    '''
+    """
     Plot from flagged fits files rather than from cubefit output multi-HDU 
     file. Side-by-side plots for v_lsr, sigma
     Parameters
@@ -371,7 +479,6 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     vcmax : numpy.float
         Maximum centroid velocity to plot, in km/s. No default.
     """
-    '''
     # Assume moment map in different dir, assume has been flagged
     # Set up directories here
     # If running in images/ then:
@@ -502,12 +609,17 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig0.save(parMapDir+"{0}_NNH3.pdf".format(region),dpi=300)
     fig0.close()
 
-def update_cubefit(region='NGC1333'):
+def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
     """
     Updates the fit parameters storage format from cube (v0, one channel per 
     parameter) into a set of files (v1, one FITS per parameter). 
     """
-    hdu=fits.open("{0}_parameter_maps.fits".format(region))
+    if file_extension:
+        root = file_extension
+    else:
+        root = 'base{0}'.format(blorder)
+
+    hdu=fits.open("{0}_parameter_maps{1}.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
@@ -712,4 +824,4 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     fitcubefile.header.update('CTYPE3','FITPAR')
     fitcubefile.header.update('CRVAL3',0)
     fitcubefile.header.update('CRPIX3',1)
-    fitcubefile.writeto("{0}_parameter_maps{1}.fits".format(region,root),clobber=True)
+    fitcubefile.writeto("{0}/{0}_parameter_maps{1}.fits".format(region,root),clobber=True)
