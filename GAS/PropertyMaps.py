@@ -25,97 +25,62 @@ def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=Non
         filename extension
     threshold : float
         minimum threshold in model cube used to identify channels with emission
+        Default is down to the machine precision, a better result could be 
+        obtained with 0.075
+
+    Usage: 
+    import GAS
+    GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='_DR1', threshold=0.075)
+
     """
     file_in ='{0}/{0}_NH3_11_base{1}.fits'.format(region_name,file_extension)
     fit_file='{0}/{0}_parameter_maps{1}.fits'.format(region_name,file_extension)
     file_out='{0}/{0}_NH3_11_base{1}_mom0_QA.fits'.format(region_name,file_extension)
+    file_rms='{0}/{0}_NH3_11_base{1}_rms_QA.fits'.format(region_name,file_extension)
+    file_rms_mom='{0}/{0}_NH3_11_base{1}_mom0_sigma_QA.fits'.format(region_name,file_extension)
+    file_temp='{0}/{0}_NH3_11_base{1}_masked_temp.fits'.format(region_name,file_extension)
 
     pycube = pyspeckit.Cube(file_in)
-    # pyspeckit BUG:    loading model fits file crashes if not given _temp_fit_loc
-    # In [13]: pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia', _temp_fit_loc=(30,30)  )
-    # INFO: Left region selection unchanged.  xminpix, xmaxpix: 0,763 [pyspeckit.spectrum.interactive]
-    # ERROR: Fitting the pixel at location (30, 30) failed with error: Data are invalid; cannot be fit..  Try setting _temp_fit_loc to a valid pixel [pyspeckit.cubes.SpectralCube]
-    # In [14]: pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia', _temp_fit_loc=(144,80)  )
-    # INFO: Left region selection unchanged.  xminpix, xmaxpix: 0,763 [pyspeckit.spectrum.interactive]
     if 'FITTYPE' in fits.getheader(fit_file):
         # 'FITTYPE' is not present in old versions of the parameter files
-        #
-        pycube.load_model_fit( fit_file, npars=6, npeaks=1, _temp_fit_loc=(144,80)  )
+        pycube.load_model_fit( fit_file, npars=6, npeaks=1)
     else:
-        pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia', _temp_fit_loc=(144,80) )
-    # If threshold is not defined, then use the 
+        pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia')
+    # If threshold is not defined, then use the machine accuracy
     if threshold == None:
         threshold=np.finfo(pycube.data.dtype).eps
-    # check if modelcube has been created
-    # pyspeckit BUG
-    #In [15]: %paste
-    #     if pycube._modelcube is None:
-    #         pycube.get_modelcube()
-    # ## -- End pasted text --
-    # ---------------------------------------------------------------------------
-    # ValueError                                Traceback (most recent call last)
-    # <ipython-input-15-8b084518db30> in <module>()
-    #       1 if pycube._modelcube is None:
-    # ----> 2     pycube.get_modelcube()
-    # /Users/jpineda/code/pyspeckit/pyspeckit/cubes/SpectralCube.py in get_modelcube(self, update)
-    #     582             self._modelcube = np.zeros_like(self.cube)
-    #     583             for x,y in zip(xx.flat,yy.flat):
-    # --> 584                 self._modelcube[:,y,x] = self.specfit.get_full_model(pars=self.parcube[:,y,x])
-    #     585 
-    #     586         return self._modelcube
-    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/fitters.pyc in get_full_model(self, debug, **kwargs)
-    #     914     def get_full_model(self, debug=False,**kwargs):
-    #     915         """ compute the model over the full axis """
-    # --> 916         return self.get_model(self.Spectrum.xarr, debug=debug,**kwargs)
-    #     917 
-    #     918     def get_model(self, xarr, pars=None, debug=False, add_baseline=None):
-    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/fitters.pyc in get_model(self, xarr, pars, debug, add_baseline)
-    #     923         else:
-    #     924             return self.get_model_frompars(xarr=xarr, pars=pars,
-    # --> 925                     add_baseline=add_baseline, debug=debug)
-    #     926 
-    #     927     def get_model_frompars(self, xarr, pars, debug=False, add_baseline=None):
-    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/fitters.pyc in get_model_frompars(self, xarr, pars, debug, add_baseline)
-    #     932         else:
-    #     933             return (self.fitter.n_modelfunc(pars,
-    # --> 934                                             **self.fitter.modelfunc_kwargs)(xarr)
-    #     935                     + self.Spectrum.baseline.get_model(np.arange(xarr.size)))
-    #     936 
-    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/models/ammonia.pyc in L(x)
-    #     388                     name = parnames[ii+jj*int(npars)].strip('0123456789').lower()
-    #     389                     modelkwargs.update({name:parvals[ii+jj*int(npars)]})
-    # --> 390                 v += self.modelfunc(x,**modelkwargs)
-    #     391             return v
-    #     392         return L
-    # /Users/jpineda/code/pyspeckit/pyspeckit/spectrum/models/ammonia.pyc in ammonia(xarr, trot, tex, ntot, width, xoff_v, fortho, tau, fillingfraction, return_tau, background_tb, verbose, return_components, debug, line_names, tkin)
-    #     102         lin_ntot = 10**ntot
-    #     103     else:
-    # --> 104         raise ValueError("ntot, the logarithmic total column density,"
-    #     105                          " must be in the range 5 - 25")
-    #     106 
-    # ValueError: ntot, the logarithmic total column density, must be in the range 5 - 25
-    #     In [24]: pycube.parcube[2,:,:]  = pycube.parcube[2,:,:] > 5.1
-    # In [25]: %paste
-    #     if pycube._modelcube is None:
-    #         pycube.get_modelcube()
-    # ## -- End pasted text --
-    # In [26]: 
-    # pycube.parcube[2,:,:]  = pycube.parcube[2,:,:] > 5.1
-    plt.ion()
-    plt.imshow(pycube.parcube[2,:,:], origin='lower', interpolation='nearest', vmin=5.)
-    pycube.parcube[2,:,:] = np.clip( pycube.parcube[2,:,:], 5.1, 25)
-    if pycube._modelcube is None:
-        pycube.get_modelcube()
+    # plt.ion()
+    # plt.imshow(pycube.parcube[2,:,:], origin='lower', interpolation='nearest', vmin=5.)
+    modelcube = pycube.get_modelcube()
     # Use spectral cube to calculate integrated intensity maps
     cube_raw = SpectralCube.read(file_in)
     # in km/s not Hz
     cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
-    # define mask and create masked cube
-    mask3d = pycube._modelcube > threshold
+    vaxis=cube.spectral_axis
+    dv=np.abs(vaxis[1]-vaxis[0])
+    # define mask 
+    mask3d = modelcube > threshold
+    # What to do with pixels without signal
+    # at the moment it uses the union of all masks... which is clearly an overkill
+    total_spc=(np.sum( mask3d, axis=(1,2)) > 1)
+    im_mask=np.sum(mask3d, axis=0)
+    for ii in np.arange( im_mask.shape[1]):
+        for jj in np.arange( im_mask.shape[0]):
+            if im_mask[jj,ii] == 0:
+                mask3d[:,jj,ii] = total_spc
+    n_chan=np.sum(mask3d, axis=0)
+    # create masked cube
     cube2 = cube.with_mask(mask3d)
+    cube3 = cube.with_mask(~mask3d)
+    #
+    cube2.write( file_temp, overwrite=True)
     # calculate moment map
-    moment_0 = cube2.moment(order=0)
+    moment_0 = cube2.moment(axis=0)
     moment_0.write( file_out, overwrite=True)
+    rms=cube3.std(axis=0)
+    rms.write( file_rms, overwrite=True)
+    mom_0_rms=rms * dv * np.sqrt(n_chan)
+    mom_0_rms.write( file_rms_mom, overwrite=True)
 
 def run_plot_fit_all():
     """
