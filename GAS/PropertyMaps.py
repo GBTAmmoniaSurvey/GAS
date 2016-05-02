@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
-def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=None):
+def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=None, save_masked=False):
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
@@ -26,61 +26,73 @@ def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=Non
     threshold : float
         minimum threshold in model cube used to identify channels with emission
         Default is down to the machine precision, a better result could be 
-        obtained with 0.075
+        obtained with 0.0125
+    save_masked : Boolean
+        Keyword to store the masked cube used in the integrated intensity calculation.
+        This is useful to 
 
     Usage: 
     import GAS
-    GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='_DR1', threshold=0.075)
+    GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='_DR1', threshold=0.0125, save_masked=True)
 
     """
-    file_in ='{0}/{0}_NH3_11_base{1}.fits'.format(region_name,file_extension)
     fit_file='{0}/{0}_parameter_maps{1}.fits'.format(region_name,file_extension)
-    file_out='{0}/{0}_NH3_11_base{1}_mom0_QA.fits'.format(region_name,file_extension)
-    file_rms='{0}/{0}_NH3_11_base{1}_rms_QA.fits'.format(region_name,file_extension)
-    file_rms_mom='{0}/{0}_NH3_11_base{1}_mom0_sigma_QA.fits'.format(region_name,file_extension)
-    file_temp='{0}/{0}_NH3_11_base{1}_masked_temp.fits'.format(region_name,file_extension)
-
-    pycube = pyspeckit.Cube(file_in)
-    if 'FITTYPE' in fits.getheader(fit_file):
-        # 'FITTYPE' is not present in old versions of the parameter files
-        pycube.load_model_fit( fit_file, npars=6, npeaks=1)
-    else:
-        pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia')
-    # If threshold is not defined, then use the machine accuracy
-    if threshold == None:
-        threshold=np.finfo(pycube.data.dtype).eps
-    # plt.ion()
-    # plt.imshow(pycube.parcube[2,:,:], origin='lower', interpolation='nearest', vmin=5.)
-    modelcube = pycube.get_modelcube()
-    # Use spectral cube to calculate integrated intensity maps
-    cube_raw = SpectralCube.read(file_in)
-    # in km/s not Hz
-    cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
-    vaxis=cube.spectral_axis
-    dv=np.abs(vaxis[1]-vaxis[0])
-    # define mask 
-    mask3d = modelcube > threshold
-    # What to do with pixels without signal
-    # at the moment it uses the union of all masks... which is clearly an overkill
-    total_spc=(np.sum( mask3d, axis=(1,2)) > 1)
-    im_mask=np.sum(mask3d, axis=0)
-    for ii in np.arange( im_mask.shape[1]):
-        for jj in np.arange( im_mask.shape[0]):
-            if im_mask[jj,ii] == 0:
-                mask3d[:,jj,ii] = total_spc
-    n_chan=np.sum(mask3d, axis=0)
-    # create masked cube
-    cube2 = cube.with_mask(mask3d)
-    cube3 = cube.with_mask(~mask3d)
-    #
-    cube2.write( file_temp, overwrite=True)
-    # calculate moment map
-    moment_0 = cube2.moment(axis=0)
-    moment_0.write( file_out, overwrite=True)
-    rms=cube3.std(axis=0)
-    rms.write( file_rms, overwrite=True)
-    mom_0_rms=rms * dv * np.sqrt(n_chan)
-    mom_0_rms.write( file_rms_mom, overwrite=True)
+    for line_i in ['11','22']:
+        file_in ='{0}/{0}_NH3_{2}_base{1}.fits'.format(region_name,file_extension,line_i)
+        file_out='{0}/{0}_NH3_{2}_base{1}_mom0_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms='{0}/{0}_NH3_{2}_base{1}_rms_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms_mom='{0}/{0}_NH3_{2}_base{1}_mom0_sigma_QA.fits'.format(region_name,file_extension,line_i)
+        file_temp='{0}/{0}_NH3_{2}_base{1}_masked_temp.fits'.format(region_name,file_extension,line_i)
+        # Load pyspeckit cube
+        pycube = pyspeckit.Cube(file_in)
+        if 'FITTYPE' in fits.getheader(fit_file):
+            # 'FITTYPE' is not present in old versions of the parameter files
+            pycube.load_model_fit( fit_file, npars=6, npeaks=1)
+        else:
+            pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia')
+        # If threshold is not defined, then use the machine accuracy
+        if threshold == None:
+            threshold=np.finfo(pycube.data.dtype).eps
+        # Get model cube from pyspeckit, this take some time
+        modelcube = pycube.get_modelcube()
+        # Use spectral cube to calculate integrated intensity maps
+        cube_raw = SpectralCube.read(file_in)
+        # in km/s not Hz
+        cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+        vaxis=cube.spectral_axis
+        dv=np.abs(vaxis[1]-vaxis[0])
+        # define mask 
+        mask3d = modelcube > threshold
+        # What to do with pixels without signal
+        # Calculate mean velocity and velocity dispersion
+        vmap=pycube.parcube[4,:,:]
+        sigma_map=pycube.parcube[3,:,:]
+        vmean=np.mean(vmap[vmap != 0])*u.km/u.s
+        if line_i == '11':
+            sigma_v=( np.mean(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
+        else:
+            sigma_v=( np.mean(sigma_map[vmap != 0]))*u.km/u.s
+        total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
+        # 
+        im_mask=np.sum(mask3d, axis=0)
+        for ii in np.arange( im_mask.shape[1]):
+            for jj in np.arange( im_mask.shape[0]):
+                if (im_mask[jj,ii] == 0) or (pycube.parcube[3,jj,ii] < 3*pycube.errcube[3,jj,ii]):
+                    mask3d[:,jj,ii] = total_spc
+        n_chan=np.sum(mask3d, axis=0)
+        # create masked cube
+        cube2 = cube.with_mask(mask3d)
+        cube3 = cube.with_mask(~mask3d)
+        #
+        if save_masked:
+            cube2.write( file_temp, overwrite=True)
+        # calculate moment map
+        moment_0 = cube2.moment(axis=0)
+        moment_0.write( file_out, overwrite=True)
+        rms=cube3.std(axis=0)
+        rms.write( file_rms, overwrite=True)
+        mom_0_rms=rms * dv * np.sqrt(n_chan)
+        mom_0_rms.write( file_rms_mom, overwrite=True)
 
 def run_plot_fit_all():
     """
