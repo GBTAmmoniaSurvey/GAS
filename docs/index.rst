@@ -30,3 +30,4 @@ Getting started
    imaging.rst
    first_look.rst
    property_map.rst
+   .. index::
