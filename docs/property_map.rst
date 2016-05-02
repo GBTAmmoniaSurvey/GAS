@@ -3,7 +3,7 @@
 Line Fitting
 ============
 
-The line fitting is done using `pyspeckit <htpp://pyspeckit.bitbucket.org>`_
+The line fitting is done using `pyspeckit <http://pyspeckit.bitbucket.org>`_
 We use the NH3 model included in ``pyspeckit`` to simultaneously fit NH3 (1,1) and (2,2) to derive the parameters of NH3.
 This includes the centroi velocity, velocity dispersion, excitation temperature, 
 kinetic temperature, and column density.
