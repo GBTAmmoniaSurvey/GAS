@@ -1,7 +1,8 @@
-matplotlib>=1.4
+matplotlib>=1.5.1
+numpy>=1.7.2
 astropy>=1.1
 aplpy>=1.0
 pyspeckit>=0.1.18.1
 spectral_cube>=0.3.0
 -e git+http://github.com/radio-astro-tools/radio_beam.git#egg=radio_beam
-scikit-image>=0.11.3
+scikit-image>=0.12.3
