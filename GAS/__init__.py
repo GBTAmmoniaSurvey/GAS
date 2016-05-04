@@ -22,5 +22,5 @@ if not _ASTROPY_SETUP_:
 #    import PropertyMaps
     import gasBinning
     import voronoi_2d_binning
-    import DR1
+#    import DR1
     pass
