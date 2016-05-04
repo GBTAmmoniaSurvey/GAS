@@ -96,13 +96,15 @@ for root, dirs, files in os.walk(PACKAGENAME):
                     os.path.relpath(root, PACKAGENAME), filename))
 package_info['package_data'][PACKAGENAME].extend(c_files)
 
+# Note that requires and provides should not be included in the call to
+# ``setup``, since these are now deprecated. See this link for more details:
+# https://groups.google.com/forum/#!topic/astropy-dev/urYO8ckB2uM
+#      provides=[PACKAGENAME],
 setup(name=PACKAGENAME,
       version=VERSION,
       description=DESCRIPTION,
       scripts=scripts,
-      requires=['astropy'],
-      install_requires=['astropy>=1.1','pyspeckit>=0.1.18.1','spectral-cube>=0.3.0', 'scikit-image>=0.11.3','aplpy>=1.0'],
-      provides=[PACKAGENAME],
+      install_requires=['astropy>=1.1','numpy','matplotlib>=1.5.1'],
       author=AUTHOR,
       author_email=AUTHOR_EMAIL,
       license=LICENSE,
