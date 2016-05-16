@@ -5,6 +5,54 @@ import astropy.units as u
 from spectral_cube import SpectralCube
 from GAS import voronoi_2d_binning as v2d
 
+
+def BinByMask(DataCube, Mask, CentroidMap = None,
+              CentroidAggregator = np.nanmean):
+    """
+    Bin a data cube by a label mask, aligning the data to a common centroid.  Returns an array.
+
+    Parameters
+    ----------
+    DataCube : SpectralCube
+        The original spectral cube with spatial dimensions Nx, Ny and spectral dimension Nv
+    Mask : 2D numpy.ndarray
+        A 2D map containing boolean values with True indicate where the spectra should be aggregated.
+    CentroidMap : 2D numpy.ndarray
+        A 2D map of the centroid velocities for the lines to stack of dimensions Nx, Ny.
+        Note that DataCube and Centroid map must have the same spectral units (e.g., km/s)
+    CentroidAggregator : numpy.ufunc
+        Operates on a vector of centroid data and returns the value summarizing that object.
+    BackgroundLabels : list
+        List of values in the label map that correspond to background objects and should not
+        be processed with the stacking. 
+
+    Returns
+    -------
+    Spectrum : np.array
+        Spectrum of average over mask.
+    """
+    ChannelWidth = np.median(DataCube.spectral_axis-
+                             np.roll(DataCube.spectral_axis,1))
+    RawData = DataCube.unmasked_data[:].value
+    y,x= np.where(Mask)
+    AccumSpec = np.zeros(DataCube.shape[0])
+    if CentroidMap is None:
+        for ThisX,ThisY in zip(x,y):
+            AccumSpec += DataCube[:,ThisY,ThisX].value
+    else:
+        CentroidValue = CentroidAggregator(CentroidMap[y,x])
+        for ThisX,ThisY in zip(x,y):
+            DeltaV = CentroidMap[ThisY,ThisX] - CentroidValue
+            # Note this assumes the units of the centroid map
+            # are in same units as the spectral axis of the cube.
+            DeltaChan = DeltaV/ChannelWidth.value
+            AccumSpec += channelShift(DataCube[:,ThisY,ThisX].value,
+                                  -DeltaChan)
+    AccumSpec /= x.size
+    return AccumSpec
+
+
+
 def BinByLabel(DataCube, LabelMap, CentroidMap = None,
                CentroidAggregator = np.nanmean, BackgroundLabels = [0]):
     """
