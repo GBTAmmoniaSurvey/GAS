@@ -6,8 +6,8 @@ from spectral_cube import SpectralCube
 from GAS import voronoi_2d_binning as v2d
 
 
-def BinByMask(DataCube, Mask, CentroidMap = None,
-              CentroidAggregator = np.nanmean):
+def BinByMask(DataCube, Mask = None, CentroidMap = None,
+              CentroidAggregator = np.nanmean, x = None, y = None):
     """
     Bin a data cube by a label mask, aligning the data to a common centroid.  Returns an array.
 
@@ -34,7 +34,10 @@ def BinByMask(DataCube, Mask, CentroidMap = None,
     ChannelWidth = np.median(DataCube.spectral_axis-
                              np.roll(DataCube.spectral_axis,1))
     RawData = DataCube.unmasked_data[:].value
-    y,x= np.where(Mask)
+    if Mask:
+        y,x= np.where(Mask)
+    # Trap y,x not set HERE!
+
     AccumSpec = np.zeros(DataCube.shape[0])
     if CentroidMap is None:
         for ThisX,ThisY in zip(x,y):
