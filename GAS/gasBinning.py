@@ -52,7 +52,8 @@ def BinByMask(DataCube, Mask = None, CentroidMap = None,
             AccumSpec[:,idx] = channelShift(DataCube[:,ThisY,ThisX].value,
                                             -DeltaChan[idx])
         AccumSpec = np.nanmean(AccumSpec,axis=1)
-    return AccumSpec
+        OffsetVelocity = DataCube.spectral_axis-CentroidValue
+    return AccumSpec,OffsetVelocity
 
 
 
