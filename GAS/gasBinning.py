@@ -31,27 +31,27 @@ def BinByMask(DataCube, Mask = None, CentroidMap = None,
     Spectrum : np.array
         Spectrum of average over mask.
     """
-    ChannelWidth = np.median(DataCube.spectral_axis-
-                             np.roll(DataCube.spectral_axis,1))
+    ChannelWidth = (np.median(DataCube.spectral_axis-
+                              np.roll(DataCube.spectral_axis,1)))
     RawData = DataCube.unmasked_data[:].value
     if Mask:
         y,x= np.where(Mask)
     # Trap y,x not set HERE!
 
-    AccumSpec = np.zeros(DataCube.shape[0])
     if CentroidMap is None:
-        for ThisX,ThisY in zip(x,y):
-            AccumSpec += DataCube[:,ThisY,ThisX].value
+        AccumSpec = np.nanmean(DataCube.filled_data[:,y,x].value,axis=1)
     else:
         CentroidValue = CentroidAggregator(CentroidMap[y,x])
-        for ThisX,ThisY in zip(x,y):
-            DeltaV = CentroidMap[ThisY,ThisX] - CentroidValue
+        DeltaV = CentroidValue-CentroidMap[y,x]
+        DeltaChan = DeltaV/ChannelWidth.value
+        AccumSpec = np.zeros(DataCube.spectral_axis.shape+y.shape)
+        for idx,(ThisX,ThisY) in enumerate(zip(x,y)):
+
             # Note this assumes the units of the centroid map
             # are in same units as the spectral axis of the cube.
-            DeltaChan = DeltaV/ChannelWidth.value
-            AccumSpec += channelShift(DataCube[:,ThisY,ThisX].value,
-                                  -DeltaChan)
-    AccumSpec /= x.size
+            AccumSpec[:,idx] = channelShift(DataCube[:,ThisY,ThisX].value,
+                                            -DeltaChan[idx])
+        AccumSpec = np.nanmean(AccumSpec,axis=1)
     return AccumSpec
 
 
