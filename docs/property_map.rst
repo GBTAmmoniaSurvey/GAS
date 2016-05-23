@@ -24,5 +24,7 @@ If you want to make some quick plots showing the fit results, then do the follow
     >>> ipython
     >>> import astropy.units as u
     >>> import GAS.PropertyMaps
-    >>> import GAS.PropertyMaps.plot_cubefit(region='OrionA', distance=450*u.pc, dvmin=0.05, dvmax=0.7, 
+    >>> GAS.PropertyMaps.plot_cubefit(region='OrionA', distance=450*u.pc, dvmin=0.05, dvmax=0.7, 
                  vcmin=5.7, vcmax=12.7, file_extension='base_DR1')
+
+The result from this line fitting will most likely include pixels that don't have a good fit (because of the default value for the minimum snr), however, we only need to do this fit once and now we clean-up the parameter fit to keep only those that are reliable.
