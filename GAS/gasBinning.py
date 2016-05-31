@@ -5,6 +5,58 @@ import astropy.units as u
 from spectral_cube import SpectralCube
 from GAS import voronoi_2d_binning as v2d
 
+
+def BinByMask(DataCube, Mask = None, CentroidMap = None,
+              CentroidAggregator = np.nanmean, x = None, y = None):
+    """
+    Bin a data cube by a label mask, aligning the data to a common centroid.  Returns an array.
+
+    Parameters
+    ----------
+    DataCube : SpectralCube
+        The original spectral cube with spatial dimensions Nx, Ny and spectral dimension Nv
+    Mask : 2D numpy.ndarray
+        A 2D map containing boolean values with True indicate where the spectra should be aggregated.
+    CentroidMap : 2D numpy.ndarray
+        A 2D map of the centroid velocities for the lines to stack of dimensions Nx, Ny.
+        Note that DataCube and Centroid map must have the same spectral units (e.g., km/s)
+    CentroidAggregator : numpy.ufunc
+        Operates on a vector of centroid data and returns the value summarizing that object.
+    BackgroundLabels : list
+        List of values in the label map that correspond to background objects and should not
+        be processed with the stacking. 
+
+    Returns
+    -------
+    Spectrum : np.array
+        Spectrum of average over mask.
+    """
+    ChannelWidth = (np.median(DataCube.spectral_axis-
+                              np.roll(DataCube.spectral_axis,1)))
+    RawData = DataCube.unmasked_data[:].value
+    if Mask:
+        y,x= np.where(Mask)
+    # Trap y,x not set HERE!
+
+    if CentroidMap is None:
+        AccumSpec = np.nanmean(DataCube.filled_data[:,y,x].value,axis=1)
+    else:
+        CentroidValue = CentroidAggregator(CentroidMap[y,x])
+        DeltaV = CentroidValue-CentroidMap[y,x]
+        DeltaChan = DeltaV/ChannelWidth.value
+        AccumSpec = np.zeros(DataCube.spectral_axis.shape+y.shape)
+        for idx,(ThisX,ThisY) in enumerate(zip(x,y)):
+
+            # Note this assumes the units of the centroid map
+            # are in same units as the spectral axis of the cube.
+            AccumSpec[:,idx] = channelShift(DataCube[:,ThisY,ThisX].value,
+                                            -DeltaChan[idx])
+        AccumSpec = np.nanmean(AccumSpec,axis=1)
+        OffsetVelocity = DataCube.spectral_axis.value-CentroidValue
+    return AccumSpec,OffsetVelocity
+
+
+
 def BinByLabel(DataCube, LabelMap, CentroidMap = None,
                CentroidAggregator = np.nanmean, BackgroundLabels = [0]):
     """
