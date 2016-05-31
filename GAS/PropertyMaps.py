@@ -36,7 +36,7 @@ def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=Non
     GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='_DR1', threshold=0.0125, save_masked=True)
 
     """
-    fit_file='{0}/{0}_parameter_maps{1}.fits'.format(region_name,file_extension)
+    fit_file='{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension)
     for line_i in ['11','22']:
         file_in ='{0}/{0}_NH3_{2}_base{1}.fits'.format(region_name,file_extension,line_i)
         file_out='{0}/{0}_NH3_{2}_base{1}_mom0_QA.fits'.format(region_name,file_extension,line_i)
@@ -143,7 +143,7 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
-def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
+def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_extension=None):
     """
     Flag cubefit results based on S/N in integrated intensity. 
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
@@ -158,6 +158,8 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
         order of baseline removed
     version : str
         data release version
+    file_extension: : str
+        filename
     """
     import matplotlib.pyplot as plt
     import aplpy
@@ -171,7 +173,12 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
     flagSN22 = 3.0
     flagSN11 = 3.0
 
-    hdu=fits.open("{0}/parameterMaps/{0}_parameter_maps.fits".format(region))
+    if file_extension:
+        root = file_extension
+    else:
+        root = 'base{0}'.format(blorder)
+
+    hdu=fits.open("{0}_parameter_maps_{1}.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
@@ -300,10 +307,10 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     if file_extension:
         root = file_extension
     else:
-        root = 'base{0}'.format(blorder)
+        root = '{0}'.format(blorder)
 
-    data_file = "{0}_parameter_maps.fits".format(region)
-    w11_file='{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
+    data_file ="{0}_parameter_maps_{1}.fits".format(region,root)
+    w11_file='{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,root)
 
     hdu   =fits.open(data_file)
     header=hdu[0].header
@@ -596,7 +603,7 @@ def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
     else:
         root = 'base{0}'.format(blorder)
 
-    hdu=fits.open("{0}_parameter_maps{1}.fits".format(region,root))
+    hdu=fits.open("{0}_parameter_maps_{1}.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
@@ -677,7 +684,7 @@ def default_masking(snr,snr_min=5.0):
 def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False, 
             snr_min=5.0, multicore=1, file_extension=None, mask_function = None):
     """
-    Fit NH3(1,1), (2,2) and (3,3) cubes for the requested region. 
+    Fit NH3(1,1) and (2,2) cubes for the requested region. 
     It fits all pixels with SNR larger than requested. 
     Initial guess is based on moment maps and neighboring pixels. 
     The fitting can be done in parallel mode using several cores, 
@@ -716,12 +723,11 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     else:
         root = 'base{0}'.format(blorder)
 
-
-    OneOneIntegrated = '{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
-    OneOneFile = '{0}/{0}_NH3_11_{1}.fits'.format(region,root)
-    RMSFile = '{0}/{0}_NH3_11_{1}_rms.fits'.format(region,root)
-    TwoTwoFile = '{0}/{0}_NH3_22_{1}.fits'.format(region,root)
-    ThreeThreeFile = '{0}/{0}_NH3_33_{1}.fits'.format(region,root)
+    OneOneIntegrated = '{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,root)
+    OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,root)
+    RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,root)
+    TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,root)
+    ThreeThreeFile = '{0}/{0}_NH3_33_base{1}.fits'.format(region,root)
         
     cube11sc = SpectralCube.read(OneOneFile)
     cube22sc = SpectralCube.read(TwoTwoFile)
@@ -801,4 +807,4 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     fitcubefile.header.update('CTYPE3','FITPAR')
     fitcubefile.header.update('CRVAL3',0)
     fitcubefile.header.update('CRPIX3',1)
-    fitcubefile.writeto("{0}/{0}_parameter_maps{1}.fits".format(region,root),clobber=True)
+    fitcubefile.writeto("{0}/{0}_parameter_maps_{1}.fits".format(region,root),clobber=True)
