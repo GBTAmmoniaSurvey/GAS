@@ -23,9 +23,11 @@ To know which first look functions are available just type:
 What does it do for you?
 ------------------------
 
-The First Look pipeline will take a FITS cube and remove the a polynomial baseline, for this you need to give the range of line free channels to be used and the polynomial order to be fit. Notice that we use a single channel range and polynomial order for the entire cube. Also, we use this same selection of channels to estimate he rms in each pixel. Both products, the baselined cube and the rms map, are exported as FITS files.
+The First Look pipeline will take a FITS cube and remove the a polynomial baseline, for this you need to give the range of line free channels to be used and the polynomial order to be fit. Notice that we use a single channel range and polynomial order for the entire cube. Also, we use this same selection of channels to estimate he rms in each pixel. 
 
-Also, the pipeline will determine what is the line peak brightness at each pixel, for this you need to provide a single range of channels where the emission is constrained (this is done to avoid noise spikes). We also calculate the *first look*, using the same channel range 
+Also, the pipeline will determine what is the line peak brightness at each pixel, for this you need to provide a single range of channels where the emission is constrained (this is done to avoid noise spikes). We also calculate the *first look* integrated intensity map, using the same channel range as for the peak brightness. *Caution* this integrated intensity map only takes into account the channel range provided, which is OK for typical lines however it means that the satelite components will be missed from the NH$_3$ maps. The solution for this is provided by `update_NH3_moment0`.
+
+All products (integrated intensity, rms, and peak brightness maps as well as the baselined cube) are exported as FITS files.
 
 How to use it on non-GAS data?
 ------------------------------
