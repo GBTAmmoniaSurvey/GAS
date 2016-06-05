@@ -20,6 +20,12 @@ To know which first look functions are available just type:
 
 *Important: The output from these functions are FITS files which are good enough to assess the quality of the data. A higher quality product is (will be) created using the results from the line fitting as input to determine an optimal mask.*
 
+What does it do for you?
+------------------------
+
+The First Look pipeline will take a FITS cube and remove the a polynomial baseline, for this you need to give the range of line free channels to be used and the polynomial order to be fit. Notice that we use a single channel range and polynomial order for the entire cube. Also, we use this same selection of channels to estimate he rms in each pixel. Both products, the baselined cube and the rms map, are exported as FITS files.
+
+Also, the pipeline will determine what is the line peak brightness at each pixel, for this you need to provide a single range of channels where the emission is constrained (this is done to avoid noise spikes). We also calculate the *first look*, using the same channel range 
 
 How to use it on non-GAS data?
 ------------------------------
