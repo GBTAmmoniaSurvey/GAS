@@ -183,14 +183,14 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     cube=hdu[0].data
     hdu.close()
 
-    rms11hdu = fits.open("{0}/{0}_NH3_11_base{1}_rms.fits".format(region,blorder))
+    rms11hdu = fits.open("{0}/{0}_NH3_11_base{1}_mom0_sigma_QA.fits.fits".format(region,blorder))
     rms11data = rms11hdu[0].data
     rms11hdu.close()
     m0_11 = fits.open("{0}/{0}_NH3_11_base{1}_mom0.fits".format(region,blorder))
     m0_11data = m0_11[0].data
     hd11 = m0_11[0].header
     m0_11.close()
-    rms22hdu = fits.open("{0}/{0}_NH3_22_base{1}_rms.fits".format(region,blorder))
+    rms22hdu = fits.open("{0}/{0}_NH3_22_base{1}__mom0_sigma_QA.fits".format(region,blorder))
     rms22data = rms22hdu[0].data
     rms22hdu.close()
     m0_22 = fits.open("{0}/{0}_NH3_22_base{1}_mom0.fits".format(region,blorder))
