@@ -13,11 +13,14 @@ Here is an example of its usage:
 In addition, the function will calculate the uncertainty at each pixel, since the channel range will depend on the line profile.
 
 An example of the improvement in the integrated intensity map is 
-.. figure:: OrionA_NH3_11_TdV_FL.png
-   :width: 300px
+
+.. figure:: figures/OrionA_NH3_11_TdV_FL.png
+   :width: 250px
    :alt: TdV NH3(1,1) First Look
+   
 compared to the improved maps
-.. figure:: OrionA_NH3_11_TdV_QA.png
-   :width: 300px
+
+.. figure:: figures/OrionA_NH3_11_TdV_QA.png
+   :width: 250px
    :alt: TdV NH3(1,1) Improved maps
 
