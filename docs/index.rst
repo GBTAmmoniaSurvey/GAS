@@ -30,4 +30,5 @@ Getting started
    imaging.rst
    first_look.rst
    property_map.rst
+   Update_NH3_mom0.rst
    .. index::
