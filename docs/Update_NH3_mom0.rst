@@ -7,7 +7,8 @@ As a solution, we have implemented a function that will use the results from the
 The function `update_NH3_moment0` is within `PropertyMaps` and it will also create a new FITS file for each NH\ :sub:`3` integrated intensity map.
 
 Here is an example of its usage:
-.. code-block:: python
+
+  .. code-block:: python
     import GAS
     import GAS.PropertyMaps
     GAS.PropertyMaps.update_NH3_moment0(region_name='OrionA', file_extension='_DR1', threshold=0.0125, save_masked=True)
