@@ -9,7 +9,7 @@ The function `update_NH3_moment0` is within `PropertyMaps` and it will also crea
 Here is an example of its usage:
 
   .. code-block:: python
-  
+
     import GAS
     import GAS.PropertyMaps
     GAS.PropertyMaps.update_NH3_moment0(region_name='OrionA', file_extension='_DR1', threshold=0.0125, save_masked=True)
@@ -39,14 +39,13 @@ In comparison, similar color stretches are are shown for the improved inetgrated
 Caveats
 =======
 
-This method for improving the integrated intensity 
+This method for improving the integrated intensity also have some limitations. It depends on having a good model, which is usually the case, however, there are places where the emission is not absolutelly well fitted with a single component. In those cases, this method losses some of the flux.
 
-Also, we see that in some regions this works very well,
+Here we show an example of the method used on the OrionA data. We see that in some regions this works very well,
 
   .. figure:: figures/OrionA_compare_spectra_pos0.png
    :width: 350px
    :alt: NH3(1,1) where it works
-
 
 while in others the masking does not catch all the emission from faint components at different velocities.
 

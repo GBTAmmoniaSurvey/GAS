@@ -6,7 +6,7 @@ Go to the directory with the survey’s images for the region to generate::
 
     >>> cd /lustre/pipeline/scratch/GAS/images/region_name
 
-and run the function to image the region want. This is an example for Serpens_Aquila::
+and run the function to image the region want. This is an example for Serpens_Aquila
 
   .. code-block:: python
   

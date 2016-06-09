@@ -16,7 +16,7 @@ The first command will load the calibration pipeline functions, while the second
 Also, there is a function that runs the data reduction for all regions, just run the following commands,
 
   .. code-block:: python
-
+  
     cd /lustre/pipeline/scratch/GAS/
     import GAS
     GAS.gasPipeline.reduceAll()
