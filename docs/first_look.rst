@@ -7,7 +7,9 @@ We have also created a first look pipeline that will allow us to baseline all th
 This is carried out with wrapper functions for each observed region, which can be found here `First Look wrappers <../GAS.run_first_look>`, where the underlying first look functionality is defined in the `First Look subpackage <../GAS.first_look>`.
 
 Go to the directory with the survey’s images and open an ipython session:
-.. code-block:: python
+  
+  .. code-block:: python
+
     cd /lustre/pipeline/scratch/GAS/images/
     import GAS.run_first_look
     GAS.run_first_look.FirstLook_SerAqu(file_extension='_DR1')
@@ -15,7 +17,9 @@ Go to the directory with the survey’s images and open an ipython session:
 Here the `file_extension` keyword is used to work with different versions of the data, e.g., DR1 and DR2. 
 
 To know which first look functions are available just type:
-.. code-block:: python
+
+  .. code-block:: python
+  
     import GAS.run_first_look
     GAS.run_first_look.<Press TAB>
 
