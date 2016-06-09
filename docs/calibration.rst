@@ -1,6 +1,6 @@
-
+###########
 Calibration
-===========
+###########
 
 The calibration is done in a region by region basis, as listed in the observations summary. Go to the directory of the region and open an ipython session,::
 
