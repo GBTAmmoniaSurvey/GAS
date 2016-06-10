@@ -8,6 +8,7 @@ from scipy.special import j1
 import pdb
 import numpy.fft as fft
 import astropy.utils.console as console
+import astropy.units as u
 import numpy.polynomial.legendre as legendre
 import warnings
 
@@ -61,6 +62,50 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
 #              (pia*distance[ind])
     wt[(d<dmin)]=0.5  #Peak of the jinc function is 0.5 not 1.0
     return(wt,ind)
+
+class VelocityRange(object):
+    def __init__(self,lower,upper):
+        self.lower = lower
+        self.upper = upper
+
+    def __repr__(self):
+        return('Velocity Interval from {0} to {1}'.format(self.lower,self.upper))
+    
+    def __str__(self):
+        return self.__repr__()
+
+    def __add__(self,other):
+        return VelocityRange(np.min([a.lower,b.lower]),np.max([a.upper,b.upper]))
+              
+
+Def testBLgen(spectable,
+              EmissionWindow = [[-5*u.km/u.s,5*u.km/u.s]],
+              v0 = 8.5*u.km/u.s):
+    """
+    Returns good slices for baseline fitting given an input GBTIDL FITS structure
+    """
+
+    cms = 299792458.
+    # First calculate full velocity range of spectra in LSRK frame
+    nChannels = len(spectable['DATA'][0])
+    lowedge = (1-(spectable['CRVAL1']+spectable['CDELT1']*(1-spectable['CRPIX1']))/
+               spectable['RESTFREQ'])*cms-spectable['VFRAME']
+    hiedge = (1-(spectable['CRVAL1']+spectable['CDELT1']*(nChannels-spectable['CRPIX1']))/
+              spectable['RESTFREQ'])*cms-spectable['VFRAME']
+    BaselineWindow = [[lowedge*u.m/u.s,hiedge*u.m/u.s]]
+    for window in EmissionWindow: 
+        for blwindow in BaselineWindow:
+            
+    # Calculate where a given edge ends up in spectral space
+    for region in EmissionWindow:
+        
+        edgeindex = (spectable['CRVAL1']-
+                     spectable['RESTFREQ']*(1-(edgevel+spectable['VFRAME'])/cms)/
+                     (spectable['CDELT1'])+spectable['CRPIX1']-1)
+    
+    pdb.set_trace()
+
+
 
 def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
     RAlist = []
@@ -117,6 +162,7 @@ def griddata(pixPerBeam = 3.0,
              startChannel = 1024, endChannel = 3072,
              doBaseline = True,
              baselineRegion = [slice(512,1024,1),slice(3072,3584,1)],
+             baselineGenerator = None,
              Sessions = None,
              file_extension = None):
     if not Sessions:
@@ -163,8 +209,6 @@ def griddata(pixPerBeam = 3.0,
     beamSize = 1.22 * (c/nu0/100.0)*180/np.pi # in degrees
 
     naxis3 = len(s[0]['DATA'][startChannel:endChannel])
-    nuindex = np.arange(len(s[0]['DATA']))
-    baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
     nuslice = (range(naxis3))[startChannel:endChannel]
 
     # Default behavior is to park the object velocity at the center channel in the VRAD-LSR frame
@@ -216,6 +260,14 @@ def griddata(pixPerBeam = 3.0,
         s = fits.open(thisfile)
         print("Now processing {0}".format(thisfile))
         print("This is file {0} of {1}".format(ctr,len(filelist)))
+
+        nuindex = np.arange(len(s['DATA']))
+        if hasattr(baselineGenerator,'__call__'):
+            baselineGenerator(s[1].data)
+            pass
+        else:
+            baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
+
         for spectrum in console.ProgressBar((s[1].data)):            #pre-processing
             specData = spectrum['DATA']
             #baseline fit
