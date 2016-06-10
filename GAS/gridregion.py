@@ -9,9 +9,10 @@ import pdb
 import numpy.fft as fft
 import astropy.utils.console as console
 import astropy.units as u
+import astropy.constants as con
 import numpy.polynomial.legendre as legendre
 import warnings
-
+from .intervals import VelocitySet,VelocityInterval
 from . import __version__
 
 def baselineSpectrum(spectrum,order=1,baselineIndex=()):
@@ -63,23 +64,8 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     wt[(d<dmin)]=0.5  #Peak of the jinc function is 0.5 not 1.0
     return(wt,ind)
 
-class VelocityRange(object):
-    def __init__(self,lower,upper):
-        self.lower = lower
-        self.upper = upper
-
-    def __repr__(self):
-        return('Velocity Interval from {0} to {1}'.format(self.lower,self.upper))
-    
-    def __str__(self):
-        return self.__repr__()
-
-    def __add__(self,other):
-        return VelocityRange(np.min([a.lower,b.lower]),np.max([a.upper,b.upper]))
-              
-
-Def testBLgen(spectable,
-              EmissionWindow = [[-5*u.km/u.s,5*u.km/u.s]],
+def testBLgen(spectrum,
+              EmissionWindow = VelocityInterval(-5*u.km/u.s,5*u.km/u.s),
               v0 = 8.5*u.km/u.s):
     """
     Returns good slices for baseline fitting given an input GBTIDL FITS structure
@@ -87,25 +73,16 @@ Def testBLgen(spectable,
 
     cms = 299792458.
     # First calculate full velocity range of spectra in LSRK frame
-    nChannels = len(spectable['DATA'][0])
-    lowedge = (1-(spectable['CRVAL1']+spectable['CDELT1']*(1-spectable['CRPIX1']))/
-               spectable['RESTFREQ'])*cms-spectable['VFRAME']
-    hiedge = (1-(spectable['CRVAL1']+spectable['CDELT1']*(nChannels-spectable['CRPIX1']))/
-              spectable['RESTFREQ'])*cms-spectable['VFRAME']
-    BaselineWindow = [[lowedge*u.m/u.s,hiedge*u.m/u.s]]
-    for window in EmissionWindow: 
-        for blwindow in BaselineWindow:
-            
-    # Calculate where a given edge ends up in spectral space
-    for region in EmissionWindow:
-        
-        edgeindex = (spectable['CRVAL1']-
-                     spectable['RESTFREQ']*(1-(edgevel+spectable['VFRAME'])/cms)/
-                     (spectable['CDELT1'])+spectable['CRPIX1']-1)
-    
+    nChannels = len(spectrum['DATA'][0])
+    lowedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(1-spectrum['CRPIX1']))/
+               spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
+    hiedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(nChannels-spectrum['CRPIX1']))/
+              spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
+    BaselineWindow = VelocityInterval(lowedge*u.m/u.s,hiedge*u.m/u.s)-EmissionWindow.applyshift(v0)
+    slices = BaselineWindow.toslice(cdelt = spectrum['CDELT1'], crval = spectrum['CRVAL1'],
+                                    vframe = spectrum['VFRAME']*u.m/u.s, crpix = spectrum['CRPIX1'],
+                                    restfreq = spectrum['RESTFREQ'])
     pdb.set_trace()
-
-
 
 def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
     RAlist = []
@@ -162,9 +139,11 @@ def griddata(pixPerBeam = 3.0,
              startChannel = 1024, endChannel = 3072,
              doBaseline = True,
              baselineRegion = [slice(512,1024,1),slice(3072,3584,1)],
+             blorder = 1,
              baselineGenerator = None,
              Sessions = None,
              file_extension = None):
+
     if not Sessions:
         filelist = glob.glob(rootdir+'/'+region+'/'+dirname+'/*fits')
         if not file_extension:
@@ -263,8 +242,8 @@ def griddata(pixPerBeam = 3.0,
 
         nuindex = np.arange(len(s['DATA']))
         if hasattr(baselineGenerator,'__call__'):
-            baselineGenerator(s[1].data)
-            pass
+            baselineRegion = baselineGenerator(s[1].data)
+            baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
         else:
             baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
 
@@ -272,7 +251,7 @@ def griddata(pixPerBeam = 3.0,
             specData = spectrum['DATA']
             #baseline fit
             if doBaseline & np.all(np.isfinite(specData)):
-                specData = baselineSpectrum(specData,order=1,
+                specData = baselineSpectrum(specData,order=blorder,
                                             baselineIndex=baselineIndex)
 
             # This part takes the TOPOCENTRIC frequency that is at
