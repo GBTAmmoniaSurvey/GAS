@@ -201,8 +201,8 @@ def griddata(pixPerBeam = 3.0,
                        templateHeader['CTYPE2'],ctype3]
         naxis2 = templateHeader['NAXIS2']
         naxis1 = templateHeader['NAXIS1']
-    outCube = np.zeros((naxis3,naxis2,naxis1))
-    outWts = np.zeros((naxis2,naxis1))
+    outCube = np.zeros((int(naxis3),int(naxis2),int(naxis1)))
+    outWts = np.zeros((int(naxis2),int(naxis1)))
 
     xmat,ymat = np.meshgrid(np.arange(naxis1),np.arange(naxis2),indexing='ij')
     xmat = xmat.reshape(xmat.size)
