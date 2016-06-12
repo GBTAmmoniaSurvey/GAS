@@ -1,6 +1,7 @@
 import numpy as np
 import astropy.units as u
 import astropy.constants as con 
+import warnings
 
 class VelocitySet(list):
     def __init__(self,input):
@@ -54,21 +55,29 @@ class VelocitySet(list):
             if interval.lower == interval.upper:
                 result.ranges.pop(idx)
         return(result)
+
+    def applyshift(self,offsetv):
+        for selfelt in self.ranges:
+            selfelt.lower += offsetv
+            selfelt.upper += offsetv
+        return(self)
     
     def toslice(self,cdelt = None, crpix = None, crval = None, vframe = 0.0*u.m/u.s, restfreq = None):
         slicelist = []
+        cms = 299792458.
         for elt in self.ranges:
-            ch1 =((restfreq*(1-((elt.lower+vframe)/con.c).to(u.dimensionless_unscaled))-crval)/cdelt)+crpix-1
-            ch2 = ((restfreq*(1-((elt.upper+vframe)/con.c).to(u.dimensionless_unscaled))-crval)/cdelt)+crpix-1
-            start = round(np.min([ch1,ch2]))
-            stop = round(np.max([ch1,ch2]))
+            ch1 =((restfreq*(1-((elt.lower+vframe)/cms))-crval)/cdelt)+crpix-1
+            ch2 = ((restfreq*(1-((elt.upper+vframe)/cms))-crval)/cdelt)+crpix-1
+            start = np.int(np.min([ch1,ch2]))
+            stop = np.int(np.max([ch1,ch2]))
             slicelist += [slice(start,stop,1)]
         return(slicelist)
 
 class VelocityInterval:
     def __init__(self,lower,upper):
-        self.lower = lower
-        self.upper = upper
+        
+        self.lower = np.min([lower,upper])
+        self.upper = np.max([lower,upper])
 
     def __repr__(self):
         return('Velocity Interval from {0} to {1}'.format(self.lower,self.upper))
@@ -98,10 +107,10 @@ class VelocityInterval:
         casearray = (np.argsort(boundaries)) % 2
         if np.all(casearray == [0,0,1,1]):
             warnings.warn('Attempt to subtract non-overlapping intervals')
-            result = VelocitySet(None)
+            result = VelocitySet([self])
         if np.all(casearray == [1,1,0,0]):
             warnings.warn('Attempt to subtract non-overlapping intervals')
-            result = VelocitySet(None)
+            result = VelocitySet([self])
         if np.all(casearray == [0,1,1,0]):
             result = VelocitySet([VelocityInterval(self.lower,other.lower),VelocityInterval(other.upper,self.upper)])
         if np.all(casearray == [1,0,0,1]):
@@ -115,3 +124,4 @@ class VelocityInterval:
     def applyshift(self,offsetv):
         self.lower += offsetv
         self.upper += offsetv
+        return(self)

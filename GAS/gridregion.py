@@ -16,11 +16,9 @@ from .intervals import VelocitySet,VelocityInterval
 from . import __version__
 
 def baselineSpectrum(spectrum,order=1,baselineIndex=()):
-    x=np.arange(len(spectrum))
+    x=np.arange(len(spectrum))-len(spectrum)/2
     coeffs = legendre.legfit(x[baselineIndex],spectrum[baselineIndex],order)
-#    pdb.set_trace()
     spectrum -= legendre.legval(x,coeffs)
-    
     return(spectrum)
 
 def freqShiftValue(freqIn,vshift,convention='RADIO'):
@@ -65,24 +63,37 @@ def jincGrid(xpix,ypix,xdata,ydata, pixPerBeam = None):
     return(wt,ind)
 
 def testBLgen(spectrum,
-              EmissionWindow = VelocityInterval(-5*u.km/u.s,5*u.km/u.s),
-              v0 = 8.5*u.km/u.s):
+              EmissionWindow = VelocityInterval(-5e3,5e3),
+              v0 = 8.5e3):
     """
     Returns good slices for baseline fitting given an input GBTIDL FITS structure
     """
-
+    
     cms = 299792458.
     # First calculate full velocity range of spectra in LSRK frame
-    nChannels = len(spectrum['DATA'][0])
-    lowedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(1-spectrum['CRPIX1']))/
-               spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
-    hiedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(nChannels-spectrum['CRPIX1']))/
-              spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
-    BaselineWindow = VelocityInterval(lowedge*u.m/u.s,hiedge*u.m/u.s)-EmissionWindow.applyshift(v0)
-    slices = BaselineWindow.toslice(cdelt = spectrum['CDELT1'], crval = spectrum['CRVAL1'],
-                                    vframe = spectrum['VFRAME']*u.m/u.s, crpix = spectrum['CRPIX1'],
+    nChannels = len(spectrum['DATA'])
+#    lowedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(1-spectrum['CRPIX1']))/
+#               spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
+#    hiedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(nChannels-spectrum['CRPIX1']))/
+#              spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
+    lowedge = -100000
+    hiedge = 100000
+    EmissionWindow = VelocityInterval(-25e3,25e3)-VelocityInterval(-14e3,-12e3)
+    EmissionWindow = EmissionWindow-VelocityInterval(12e3,14e3)
+    coeffs = [-2.8256074 , -4.65791997,  9.14502305]
+    v0 = coeffs[2]+\
+        coeffs[0]*(spectrum['CRVAL2']-83.446122802665869)+\
+        coeffs[1]*(spectrum['CRVAL3']+6.0050560818354661)
+    EmissionWindow.applyshift(v0)
+    BaselineWindow = VelocitySet([VelocityInterval(lowedge,hiedge)])-\
+        EmissionWindow
+    slices = BaselineWindow.toslice(cdelt = spectrum['CDELT1'], 
+                                    crval = spectrum['CRVAL1'],
+                                    vframe = spectrum['VFRAME'], 
+                                    crpix = spectrum['CRPIX1'],
                                     restfreq = spectrum['RESTFREQ'])
-    pdb.set_trace()
+    return(slices)
+
 
 def autoHeader(filelist, beamSize = 0.0087, pixPerBeam = 3.0):
     RAlist = []
@@ -240,14 +251,19 @@ def griddata(pixPerBeam = 3.0,
         print("Now processing {0}".format(thisfile))
         print("This is file {0} of {1}".format(ctr,len(filelist)))
 
-        nuindex = np.arange(len(s['DATA']))
-        if hasattr(baselineGenerator,'__call__'):
-            baselineRegion = baselineGenerator(s[1].data)
-            baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
-        else:
-            baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
+        nuindex = np.arange(len(s[1].data['DATA'][0]))
 
-        for spectrum in console.ProgressBar((s[1].data)):            #pre-processing
+        EW = VelocityInterval(-5e3,5e3)
+        EW.applyshift(8.500e3)
+
+        for spectrum in console.ProgressBar((s[1].data)):
+            # Generate Baseline regions
+            if hasattr(baselineGenerator,'__call__'):
+                baselineRegion = baselineGenerator(spectrum,EmissionWindow = EW)
+                baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
+            else:
+                baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
+
             specData = spectrum['DATA']
             #baseline fit
             if doBaseline & np.all(np.isfinite(specData)):
