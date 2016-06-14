@@ -22,7 +22,7 @@ def updateLogs(output='ObservationLog.csv',release=None):
         return False
 
 def updateCatalog(output='RegionCatalog.csv',release=None):
-    if release is None:
+    if (release is None) or ('all' in release):
         command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheets/d/140SUALscsm4Lco2WU3jDaREtUnf4jA9ZEBrMg4VAdKw/export?gid=1599734490&format=csv'"
         return not subprocess.call(command,shell=True)
     if 'DR1' in release:
