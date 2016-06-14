@@ -40,7 +40,10 @@ def GenerateRegions(refresh=False,release='all'):
     if refresh:
         updateLogs(release=release)
         updateCatalog(release=release)
-
+    if not os.access('ObservationLog.csv',os.R_OK):
+        updateLogs(release = release)
+    if not os.access('RegionCatalog.csv',os.R_OK):
+        updateCatalog(release = release)
     obs = Table.read('ObservationLog.csv')
     cat = Table.read('RegionCatalog.csv')
 

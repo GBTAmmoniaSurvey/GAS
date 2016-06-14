@@ -14,9 +14,10 @@ import numpy.polynomial.legendre as legendre
 import warnings
 from .intervals import VelocitySet,VelocityInterval
 from . import __version__
+from scipy.optimize import least_squares as lsq
 
 def baselineSpectrum(spectrum,order=1,baselineIndex=()):
-    x=np.arange(len(spectrum))-len(spectrum)/2
+    x= np.linspace(-1,1,len(spectrum))
     coeffs = legendre.legfit(x[baselineIndex],spectrum[baselineIndex],order)
     spectrum -= legendre.legval(x,coeffs)
     return(spectrum)
@@ -72,19 +73,20 @@ def testBLgen(spectrum,
     cms = 299792458.
     # First calculate full velocity range of spectra in LSRK frame
     nChannels = len(spectrum['DATA'])
-#    lowedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(1-spectrum['CRPIX1']))/
-#               spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
-#    hiedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(nChannels-spectrum['CRPIX1']))/
-#              spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
-    lowedge = -100000
-    hiedge = 100000
-    EmissionWindow = VelocityInterval(-25e3,25e3)-VelocityInterval(-14e3,-12e3)
-    EmissionWindow = EmissionWindow-VelocityInterval(12e3,14e3)
+    lowedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(1-spectrum['CRPIX1']))/
+               spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
+    hiedge = (1-(spectrum['CRVAL1']+spectrum['CDELT1']*(nChannels-spectrum['CRPIX1']))/
+              spectrum['RESTFREQ'])*cms-spectrum['VFRAME']
+    lowedge +=20000
+    hiedge -= 20000
+    
+    EmissionWindow = VelocitySet([VelocityInterval(-70e3,70e3)])
     coeffs = [-2.8256074 , -4.65791997,  9.14502305]
     v0 = coeffs[2]+\
         coeffs[0]*(spectrum['CRVAL2']-83.446122802665869)+\
         coeffs[1]*(spectrum['CRVAL3']+6.0050560818354661)
-    EmissionWindow.applyshift(v0)
+#    v0 = 8500
+#    EmissionWindow.applyshift(v0)
     BaselineWindow = VelocitySet([VelocityInterval(lowedge,hiedge)])-\
         EmissionWindow
     slices = BaselineWindow.toslice(cdelt = spectrum['CDELT1'], 
