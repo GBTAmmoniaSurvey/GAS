@@ -12,9 +12,7 @@ import astropy.units as u
 import astropy.constants as con
 import numpy.polynomial.legendre as legendre
 import warnings
-from .intervals import VelocitySet,VelocityInterval
 from . import __version__
-from scipy.optimize import least_squares as lsq
 
 def baselineSpectrum(spectrum,order=1,baselineIndex=()):
     x= np.linspace(-1,1,len(spectrum))
