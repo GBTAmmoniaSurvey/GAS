@@ -6,7 +6,7 @@ from astropy.table import Table, join
 import numpy as np
 
 def updateLogs(output='ObservationLog.csv',release=None):
-    if release is None:
+    if (release is None) or ('all' in release):
         command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheet/ccc?key=1F6MnXjK1Y1VyM8zWW3R5VvLAFF2Hkc85SGBRBxQ24JY&output=csv'"
         # The returns from subprocess are the error codes from the OS
         # If 0 then it worked so we should return True
