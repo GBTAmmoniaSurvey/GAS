@@ -1,3 +1,11 @@
+import numpy as np
+import numpy.polynomial.legendre as legendre
+import warnings
+from .intervals import VelocitySet,VelocityInterval
+from scipy.optimize import least_squares as lsq
+from spectral_cube import SpectralCube
+import itertools
+
 def testBLgen(spectrum,
               EmissionWindow = VelocityInterval(-5e3,5e3),
               v0 = 8.5e3):
@@ -27,11 +35,32 @@ def testBLgen(spectrum,
                                     restfreq = spectrum['RESTFREQ'])
     return(slices)
 
-def rebaseline(filename, order = 1, baselineGenerator = None):
+def legendreLoss(y,x,noise,coeffs):
+    return np.abs((y-legendre.legval(x,coeffs))/noise)
 
-    EW = VelocityInterval(-5e3,5e3)
-    EW.applyshift(8.500e3)
-    if hasattr(baselineGenerator,'__call__'):
-        baselineRegion = baselineGenerator(spectrum,EmissionWindow = EW)
-        baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
-    else:
+def robustBaseline(y,baselineIndex):
+    x = np.linspace(-1,1,len(y))
+    
+
+
+
+def rebaseline(filename, blorder = 1, baselineGenerator = None,        
+               baselineRegion = [slice(0,262,1),slice(-512,0,1)], baselineFunction = ):
+
+
+    cube = SpectralCube.read(filename)
+    goodposition = cube.apply_numpy_function(np.any,axis=0)
+    y,x = np.where(goodposition)
+    for thisy,thisx in itertools.izip(y,x):
+        spectrum = cube[:,thisy,thisx]
+        
+
+
+    
+    
+    # EW = VelocityInterval(-5e3,5e3)
+    # EW.applyshift(8.500e3)
+    # if hasattr(baselineGenerator,'__call__'):
+    #     baselineRegion = baselineGenerator(spectrum,EmissionWindow = EW)
+    #     baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
+    # else:
