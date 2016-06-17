@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
+from pyspeckit.spectrum.models import ammonia
+
 def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=None, save_masked=False):
     """
     Function to update moment calculation based on centroid velocity from line fit.
@@ -49,7 +51,9 @@ def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=Non
             # 'FITTYPE' is not present in old versions of the parameter files
             pycube.load_model_fit( fit_file, npars=6, npeaks=1)
         else:
-            pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='ammonia')
+    	    if not 'cold_ammonia' in pycube.specfit.Registry.multifitters:
+                pycube.specfit.Registry.add_fitter('cold_ammonia',ammonia.cold_ammonia_model(),6)
+            pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='cold_ammonia')
         # If threshold is not defined, then use the machine accuracy
         if threshold == None:
             threshold=np.finfo(pycube.data.dtype).eps
@@ -777,8 +781,12 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
         plt.show()
     F=False
     T=True
+    
+    if not 'cold_ammonia' in cubes.specfit.Registry.multifitters:
+        cubes.specfit.Registry.add_fitter('cold_ammonia',ammonia.cold_ammonia_model(),6)
+        
     print('start fit')
-    cubes.fiteach(fittype='ammonia',  guesses=guesses,
+    cubes.fiteach(fittype='cold_ammonia',  guesses=guesses,
                   integral=False, verbose_level=3, 
                   fixed=[F,F,F,F,F,T], signal_cut=2,
                   limitedmax=[F,F,T,F,T,T],

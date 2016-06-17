@@ -26,7 +26,7 @@ Dependencies
 ------------
 
 * astropy (>=1.1)
-* pyspeckit (>0.1.18.1)
+* pyspeckit (>=0.1.19)
 * matplotlib (>=1.5.1)
 * aplpy (>=1.0)
 * spectral_cube (>=0.3.0)
