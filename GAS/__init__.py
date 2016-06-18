@@ -24,5 +24,6 @@ if not _ASTROPY_SETUP_:
     import voronoi_2d_binning
     import utils
     import catalogs
+    import baseline
 #    import DR1
     pass

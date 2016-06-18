@@ -62,15 +62,23 @@ class VelocitySet(list):
             selfelt.upper += offsetv
         return(self)
     
-    def toslice(self,cdelt = None, crpix = None, crval = None, vframe = 0.0*u.m/u.s, restfreq = None):
+    def toslice(self,spaxis = None, cdelt = None, crpix = None, 
+                crval = None, vframe = 0.0*u.m/u.s, restfreq = None):
         slicelist = []
         cms = 299792458.
-        for elt in self.ranges:
-            ch1 =((restfreq*(1-((elt.lower+vframe)/cms))-crval)/cdelt)+crpix-1
-            ch2 = ((restfreq*(1-((elt.upper+vframe)/cms))-crval)/cdelt)+crpix-1
-            start = np.int(np.min([ch1,ch2]))
-            stop = np.int(np.max([ch1,ch2]))
-            slicelist += [slice(start,stop,1)]
+        
+        if spaxis is not None:
+            for elt in self.ranges:
+                match = np.where((spaxis>=elt.lower)*(spaxis<=elt.upper))
+                if len(match[0])>0:
+                    slicelist +=[slice(match[0].min(),match[0].max(),1)]
+        else:
+            for elt in self.ranges:
+                ch1 =((restfreq*(1-((elt.lower+vframe)/cms))-crval)/cdelt)+crpix-1
+                ch2 = ((restfreq*(1-((elt.upper+vframe)/cms))-crval)/cdelt)+crpix-1
+                start = np.int(np.min([ch1,ch2]))
+                stop = np.int(np.max([ch1,ch2]))
+                slicelist += [slice(start,stop,1)]
         return(slicelist)
 
 class VelocityInterval:
