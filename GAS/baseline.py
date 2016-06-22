@@ -84,6 +84,7 @@ def rebaseline(filename, blorder = 1,
         runmax = np.max([nuindex[baselineIndex].max(),runmax])
 
         outcube[:,thisy,thisx] = robustBaseline(spectrum,baselineIndex,blorder=blorder)
+        import pdb; pdb.set_trace()
     outsc = SpectralCube(outcube,cube.wcs,header=cube.header)
 #    outsc = outsc[runmin:runmax,:,:] # cut baseline edges
     outsc.with_spectral_unit(originalUnit)
