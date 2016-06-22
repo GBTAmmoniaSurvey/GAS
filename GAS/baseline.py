@@ -45,7 +45,9 @@ def legendreLoss(coeffs,y,x,noise):
 def robustBaseline(y,baselineIndex,blorder=1):
     x = np.linspace(-1,1,len(y))
     noise = mad1d((y-np.roll(y,-2))[baselineIndex])*2**(-0.5)
-    opts = lsq(legendreLoss,np.zeros(blorder+1),args=(y,x,noise),loss='arctan')
+    opts = lsq(legendreLoss,np.zeros(blorder+1),args=(y[baselineIndex],
+                                                      x[baselineIndex],
+                                                      noise),loss='arctan')
     return y-legendre.legval(x,opts.x)
 
 def rebaseline(filename, blorder = 1, 
@@ -74,7 +76,7 @@ def rebaseline(filename, blorder = 1,
 
         if hasattr(windowFunction,'__call__'):
             _, Dec, RA = cube.world[0,thisy,thisx]
-            v0 = VlsrByCoord(RA.value, Dec.value,RegionName,regionCatalog = catalog)
+            v0 = VlsrByCoord(RA.value,Dec.value,RegionName,regionCatalog = catalog)
             baselineIndex = windowFunction(spectrum,
                                            cube.spectral_axis.to(u.km/u.s).value,
                                            v0 = v0, **kwargs)
@@ -84,7 +86,7 @@ def rebaseline(filename, blorder = 1,
         runmax = np.max([nuindex[baselineIndex].max(),runmax])
 
         outcube[:,thisy,thisx] = robustBaseline(spectrum,baselineIndex,blorder=blorder)
-        import pdb; pdb.set_trace()
+#        import pdb; pdb.set_trace()
     outsc = SpectralCube(outcube,cube.wcs,header=cube.header)
 #    outsc = outsc[runmin:runmax,:,:] # cut baseline edges
     outsc.with_spectral_unit(originalUnit)
