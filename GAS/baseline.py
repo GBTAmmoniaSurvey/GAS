@@ -63,7 +63,7 @@ def mad1d(x):
     return np.median(np.abs(x-med0))*1.4826
 
 def legendreLoss(coeffs,y,x,noise):
-    return np.sum(np.abs((y-legendre.legval(x,coeffs))/noise))
+    return (y-legendre.legval(x,coeffs))/noise
 
 def robustBaseline(y,baselineIndex,blorder=1,noiserms=None):
     x = np.linspace(-1,1,len(y))
@@ -71,7 +71,7 @@ def robustBaseline(y,baselineIndex,blorder=1,noiserms=None):
         noiserms = mad1d((y-np.roll(y,-2))[baselineIndex])
     opts = lsq(legendreLoss,np.zeros(blorder+1),args=(y[baselineIndex],
                                                       x[baselineIndex],
-                                                      noiserms),loss='linear')
+                                                      noiserms),loss='arctan')
 #    import pdb; pdb.set_trace()
 
     return y-legendre.legval(x,opts.x)
@@ -79,7 +79,30 @@ def robustBaseline(y,baselineIndex,blorder=1,noiserms=None):
 def rebaseline(filename, blorder = 1, 
                baselineRegion = [slice(0,262,1),slice(-512,0,1)], 
                windowFunction = None, **kwargs):
+    """
+    Rebaseline a data cube using robust regression of Legendre polynomials.
 
+    Parameters
+    ----------
+    filename : string
+        FITS filename of the data cube
+    blorder : int
+        Order of the polynomial to fit to the data
+    baselineRegion : list
+        List of slices defining the default region of the spectrum, in 
+        channels, to be used for the baseline fitting. 
+    windowFuntion : function
+        Name of function to be used that will accept spectrum data, and velocity
+        axis and will return a binary mask of the channels to be used in the 
+        baseline fitting.  Extra **kwargs are passed to windowFunction to do with
+        as it must.
+
+    Returns
+    -------
+    Nothing.  A new FITS file is written out with the suffix 'rebaseN' where N 
+    is the baseline order
+
+    """
     cube = SpectralCube.read(filename)
     originalUnit = cube.spectral_axis.unit
     cube = cube.with_spectral_unit(u.km/u.s,velocity_convention='radio')
@@ -102,6 +125,7 @@ def rebaseline(filename, blorder = 1,
 
         if hasattr(windowFunction,'__call__'):
             _, Dec, RA = cube.world[0,thisy,thisx]
+            # This determines a v0 appropriate for the region
             v0 = VlsrByCoord(RA.value,Dec.value,RegionName,regionCatalog = catalog)
             baselineIndex = windowFunction(spectrum,
                                            cube.spectral_axis.to(u.km/u.s).value,
@@ -110,13 +134,14 @@ def rebaseline(filename, blorder = 1,
             baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
         runmin = np.min([nuindex[baselineIndex].min(),runmin])
         runmax = np.max([nuindex[baselineIndex].max(),runmax])
+        # Use channel-to-channel difference as the noise value.
         noise = mad1d((spectrum-np.roll(spectrum,-2))[baselineIndex])*2**(-0.5)
 
         outcube[:,thisy,thisx] = robustBaseline(spectrum,baselineIndex,
                                                 blorder=blorder,noiserms=noise)
-        import pdb; pdb.set_trace()
     outsc = SpectralCube(outcube,cube.wcs,header=cube.header)
-    outsc = outsc[runmin:runmax,:,:] # cut baseline edges
-    outsc.with_spectral_unit(originalUnit)
+    outsc = outsc[runmin:runmax,:,:] # cut beyond baseline edges
+    # Return to original spectral unit
+    outsc = outsc.with_spectral_unit(originalUnit)
     outsc.write(filename.replace('.fits','_rebase{0}.fits'.format(blorder)),overwrite=True)
     

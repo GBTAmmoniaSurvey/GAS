@@ -6,6 +6,29 @@ import numpy as np
 
 def VlsrByCoord(RA, Dec, region = 'OrionA', regionCatalog = None):
 
+    """
+    For the GAS regions determine the appropriate v0 given coordinates.  
+    If a velocity gradient has been fit, it is hard-coded here.  Otherwise, 
+    this uses the catalog velocities.
+
+    Parameters
+    ----------
+    RA : float
+        The right ascension of the spectrum
+    Dec: float
+        The declination of the spectrum
+    Region : str
+        The GAS name of the region, used in catalog lookups.
+    regionCatalog : astropy.table.Table
+        Table containing the catalog values of the velocity to prevent 
+        repeated catalog parsing
+
+    Returns
+    ------- 
+    v0 : float
+        Estimate of central velocity of emission spectrum in km/s 
+    """
+
     if 'NGC1333' in region:
         v0 = 7.6687698945600005\
             -0.10015533*(RA-52.2275368656)\
@@ -29,8 +52,24 @@ def VlsrByCoord(RA, Dec, region = 'OrionA', regionCatalog = None):
     except IndexError:
         return np.nan
 
-def FitGradient(vlsrData, vlsrWCS,region='OrionA'):
+def FitGradient(vlsrData, vlsrWCS):
+
+    """
+    Utility function for fitting a velocity gradient.  Gives coefficients to 
+    hardwire into the VlsrByCoord function.
+
+    Parameters
+    ----------
+    vlsrData : np.array
+        Image of the vlsr data
+    vlsrWCS : astropy.wcs.WCS
+        WCS object corresponding to the image
     
+    Returns
+    -------
+    None -- output print to screen.
+    """
+
     ygood,xgood = np.where((vlsrData!=0)*np.isfinite(vlsrData))
     ra, dec = vlsrWCS.wcs_pix2world(xgood,ygood,0)
     rabar= np.median(ra)
