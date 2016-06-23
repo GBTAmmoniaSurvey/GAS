@@ -1,5 +1,4 @@
-import pdb
-import os 
+import os
 import subprocess
 import glob
 import warnings
@@ -7,20 +6,20 @@ from astropy.time import Time
 from . import catalogs
 
 
-def move_files(region='Cepheus_L1251', session=81, 
+def move_files(region='Cepheus_L1251', session=81,
                prefix='Cepheus_L1251_map_1_scan_26_49'):
     """
-    Sometimes the pipeline fails to move the calibrated files into the proper 
-    folder. 
+    Sometimes the pipeline fails to move the calibrated files into the proper
+    folder.
     move_files(region='Cepheus_L1251', session='81', prefix='Cepheus_L1251_map_1_scan_26_49')
 
-    region -- Region name. The files will be moved to folders like 
+    region -- Region name. The files will be moved to folders like
               region+line_name (eg NGC1333_C2S).
 
-    session -- Integer with session number of the observations. This is 
+    session -- Integer with session number of the observations. This is
                added to the original filename.
 
-    prefix -- String with prefix of files to be searched for. 
+    prefix -- String with prefix of files to be searched for.
     """
     folder=[ region+'_NH3_11',
              region+'_NH3_22',
@@ -34,7 +33,7 @@ def move_files(region='Cepheus_L1251', session=81,
         file_list=glob.glob('{0}*window{1}*fits'.format(prefix,window[i]))
         if len(file_list) > 0:
             for file_i in file_list:
-                os.rename( file_i, '{0}/{1}'.format( folder[i], 
+                os.rename( file_i, '{0}/{1}'.format( folder[i],
                            file_i.replace('.fits', '_sess{0}.fits'.format(i))))
 
 def fillAll(overwrite=False):
@@ -85,7 +84,7 @@ def reduceAll(overwrite=False, release = 'all'):
             except OSError:
                 os.mkdir(cwd+'/'+region)
                 os.chdir(cwd+'/'+region)
-            wrapper(region=region, overwrite = overwrite, 
+            wrapper(region=region, overwrite = overwrite,
                     release=release, obslog = Log)
             os.chdir(cwd)
 
@@ -97,23 +96,23 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     This is the GAS pipeline which chomps the observation logs and
     then batch calibrates the data.  It requires AstroPy because
     their tables are pretty nifty.
-    
+
     wrapper(logfile='../ObservationLog.csv',region='NGC1333',window=['3'])
 
-    region : string 
+    region : string
         Region name as given in logs
     window : list of strings
         List of spectral windows to calibrate
-    logfile : string 
+    logfile : string
         Full path to CSV version of the logfile (optional)
     obslog : astropy.Table
         Table representing an already parsed observation log
     overwrite : bool
         If True, carries out calibration for files already present on disk.
-    startdate : string 
-        representation of date in format YYYY-MM-DD for beginning calibration 
-    enddate : string 
-        date in format YYYY-MM-DD for ending calibration 
+    startdate : string
+        representation of date in format YYYY-MM-DD for beginning calibration
+    enddate : string
+        date in format YYYY-MM-DD for ending calibration
     release : string
         name of column in the log file that is filled with boolean
         values indicating whether a given set of scans belongs to the data
@@ -159,15 +158,15 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
                            RawDataDir=observation['Special RawDir'],
                            Window=str(thisWindow),overwrite=overwrite)
 
-def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58, 
-               Source='Perseus_map_NGC1333-A', Window='0', 
+def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
+               Source='Perseus_map_NGC1333-A', Window='0',
                Region = 'NGC1333', OptionDict = None,
-               RawDataDir = None, 
+               RawDataDir = None,
                Gains=None,
                OutputRoot = None, overwrite=False):
 
     if RawDataDir is None:
-        RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/' 
+        RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/'
     if Gains is None:
         Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
     SessionDir = 'AGBT15A_430_'+str(SessionNumber).zfill(2)+'.raw.vegas/'
@@ -180,7 +179,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                   '4':'NH3_33',
                   '5':'HC5N',
                   '6':'HC7N_22_21'}
-    
+
     # Set default pipeline options as a dictionary
     if OptionDict is None:
         OptionDict = {'--window':Window,
@@ -207,13 +206,13 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
 
     for bank in BankNames:
         # Loop over each feed and polarization
-        # we check if a pipeline call is necessary. 
+        # we check if a pipeline call is necessary.
         for feed in ['0','1','2','3','4','5','6']:
             for pol in ['0','1']:
                 FilesIntact = True
                 if not overwrite:
                     outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
-                        format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
+                        format(StartScan,EndScan,Window,feed,pol,SessionNumber)
                     FilesIntact = FilesIntact and os.path.exists(OutputDirectory+'/'+outputfile)
                     if FilesIntact:
                         print('Data for Polarization {0} of Feed {1} appear on disk... skipping'.format(pol,feed))
@@ -230,18 +229,18 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                     subprocess.call(command,shell=True)
 
                     indexname    = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
-                        format(StartScan,EndScan,Window,feed,pol) 
+                        format(StartScan,EndScan,Window,feed,pol)
                     outindexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.index'.\
-                        format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
+                        format(StartScan,EndScan,Window,feed,pol,SessionNumber)
                     try:
                         os.rename(indexname,OutputDirectory+'/'+outindexname)
                     except:
                         pass
-                    
+
                     filename   = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
-                        format(StartScan,EndScan,Window,feed,pol) 
+                        format(StartScan,EndScan,Window,feed,pol)
                     outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
-                        format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
+                        format(StartScan,EndScan,Window,feed,pol,SessionNumber)
                     try:
                         os.rename(filename,OutputDirectory+'/'+outputfile)
                         os.chown(OutputDirectory+'/'+outputfile,0774)
