@@ -1,7 +1,6 @@
 import numpy as np
 import numpy.polynomial.legendre as legendre
 import warnings
-from .intervals import VelocitySet,VelocityInterval
 from .utils import VlsrByCoord
 import catalogs
 from scipy.optimize import least_squares as lsq
@@ -11,13 +10,6 @@ import itertools
 import astropy.utils.console as console
 import pyspeckit.spectrum.models.ammonia_constants as acons
 #from pyspeckit.parallel_map import parallel_map
-
-oneone = [VelocityInterval(voff-0.001,voff+0.001) for 
-          voff in acons.voff_lines_dict['oneone']]
-twotwo = [VelocityInterval(voff-0.001,voff+0.001) for 
-          voff in acons.voff_lines_dict['twotwo']]
-threethree = [VelocityInterval(voff-0.001,voff+0.001) for 
-              voff in acons.voff_lines_dict['threethree']]
 
 def ammoniaWindow(spectrum, spaxis, freqthrow = 4.11*u.MHz, 
                   window = 2, v0 = 8.5, line='oneone',outerwindow=None):
@@ -143,5 +135,6 @@ def rebaseline(filename, blorder = 1,
     outsc = outsc[runmin:runmax,:,:] # cut beyond baseline edges
     # Return to original spectral unit
     outsc = outsc.with_spectral_unit(originalUnit)
-    outsc.write(filename.replace('.fits','_rebase{0}.fits'.format(blorder)),overwrite=True)
+    outsc.write(filename.replace('.fits','_rebase{0}.fits'.format(blorder)),
+                overwrite=True)
     
