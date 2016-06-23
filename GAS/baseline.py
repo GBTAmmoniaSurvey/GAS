@@ -20,19 +20,42 @@ threethree = [VelocityInterval(voff-0.001,voff+0.001) for
               voff in acons.voff_lines_dict['threethree']]
 
 def ammoniaWindow(spectrum, spaxis, freqthrow = 4.11*u.MHz, 
-                  window = 2, v0 = 8.5, line='oneone'):
+                  window = 2, v0 = 8.5, line='oneone',outerwindow=None):
     mask = np.zeros_like(spectrum,dtype = np.bool)
-    for hyperfine in acons.voff_lines_dict[line]:
+    voffs = np.array([dv for dv in acons.voff_lines_dict[line]])
+    for hyperfine in voffs:
         mask[(spaxis>(v0+voff-window))*(spaxis<(v0+voff+window))] = True
-    deltachan = freqthrow/((spaxis[1]-spaxis[0])/299792.458*acons.freq_dict[line])
+    deltachan = freqthrow/((spaxis[1]-spaxis[0])/299792.458*acons.freq_dict[line]*u.Hz)
+    deltachan = deltachan.to(u.dimensionless_unscaled).value
+    deltachan = (np.floor(np.abs(
+                deltachan.to(u.dimensionless_unscaled).value))).astype(np.int)
+    mask = np.logical_or(mask,np.r_[mask[deltachan:-1],
+                                    np.zeros(deltachan+1,dtype=np.bool)])
+    mask = np.logical_or(mask,np.r_[np.zeros(deltachan+1,dtype=np.bool),
+                                    mask[0:(-deltachan-1)]])
     # TODO get in frequency switch throw
+    if outerwindow is not None:
+        mask[(spaxis>(v0+outerwindow+voffs.max()))] = True
+        mask[(spaxis<(v0-outerwindow-voffs.min()))] = True
+
     return ~mask
 
 def tightWindow(spectrum, spaxis,
                 window = 5,
-                v0 = 8.5):
+                outerwindow = None,
+                v0 = 8.5,freqthrow = 4.11*u.MHz):
     mask = np.zeros_like(spectrum,dtype = np.bool)
     mask[(spaxis>(v0-window))*(spaxis<(v0+window))]=True
+    deltachan = freqthrow/((spaxis[1]-spaxis[0])/299792.458*23.5*u.GHz)
+    deltachan = (np.floor(np.abs(
+                deltachan.to(u.dimensionless_unscaled).value))).astype(np.int)
+    mask = np.logical_or(mask,np.r_[mask[deltachan:-1],\
+                                        np.zeros(deltachan+1,dtype=np.bool)])
+    mask = np.logical_or(mask,np.r_[np.zeros(deltachan+1,dtype=np.bool),
+                                    mask[0:(-deltachan-1)]])
+    if outerwindow is not None:
+        mask[(spaxis>(v0+outerwindow))] = True
+        mask[(spaxis<(v0-outerwindow))] = True
     return(~mask)
 
 def mad1d(x):
@@ -42,12 +65,15 @@ def mad1d(x):
 def legendreLoss(coeffs,y,x,noise):
     return np.sum(np.abs((y-legendre.legval(x,coeffs))/noise))
 
-def robustBaseline(y,baselineIndex,blorder=1):
+def robustBaseline(y,baselineIndex,blorder=1,noiserms=None):
     x = np.linspace(-1,1,len(y))
-    noise = mad1d((y-np.roll(y,-2))[baselineIndex])*2**(-0.5)
+    if noiserms is None:
+        noiserms = mad1d((y-np.roll(y,-2))[baselineIndex])
     opts = lsq(legendreLoss,np.zeros(blorder+1),args=(y[baselineIndex],
                                                       x[baselineIndex],
-                                                      noise),loss='arctan')
+                                                      noiserms),loss='linear')
+#    import pdb; pdb.set_trace()
+
     return y-legendre.legval(x,opts.x)
 
 def rebaseline(filename, blorder = 1, 
@@ -84,11 +110,13 @@ def rebaseline(filename, blorder = 1,
             baselineIndex = np.concatenate([nuindex[ss] for ss in baselineRegion])
         runmin = np.min([nuindex[baselineIndex].min(),runmin])
         runmax = np.max([nuindex[baselineIndex].max(),runmax])
+        noise = mad1d((spectrum-np.roll(spectrum,-2))[baselineIndex])*2**(-0.5)
 
-        outcube[:,thisy,thisx] = robustBaseline(spectrum,baselineIndex,blorder=blorder)
-#        import pdb; pdb.set_trace()
+        outcube[:,thisy,thisx] = robustBaseline(spectrum,baselineIndex,
+                                                blorder=blorder,noiserms=noise)
+        import pdb; pdb.set_trace()
     outsc = SpectralCube(outcube,cube.wcs,header=cube.header)
-#    outsc = outsc[runmin:runmax,:,:] # cut baseline edges
+    outsc = outsc[runmin:runmax,:,:] # cut baseline edges
     outsc.with_spectral_unit(originalUnit)
     outsc.write(filename.replace('.fits','_rebase{0}.fits'.format(blorder)),overwrite=True)
     
