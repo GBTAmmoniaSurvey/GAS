@@ -93,7 +93,7 @@ def grid_SerAqu(release=None):
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension)
 
-def grid_NGC1333(release=None):
+def grid_NGC1333(release=None,rbflag=True):
     """
     Function to image the NGC1333 data. The release parameter is used to 
     select the proper sessions to be imaged and the pre-defined 
@@ -112,63 +112,63 @@ def grid_NGC1333(release=None):
     region_name='NGC1333'
     print(info_message+region_name)
     #
-    startChannel = 1024 + 655 # default 1024
-    endChannel = 1024 + 1418  # default 3072
+    # startChannel = 1024 + 655 # default 1024
+    # endChannel = 1024 + 1418  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_11', 
-        startChannel = startChannel, endChannel = endChannel, 
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
     hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
-    startChannel = 1724
-    endChannel = 2374
+    # startChannel = 1724
+    # endChannel = 2374
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_22',
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
-    startChannel = 1888
-    endChannel = 2220
+    # startChannel = 1888
+    # endChannel = 2220
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_33',
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
 	#
-    startChannel = 1724 + 165
-    endChannel = 1724 + 497
+    # startChannel = 1724 + 165
+    # endChannel = 1724 + 497
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_C2S', 
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
-    startChannel=1724 + 168
-    endChannel=1724 + 500
+    # startChannel=1724 + 168
+    # endChannel=1724 + 500
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC5N', 
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
-    startChannel=1878
-    endChannel=2210
+    # startChannel=1878
+    # endChannel=2210
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_21_20', 
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
-    startChannel= 1890
-    endChannel= 2222
+    # startChannel= 1890
+    # endChannel= 2222
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_22_21', 
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
 def grid_L1455(release=None):
     """

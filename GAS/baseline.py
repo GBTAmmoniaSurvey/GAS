@@ -8,7 +8,6 @@ import astropy.units as u
 import astropy.utils.console as console
 import pyspeckit.spectrum.models.ammonia_constants as acons
 
-
 def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
                   window=2, v0=8.5, line='oneone', outerwindow=None):
     """
@@ -89,7 +88,7 @@ def tightWindow(spectrum, spaxis,
     mask[(spaxis > (v0 - window)) * (spaxis < (v0 + window))] = True
     deltachan = freqthrow / ((spaxis[1] - spaxis[0]) /
                              299792.458 * 23.5 * u.GHz)
-    deltachan.to(u.dimensionless_unscaled).value
+    deltachan = deltachan.to(u.dimensionless_unscaled).value
     deltachan = (np.floor(np.abs(deltachan))).astype(np.int)
 
     mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
@@ -123,7 +122,7 @@ def robustBaseline(y, baselineIndex, blorder=1, noiserms=None):
     return y - legendre.legval(x, opts.x)
 
 
-def rebaseline(filename, blorder=1,
+def rebaseline(filename, blorder=3,
                baselineRegion=[slice(0, 262, 1), slice(-512, 0, 1)],
                windowFunction=None, **kwargs):
     """
