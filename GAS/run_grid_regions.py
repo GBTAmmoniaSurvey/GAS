@@ -94,8 +94,7 @@ def grid_SerAqu(release=None):
         Sessions=mySessions, file_extension=file_extension)
 
 def grid_NGC1333(release=None,rbflag=True):
-    """
-    Function to image the NGC1333 data. The release parameter is used to 
+    """    Function to image the NGC1333 data. The release parameter is used to 
     select the proper sessions to be imaged and the pre-defined 
     file extension.
     """
@@ -115,7 +114,7 @@ def grid_NGC1333(release=None,rbflag=True):
     # startChannel = 1024 + 655 # default 1024
     # endChannel = 1024 + 1418  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_11', 
+        dirname=region_name+'_NH3_11', outerwindow=20, 
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
     #
@@ -124,7 +123,7 @@ def grid_NGC1333(release=None,rbflag=True):
     # startChannel = 1724
     # endChannel = 2374
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_22',
+        dirname=region_name+'_NH3_22', outerwindow=20,
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
@@ -132,7 +131,7 @@ def grid_NGC1333(release=None,rbflag=True):
     # startChannel = 1888
     # endChannel = 2220
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_33',
+        dirname=region_name+'_NH3_33', outerwindow=20,
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
@@ -141,7 +140,7 @@ def grid_NGC1333(release=None,rbflag=True):
     # startChannel = 1724 + 165
     # endChannel = 1724 + 497
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_C2S', 
+        dirname=region_name+'_C2S', outerwindow=8,
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
@@ -150,14 +149,14 @@ def grid_NGC1333(release=None,rbflag=True):
     # endChannel=1724 + 500
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC5N', 
-        templateHeader=hd_temp,
+        templateHeader=hd_temp, outerwindow=8,
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
     #
     # startChannel=1878
     # endChannel=2210
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC7N_21_20', 
+        dirname=region_name+'_HC7N_21_20', outerwindow=8,
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
@@ -165,8 +164,8 @@ def grid_NGC1333(release=None,rbflag=True):
     # startChannel= 1890
     # endChannel= 2222
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC7N_22_21', 
-        templateHeader=hd_temp,
+        dirname=region_name+'_HC7N_22_21', outerwindow=8,
+        templateHeader=hd_temp,xs
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
 
