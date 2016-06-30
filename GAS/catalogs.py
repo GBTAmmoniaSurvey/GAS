@@ -6,7 +6,7 @@ from astropy.table import Table, join
 import numpy as np
 
 def updateLogs(output='ObservationLog.csv',release=None):
-    if release is None:
+    if (release is None) or ('all' in release):
         command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheet/ccc?key=1F6MnXjK1Y1VyM8zWW3R5VvLAFF2Hkc85SGBRBxQ24JY&output=csv'"
         # The returns from subprocess are the error codes from the OS
         # If 0 then it worked so we should return True
@@ -22,7 +22,7 @@ def updateLogs(output='ObservationLog.csv',release=None):
         return False
 
 def updateCatalog(output='RegionCatalog.csv',release=None):
-    if release is None:
+    if (release is None) or ('all' in release):
         command = "wget --no-check-certificate --output-document="+output+" 'https://docs.google.com/spreadsheets/d/140SUALscsm4Lco2WU3jDaREtUnf4jA9ZEBrMg4VAdKw/export?gid=1599734490&format=csv'"
         return not subprocess.call(command,shell=True)
     if 'DR1' in release:
@@ -40,7 +40,10 @@ def GenerateRegions(refresh=False,release='all'):
     if refresh:
         updateLogs(release=release)
         updateCatalog(release=release)
-
+    if not os.access('ObservationLog.csv',os.R_OK):
+        updateLogs(release = release)
+    if not os.access('RegionCatalog.csv',os.R_OK):
+        updateCatalog(release = release)
     obs = Table.read('ObservationLog.csv')
     cat = Table.read('RegionCatalog.csv')
 
