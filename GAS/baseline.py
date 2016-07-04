@@ -40,20 +40,24 @@ def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
     for voff in voffs:
         mask[(spaxis > (v0 + voff - window)) *
              (spaxis < (v0 + voff + window))] = True
+
     deltachan = freqthrow / ((spaxis[1] - spaxis[0]) / 299792.458 *
                              acons.freq_dict[line] * u.Hz)
     deltachan = deltachan.to(u.dimensionless_unscaled).value
     deltachan = (np.floor(np.abs(deltachan))).astype(np.int)
 
-    mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
-                                     np.zeros(deltachan + 1, dtype=np.bool)])
-    mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1, dtype=np.bool),
-                                     mask[0:(-deltachan - 1)]])
-    # TODO get in frequency switch throw
-    if outerwindow is not None:
-        mask[(spaxis > (v0 + outerwindow + voffs.max()))] = True
-        mask[(spaxis < (v0 - outerwindow - voffs.min()))] = True
+    if (deltachan < spaxis.size):
+        mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
+                                         np.zeros(deltachan + 1, 
+                                                  dtype=np.bool)])
+        mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1, 
+                                                  dtype=np.bool),
+                                         mask[0:(-deltachan - 1)]])
 
+
+    if outerwindow is not None:
+        mask[(spaxis > (v0 + outerwindow + voffs.max()))] = False
+        mask[(spaxis < (v0 - outerwindow + voffs.min()))] = False
     return ~mask
 
 
@@ -91,13 +95,17 @@ def tightWindow(spectrum, spaxis,
     deltachan = deltachan.to(u.dimensionless_unscaled).value
     deltachan = (np.floor(np.abs(deltachan))).astype(np.int)
 
-    mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
-                                     np.zeros(deltachan + 1, dtype=np.bool)])
-    mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1, dtype=np.bool),
-                                     mask[0:(-deltachan - 1)]])
+    if (deltachan < spaxis.size):
+
+        mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
+                                         np.zeros(deltachan + 1,
+                                                  dtype=np.bool)])
+        mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1,
+                                                  dtype=np.bool),
+                                         mask[0:(-deltachan - 1)]])
     if outerwindow is not None:
-        mask[(spaxis > (v0 + outerwindow))] = True
-        mask[(spaxis < (v0 - outerwindow))] = True
+        mask[(spaxis > (v0 + outerwindow))] = False
+        mask[(spaxis < (v0 - outerwindow))] = False
     return(~mask)
 
 

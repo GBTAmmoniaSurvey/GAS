@@ -165,7 +165,7 @@ def grid_NGC1333(release=None,rbflag=True):
     # endChannel= 2222
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_22_21', outerwindow=8,
-        templateHeader=hd_temp,xs
+        templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
 

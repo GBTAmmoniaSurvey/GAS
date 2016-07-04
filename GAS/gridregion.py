@@ -134,7 +134,7 @@ def griddata(pixPerBeam=3.0,
              blorder=1,
              Sessions=None,
              file_extension=None,
-             rebase=False):
+             rebase=False, **kwargs):
 
     if not Sessions:
         filelist = glob.glob(rootdir + '/' + region + '/' + dirname + '/*fits')
@@ -316,4 +316,4 @@ def griddata(pixPerBeam=3.0,
         else:
             winfunc = baseline.tightWindow
         baseline.rebaseline(dirname + file_extension + '.fits',
-                            windowFunction = winfunc)
+                            windowFunction = winfunc, **kwargs)
