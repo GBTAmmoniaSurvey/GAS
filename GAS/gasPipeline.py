@@ -159,6 +159,7 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
                            RawDataDir=observation['Special RawDir'],
                            Window=str(thisWindow),overwrite=overwrite)
 
+<<<<<<< HEAD
 def parseLog(logfile='ObservationLog.csv'):
     """
     Ingests a CSV log file into an astropy table
@@ -201,6 +202,8 @@ def updateCatalog(output='RegionCatalog.csv',release=None):
         warnings.warn('Updating logs failed for non-existent data release.')
         return False
 
+=======
+>>>>>>> GBTAmmoniaSurvey/master
 def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58, 
                Source='Perseus_map_NGC1333-A', Window='0', 
                Region = 'NGC1333', OptionDict = None,

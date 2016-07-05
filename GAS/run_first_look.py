@@ -10,10 +10,13 @@ from . import first_look
 from . import gasPipeline
 from . import catalogs
 
+<<<<<<< HEAD
 quit_message=textwrap.dedent("""\
     Release parameters not defined. This region is either not
     processed in this release or it is not yet implemented.""")
             
+=======
+>>>>>>> GBTAmmoniaSurvey/master
 def FirstLook(regions=None, file_extension=None, release='all'):
     """
     This runs through cubes in a directory tree and generates first

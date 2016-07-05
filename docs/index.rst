@@ -29,4 +29,10 @@ Getting started
    calibration.rst
    imaging.rst
    first_look.rst
+<<<<<<< HEAD
    property_map.rst
+=======
+   property_map.rst
+   Update_NH3_mom0.rst
+   .. index::
+>>>>>>> GBTAmmoniaSurvey/master

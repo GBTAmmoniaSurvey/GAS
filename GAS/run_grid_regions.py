@@ -93,7 +93,7 @@ def grid_SerAqu(release=None):
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension)
 
-def grid_NGC1333(release=None):
+def grid_NGC1333(release=None,rbflag=True):
     """
     Function to image the NGC1333 data. The release parameter is used to 
     select the proper sessions to be imaged and the pre-defined 
@@ -112,63 +112,63 @@ def grid_NGC1333(release=None):
     region_name='NGC1333'
     print(info_message+region_name)
     #
-    startChannel = 1024 + 655 # default 1024
-    endChannel = 1024 + 1418  # default 3072
+    # startChannel = 1024 + 655 # default 1024
+    # endChannel = 1024 + 1418  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_11', 
-        startChannel = startChannel, endChannel = endChannel, 
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
     hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
-    startChannel = 1724
-    endChannel = 2374
+    # startChannel = 1724
+    # endChannel = 2374
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_22',
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
-    startChannel = 1888
-    endChannel = 2220
+    # startChannel = 1888
+    # endChannel = 2220
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_33',
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
 	#
-    startChannel = 1724 + 165
-    endChannel = 1724 + 497
+    # startChannel = 1724 + 165
+    # endChannel = 1724 + 497
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_C2S', 
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
-    startChannel=1724 + 168
-    endChannel=1724 + 500
+    # startChannel=1724 + 168
+    # endChannel=1724 + 500
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC5N', 
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
-    startChannel=1878
-    endChannel=2210
+    # startChannel=1878
+    # endChannel=2210
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_21_20', 
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     #
-    startChannel= 1890
-    endChannel= 2222
+    # startChannel= 1890
+    # endChannel= 2222
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_22_21', 
-        startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
 def grid_L1455(release=None):
     """
@@ -187,6 +187,122 @@ def grid_L1455(release=None):
     else:
         sys.exit(quit_message)
     region_name = 'L1455'
+    print(info_message+region_name)
+    #
+    startChannel = 1024 + 630
+    endChannel = 1024 + 1380
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_11', 
+        startChannel = startChannel, endChannel = endChannel, 
+        Sessions=mySessions, file_extension=file_extension)
+    #
+    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
+<<<<<<< HEAD
+
+    startChannel = 1724
+    endChannel = 2374
+=======
+    startChannel = 1024 + 700
+    endChannel = 1024 + 1350
+>>>>>>> GBTAmmoniaSurvey/master
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_22',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+<<<<<<< HEAD
+    #
+    startChannel = 1888
+    endChannel = 2220
+=======
+
+    startChannel = 1024 + 700 # No lines. Using the same as NH3_22 
+    endChannel = 1024 + 1350 # No lines. Using the same as NH3_22
+>>>>>>> GBTAmmoniaSurvey/master
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_NH3_33',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+
+<<<<<<< HEAD
+	#
+    startChannel = 1724 + 165
+    endChannel = 1724 + 497
+=======
+    startChannel = 1024 + 700 
+    endChannel = 1024 + 1350
+>>>>>>> GBTAmmoniaSurvey/master
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_C2S',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+<<<<<<< HEAD
+    #
+    startChannel=1724 + 168
+    endChannel=1724 + 500
+=======
+    
+    startChannel = 1024 + 700 # No Lines. Using the same as previous
+    endChannel = 1024 + 1350 # No Lines. Using the same as previous
+>>>>>>> GBTAmmoniaSurvey/master
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC5N',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+<<<<<<< HEAD
+    #
+    startChannel=1878
+    endChannel=2210
+=======
+    
+    startChannel = 1024 + 700 + 180 # No Lines. Reduce channel range to avoid absorption from frequency switching
+    endChannel   = 1024 + 700 + 460 # No Lines. Reduce channel range to avoid absorption from frequency switching
+>>>>>>> GBTAmmoniaSurvey/master
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC7N_21_20',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+<<<<<<< HEAD
+    #
+    startChannel= 1890
+    endChannel= 2222
+=======
+    
+    startChannel = 1024 + 700 # No Lines. Using the same as previous
+    endChannel = 1024 + 1350 # No Lines. Using the same as previous
+>>>>>>> GBTAmmoniaSurvey/master
+    gridregion.griddata( rootdir=data_dir, region=region_name, 
+        dirname=region_name+'_HC7N_22_21',
+        startChannel = startChannel, endChannel = endChannel, 
+        templateHeader=hd_temp,
+        Sessions=mySessions, file_extension=file_extension)
+
+
+def grid_L1448(release=None):
+    """
+<<<<<<< HEAD
+    Function to image the L1455 data. The release parameter is 
+=======
+    Function to image the L1448 data. The release parameter is 
+>>>>>>> GBTAmmoniaSurvey/master
+    used to select the proper sessions to be imaged and the pre-defined 
+    file extension.
+    """
+    if not release:
+        file_extension='_all'
+        mySessions=None
+        data_dir=gbt_dir
+    elif release == 'DR2':
+        file_extension='_DR2'
+        mySessions = None
+        data_dir=dr1_dir
+    else:
+        sys.exit(quit_message)
+    region_name = 'L1448'
     print(info_message+region_name)
     #
     startChannel = 1024 + 630
@@ -246,9 +362,15 @@ def grid_L1455(release=None):
         Sessions=mySessions, file_extension=file_extension)
 
 
+<<<<<<< HEAD
 def grid_L1448(release=None):
     """
     Function to image the L1448 data. The release parameter is 
+=======
+def grid_L1451(release=None):
+    """
+    Function to image the L1451 data. The release parameter is 
+>>>>>>> GBTAmmoniaSurvey/master
     used to select the proper sessions to be imaged and the pre-defined 
     file extension.
     """
@@ -259,10 +381,15 @@ def grid_L1448(release=None):
     elif release == 'DR2':
         file_extension='_DR2'
         mySessions = None
-        data_dir=dr1_dir
+        data_dir=dr2_dir
     else:
         sys.exit(quit_message)
+<<<<<<< HEAD
     region_name = 'L1448'
+=======
+    region_name='L1451'
+
+>>>>>>> GBTAmmoniaSurvey/master
     print(info_message+region_name)
     #
     startChannel = 1024 + 630
@@ -273,6 +400,7 @@ def grid_L1448(release=None):
         Sessions=mySessions, file_extension=file_extension)
     
     hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
+<<<<<<< HEAD
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 
@@ -350,6 +478,8 @@ def grid_L1451(release=None):
         Sessions=mySessions, file_extension=file_extension)
     
     hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
+=======
+>>>>>>> GBTAmmoniaSurvey/master
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 

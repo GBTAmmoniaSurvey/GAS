@@ -9,35 +9,128 @@ import matplotlib.pyplot as plt
 import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 
+from pyspeckit.spectrum.models import ammonia
+
+def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=None, save_masked=False):
+    """
+    Function to update moment calculation based on centroid velocity from line fit.
+    For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
+    and then use those channels as the appropiate channels for integration.
+
+    Based on code provided by Vlas Sokolov
+
+    Parameters
+    ----------
+    region : str
+        Name of region to re-calculate moment map
+    file_extension : str
+        filename extension
+    threshold : float
+        minimum threshold in model cube used to identify channels with emission
+        Default is down to the machine precision, a better result could be 
+        obtained with 0.0125
+    save_masked : Boolean
+        Keyword to store the masked cube used in the integrated intensity calculation.
+        This is useful to 
+
+    Usage: 
+    import GAS
+    GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='_DR1', threshold=0.0125, save_masked=True)
+
+    """
+    fit_file='{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension)
+    for line_i in ['11','22']:
+        file_in ='{0}/{0}_NH3_{2}_base{1}.fits'.format(region_name,file_extension,line_i)
+        file_out='{0}/{0}_NH3_{2}_base{1}_mom0_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms='{0}/{0}_NH3_{2}_base{1}_rms_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms_mom='{0}/{0}_NH3_{2}_base{1}_mom0_sigma_QA.fits'.format(region_name,file_extension,line_i)
+        file_temp='{0}/{0}_NH3_{2}_base{1}_masked_temp.fits'.format(region_name,file_extension,line_i)
+        # Load pyspeckit cube
+        pycube = pyspeckit.Cube(file_in)
+        if 'FITTYPE' in fits.getheader(fit_file):
+            # 'FITTYPE' is not present in old versions of the parameter files
+            pycube.load_model_fit( fit_file, npars=6, npeaks=1)
+        else:
+    	    if not 'cold_ammonia' in pycube.specfit.Registry.multifitters:
+                pycube.specfit.Registry.add_fitter('cold_ammonia',ammonia.cold_ammonia_model(),6)
+            pycube.load_model_fit( fit_file, npars=6, npeaks=1, fittype='cold_ammonia')
+        # If threshold is not defined, then use the machine accuracy
+        if threshold == None:
+            threshold=np.finfo(pycube.data.dtype).eps
+        # Get model cube from pyspeckit, this take some time
+        modelcube = pycube.get_modelcube()
+        # Use spectral cube to calculate integrated intensity maps
+        cube_raw = SpectralCube.read(file_in)
+        # in km/s not Hz
+        cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+        vaxis=cube.spectral_axis
+        dv=np.abs(vaxis[1]-vaxis[0])
+        # define mask 
+        mask3d = modelcube > threshold
+        # What to do with pixels without signal
+        # Calculate mean velocity and velocity dispersion
+        vmap=pycube.parcube[4,:,:]
+        sigma_map=pycube.parcube[3,:,:]
+        vmean=np.mean(vmap[vmap != 0])*u.km/u.s
+        if line_i == '11':
+            sigma_v=( np.mean(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
+        else:
+            sigma_v=( np.mean(sigma_map[vmap != 0]))*u.km/u.s
+        total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
+        # 
+        im_mask=np.sum(mask3d, axis=0)
+        for ii in np.arange( im_mask.shape[1]):
+            for jj in np.arange( im_mask.shape[0]):
+                if (im_mask[jj,ii] == 0) or (pycube.parcube[3,jj,ii] < 3*pycube.errcube[3,jj,ii]):
+                    mask3d[:,jj,ii] = total_spc
+        n_chan=np.sum(mask3d, axis=0)
+        # create masked cube
+        cube2 = cube.with_mask(mask3d)
+        cube3 = cube.with_mask(~mask3d)
+        #
+        if save_masked:
+            cube2.write( file_temp, overwrite=True)
+        # calculate moment map
+        moment_0 = cube2.moment(axis=0)
+        moment_0.write( file_out, overwrite=True)
+        rms=cube3.std(axis=0)
+        rms.write( file_rms, overwrite=True)
+        mom_0_rms=rms * dv * np.sqrt(n_chan)
+        mom_0_rms.write( file_rms_mom, overwrite=True)
+
 def run_plot_fit_all():
     """
     Run the functions for fitting the NH3 line profile and plotting the 
     results for all regions
     """
     cubefit(region='L1455', blorder=1, do_plot=True, snr_min=3, multicore=1, 
-            vmax=6.7, vmin=3.5)
+            vmax=6.7, vmin=3.5, file_extension='base_DR1')
     plot_cubefit(region='L1455', distance=250*u.pc, dvmin=0.05, dvmax=0.45, 
-                 vcmin=4.5, vcmax=6.0)
+                 vcmin=4.5, vcmax=6.0, file_extension='base_DR1')
 
     cubefit(region='NGC1333', blorder=1, do_plot=True, snr_min=3, multicore=1,
-            vmax=9.5, vmin=4.2)
+            vmax=9.5, vmin=4.2, file_extension='base_DR1')
     plot_cubefit(region='NGC1333', distance=250*u.pc, dvmin=0.05, dvmax=0.6, 
-                 vcmin=6.4, vcmax=9.3)
+                 vcmin=6.4, vcmax=9.3, file_extension='base_DR1')
 
     cubefit(region='B18', vmin=4.5, vmax=7.5, do_plot=False, snr_min=3.0, 
-            multicore=1)
+            multicore=1, file_extension='base_DR1')
     plot_cubefit(region='B18', distance=137*u.pc, dvmin=0.05, dvmax=0.3, 
-                 vcmin=5.7, vcmax=6.7)
+                 vcmin=5.7, vcmax=6.7, file_extension='base_DR1')
 
     cubefit(region='L1688', vmin=2.5, vmax=5.5, do_plot=False, snr_min=3.0, 
+<<<<<<< HEAD
             multicore=1)
+=======
+            multicore=1, file_extension='base_DR1')
+>>>>>>> GBTAmmoniaSurvey/master
     plot_cubefit(region='L1688', distance=120*u.pc, dvmin=0.05, dvmax=0.7, 
-                 vcmin=2.7, vcmax=4.8)
+                 vcmin=2.7, vcmax=4.8, file_extension='base_DR1')
 
     cubefit(region='OrionA', vmin=5.6, vmax=13.7, do_plot=False, snr_min=3.0, 
-            multicore=1)
+            multicore=1, file_extension='base_DR1')
     plot_cubefit(region='OrionA', distance=450*u.pc, dvmin=0.05, dvmax=0.7, 
-                 vcmin=5.7, vcmax=12.7)
+                 vcmin=5.7, vcmax=12.7, file_extension='base_DR1')
 
 
 
@@ -58,8 +151,8 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
-def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
-    '''
+def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_extension=None):
+    """
     Flag cubefit results based on S/N in integrated intensity. 
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
     Outputs five .pdf files: Tkin, Tex, Vc, sigmaV, NNH3
@@ -73,7 +166,9 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
         order of baseline removed
     version : str
         data release version
-    '''
+    file_extension: : str
+        filename
+    """
     import matplotlib.pyplot as plt
     import aplpy
 
@@ -86,19 +181,24 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2):
     flagSN22 = 3.0
     flagSN11 = 3.0
 
-    hdu=fits.open("{0}/parameterMaps/{0}_parameter_maps.fits".format(region))
+    if file_extension:
+        root = file_extension
+    else:
+        root = 'base{0}'.format(blorder)
+
+    hdu=fits.open("{0}_parameter_maps_{1}.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
 
-    rms11hdu = fits.open("{0}/{0}_NH3_11_base{1}_rms.fits".format(region,blorder))
+    rms11hdu = fits.open("{0}/{0}_NH3_11_base{1}_mom0_sigma_QA.fits.fits".format(region,blorder))
     rms11data = rms11hdu[0].data
     rms11hdu.close()
     m0_11 = fits.open("{0}/{0}_NH3_11_base{1}_mom0.fits".format(region,blorder))
     m0_11data = m0_11[0].data
     hd11 = m0_11[0].header
     m0_11.close()
-    rms22hdu = fits.open("{0}/{0}_NH3_22_base{1}_rms.fits".format(region,blorder))
+    rms22hdu = fits.open("{0}/{0}_NH3_22_base{1}_mom0_sigma_QA.fits".format(region,blorder))
     rms22data = rms22hdu[0].data
     rms22hdu.close()
     m0_22 = fits.open("{0}/{0}_NH3_22_base{1}_mom0.fits".format(region,blorder))
@@ -215,10 +315,17 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     if file_extension:
         root = file_extension
     else:
+<<<<<<< HEAD
         root = 'base{0}'.format(blorder)
 
     data_file = "{0}_parameter_maps.fits".format(region)
     w11_file='{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
+=======
+        root = '{0}'.format(blorder)
+
+    data_file ="{0}_parameter_maps_{1}.fits".format(region,root)
+    w11_file='{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,root)
+>>>>>>> GBTAmmoniaSurvey/master
 
     hdu   =fits.open(data_file)
     header=hdu[0].header
@@ -332,7 +439,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     # N(NH3)
     # 
     color_table='viridis'
-    fig0=aplpy.FITSFigure(hdu_tex, hdu=0)
+    fig0=aplpy.FITSFigure(hdu_nnh3, hdu=0)
     fig0.show_colorscale( cmap=color_table)
     fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
                       zorder=34)
@@ -348,7 +455,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
 def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc, 
                      version='v1',dvmin=0, 
                      dvmax=None, vcmin=None, vcmax=None):
-    '''
+    """
     Plot from flagged fits files rather than from cubefit output multi-HDU 
     file. Side-by-side plots for v_lsr, sigma
     Parameters
@@ -371,7 +478,6 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     vcmax : numpy.float
         Maximum centroid velocity to plot, in km/s. No default.
     """
-    '''
     # Assume moment map in different dir, assume has been flagged
     # Set up directories here
     # If running in images/ then:
@@ -502,12 +608,17 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig0.save(parMapDir+"{0}_NNH3.pdf".format(region),dpi=300)
     fig0.close()
 
-def update_cubefit(region='NGC1333'):
+def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
     """
     Updates the fit parameters storage format from cube (v0, one channel per 
     parameter) into a set of files (v1, one FITS per parameter). 
     """
-    hdu=fits.open("{0}_parameter_maps.fits".format(region))
+    if file_extension:
+        root = file_extension
+    else:
+        root = 'base{0}'.format(blorder)
+
+    hdu=fits.open("{0}_parameter_maps_{1}.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
@@ -588,7 +699,7 @@ def default_masking(snr,snr_min=5.0):
 def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False, 
             snr_min=5.0, multicore=1, file_extension=None, mask_function = None):
     """
-    Fit NH3(1,1), (2,2) and (3,3) cubes for the requested region. 
+    Fit NH3(1,1) and (2,2) cubes for the requested region. 
     It fits all pixels with SNR larger than requested. 
     Initial guess is based on moment maps and neighboring pixels. 
     The fitting can be done in parallel mode using several cores, 
@@ -627,12 +738,20 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     else:
         root = 'base{0}'.format(blorder)
 
+<<<<<<< HEAD
 
     OneOneIntegrated = '{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
     OneOneFile = '{0}/{0}_NH3_11_{1}.fits'.format(region,root)
     RMSFile = '{0}/{0}_NH3_11_{1}_rms.fits'.format(region,root)
     TwoTwoFile = '{0}/{0}_NH3_22_{1}.fits'.format(region,root)
     ThreeThreeFile = '{0}/{0}_NH3_33_{1}.fits'.format(region,root)
+=======
+    OneOneIntegrated = '{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,root)
+    OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,root)
+    RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,root)
+    TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,root)
+    ThreeThreeFile = '{0}/{0}_NH3_33_base{1}.fits'.format(region,root)
+>>>>>>> GBTAmmoniaSurvey/master
         
     cube11sc = SpectralCube.read(OneOneFile)
     cube22sc = SpectralCube.read(TwoTwoFile)
@@ -682,8 +801,12 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
         plt.show()
     F=False
     T=True
+    
+    if not 'cold_ammonia' in cubes.specfit.Registry.multifitters:
+        cubes.specfit.Registry.add_fitter('cold_ammonia',ammonia.cold_ammonia_model(),6)
+        
     print('start fit')
-    cubes.fiteach(fittype='ammonia',  guesses=guesses,
+    cubes.fiteach(fittype='cold_ammonia',  guesses=guesses,
                   integral=False, verbose_level=3, 
                   fixed=[F,F,F,F,F,T], signal_cut=2,
                   limitedmax=[F,F,T,F,T,T],
@@ -712,4 +835,8 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     fitcubefile.header.update('CTYPE3','FITPAR')
     fitcubefile.header.update('CRVAL3',0)
     fitcubefile.header.update('CRPIX3',1)
+<<<<<<< HEAD
     fitcubefile.writeto("{0}_parameter_maps.fits".format(region),clobber=True)
+=======
+    fitcubefile.writeto("{0}/{0}_parameter_maps_{1}.fits".format(region,root),clobber=True)
+>>>>>>> GBTAmmoniaSurvey/master
