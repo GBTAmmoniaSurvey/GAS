@@ -137,7 +137,7 @@ def rebaseline(filename, blorder=3,
     baselineRegion : list
         List of slices defining the default region of the spectrum, in
         channels, to be used for the baseline fitting.
-    windowFuntion : function
+    windowFunction : function
         Name of function to be used that will accept spectrum data, and
         velocity axis and will return a binary mask of the channels to be used
         in the  baseline fitting.  Extra **kwargs are passed to windowFunction
