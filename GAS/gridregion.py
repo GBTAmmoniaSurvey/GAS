@@ -311,9 +311,22 @@ def griddata(pixPerBeam=3.0,
     hdu2.writeto(dirname + file_extension + '_wts.fits', clobber=True)
 
     if rebase:
-        if 'NH3' in dirname:
+        if 'NH3_11' in dirname:
+            baseline.rebaseline(dirname + file_extension + '.fits',
+                                windowFunction=baseline.ammoniaWindow,
+                                line='oneone', **kwargs)
+
+        if 'NH3_22' in dirname:
             winfunc = baseline.ammoniaWindow
+            baseline.rebaseline(dirname + file_extension + '.fits',
+                                windowFunction=baseline.ammoniaWindow,
+                                line='twotwo', **kwargs)
+
+        if 'NH3_33' in dirname:
+            baseline.rebaseline(dirname + file_extension + '.fits',
+                                winfunc = baseline.ammoniaWindow,
+                                line='threethree', **kwargs)
         else:
-            winfunc = baseline.tightWindow
-        baseline.rebaseline(dirname + file_extension + '.fits',
-                            windowFunction = winfunc, **kwargs)
+            baseline.rebaseline(dirname + file_extension + '.fits',
+                                windowFunction=baseline.tightWindow, 
+                                **kwargs)

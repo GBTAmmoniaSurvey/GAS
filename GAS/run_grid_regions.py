@@ -3,7 +3,7 @@ from . import gridregion
 import textwrap
 import sys
 import os
-
+from . import baseline
 from astropy.io import fits
 
 quit_message=textwrap.dedent("""\
@@ -114,7 +114,7 @@ def grid_NGC1333(release=None,rbflag=True):
     # startChannel = 1024 + 655 # default 1024
     # endChannel = 1024 + 1418  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_11', outerwindow=20, 
+        dirname=region_name+'_NH3_11', outerwindow=18, 
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
     #
@@ -123,7 +123,7 @@ def grid_NGC1333(release=None,rbflag=True):
     # startChannel = 1724
     # endChannel = 2374
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_22', outerwindow=20,
+        dirname=region_name+'_NH3_22', outerwindow=18,
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
@@ -131,7 +131,7 @@ def grid_NGC1333(release=None,rbflag=True):
     # startChannel = 1888
     # endChannel = 2220
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_33', outerwindow=20,
+        dirname=region_name+'_NH3_33', outerwindow=18,
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
@@ -397,7 +397,7 @@ def grid_L1451(release=None):
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension)
 
-def grid_L1688(release=None):
+def grid_L1688(release=None,rbflag=True):
     """
     Function to image the L1688 data. The release parameter is 
     used to select the proper sessions to be imaged and the pre-defined 
@@ -419,9 +419,10 @@ def grid_L1688(release=None):
     startChannel = 1024 + 650 #As is in the fits file
     endChannel = 1024 + 1400
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_11', 
+        dirname=region_name+'_NH3_11', outerwindow=18,
         startChannel = startChannel, endChannel = endChannel, 
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
     hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
@@ -430,50 +431,56 @@ def grid_L1688(release=None):
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_22',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        templateHeader=hd_temp, outerwindow=18,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_NH3_33',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        templateHeader=hd_temp, outerwindow=18,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_C2S',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        templateHeader=hd_temp, outerwindow=8,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC5N',
+        dirname=region_name+'_HC5N', outerwindow=8,
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC7N_21_20',
+        dirname=region_name+'_HC7N_21_20', outerwindow=8,
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC7N_22_21',
+        dirname=region_name+'_HC7N_22_21', outerwindow=8,
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
-def grid_OrionA(release=None):
+def grid_OrionA(release=None, rbflag=True):
     """
     Function to image the OrionA data. The release parameter is 
     used to select the proper sessions to be imaged and the pre-defined 
@@ -495,59 +502,66 @@ def grid_OrionA(release=None):
     startChannel = 1024 + 655 # default 1024
     endChannel = 1024 + 1418  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_11', 
+        dirname=region_name+'_NH3_11', outerwindow=18,
         startChannel = startChannel, endChannel = endChannel, 
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_22',
+        dirname=region_name+'_NH3_22', outerwindow=18,
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
     startChannel = 1024 + 577 # default 1024
     endChannel = 1024 + 1540  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_33',
+        dirname=region_name+'_NH3_33', outerwindow=18,
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
     startChannel = 1024 + 790 # default 1024
     endChannel = 1024 + 1290  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_C2S',
+        dirname=region_name+'_C2S', outerwindow=8,
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     startChannel = 1024 + 600 # default 1024
     endChannel = 1024 + 1150  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_HC5N',
+        dirname=region_name+'_HC5N', outerwindow=8,
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     startChannel = 1024 + 600 # default 1024
     endChannel = 1024 + 1130  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_21_20',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+                         templateHeader=hd_temp, outerwindow=8,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     startChannel = 1024 + 600 # default 1024
     endChannel = 1024 + 1150  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_22_21',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        templateHeader=hd_temp, outerwindow=8,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
 def grid_OrionB_NGC2023_2024(release=None):
     """
@@ -701,7 +715,7 @@ def grid_OrionB_NGC2068_2071(release=None):
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension)
 
-def grid_B18(release=None):
+def grid_B18(release=None,rbflag=True):
     """
     Function to image the B18 data. The release parameter is used 
     to select the proper sessions to be imaged and the pre-defined 
@@ -723,7 +737,7 @@ def grid_B18(release=None):
     startChannel = 1024 + 655 # default 1024
     endChannel = 1024 + 1418  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_11', 
+        dirname=region_name+'_NH3_11', outerwindow=18,
         startChannel = startChannel, endChannel = endChannel, 
         Sessions=mySessions, file_extension=file_extension)
     
@@ -732,50 +746,56 @@ def grid_B18(release=None):
     startChannel = 1024 + 596 # default 1024
     endChannel = 1024 + 1470  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_22',
+        dirname=region_name+'_NH3_22',outerwindow=18,
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
     startChannel = 1024 + 577 # default 1024
     endChannel = 1024 + 1540  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
-        dirname=region_name+'_NH3_33',
-        startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+                         dirname=region_name+'_NH3_33', outerwindow=18,
+                         startChannel = startChannel, endChannel = endChannel, 
+                         templateHeader=hd_temp,
+                         Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
     startChannel = 1024 + 790 # default 1024
     endChannel = 1024 + 1290  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_C2S',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        templateHeader=hd_temp, outerwindow=8,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     startChannel = 1024 + 600 # default 1024
     endChannel = 1024 + 1150  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC5N',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        templateHeader=hd_temp, outerwindow=8,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
     startChannel = 1024 + 600 # default 1024
     endChannel = 1024 + 1150  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_21_20',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        templateHeader=hd_temp, outerwindow=8,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
     
     startChannel = 1024 + 600 # default 1024
     endChannel = 1024 + 1150  # default 3072
     gridregion.griddata( rootdir=data_dir, region=region_name, 
         dirname=region_name+'_HC7N_22_21',
         startChannel = startChannel, endChannel = endChannel, 
-        templateHeader=hd_temp,
-        Sessions=mySessions, file_extension=file_extension)
+        templateHeader=hd_temp, outerwindow=8,
+        Sessions=mySessions, file_extension=file_extension,
+                         rebase=rbflag)
 
 def grid_Cepheus_L1228(release=None):
     """
@@ -1511,3 +1531,35 @@ def grid_SerMWC(release=None):
         startChannel = startChannel, endChannel = endChannel, 
         templateHeader=hd_temp,
         Sessions=mySessions, file_extension=file_extension)
+
+def run_rebaseline(region='NGC1333',file_extension='DR1.fits',
+                   blorder=3,nh3outer=20,outerwindow=20,**kwargs):
+
+    for line in ['NH3_11','NH3_22','NH3_33','HC5N',
+                 'HC7N_22_21','HC7N_21_20','C2S']:
+        filename = region+'_'+line+'_'+file_extension
+        if 'NH3_11' in line:
+            print "Running 1,1"
+            baseline.rebaseline(filename,
+                                windowFunction=baseline.ammoniaWindow,
+                                line='oneone', outerwindow=nh3outer,
+                                blorder=blorder,**kwargs)
+
+        elif 'NH3_22' in line:
+            print "running 2,2"
+            baseline.rebaseline(filename,
+                                windowFunction=baseline.ammoniaWindow,
+                                outerwindow=nh3outer,blorder=blorder,
+                                line='twotwo', **kwargs)
+
+        elif 'NH3_33' in line:
+            baseline.rebaseline(filename,
+                                winfunc = baseline.ammoniaWindow,
+                                outerwindow=nh3outer,blorder=blorder,
+                                line='threethree', **kwargs)
+        else:
+            baseline.rebaseline(filename,
+                                windowFunction=baseline.tightWindow, 
+                                outerwindow=outerwindow,blorder=blorder,
+                                **kwargs)
+
