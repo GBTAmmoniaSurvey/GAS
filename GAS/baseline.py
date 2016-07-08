@@ -8,6 +8,7 @@ import astropy.units as u
 import astropy.utils.console as console
 import pyspeckit.spectrum.models.ammonia_constants as acons
 
+
 def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
                   window=2, v0=8.5, line='oneone', outerwindow=None):
     """
@@ -48,12 +49,11 @@ def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
 
     if (deltachan < spaxis.size):
         mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
-                                         np.zeros(deltachan + 1, 
+                                         np.zeros(deltachan + 1,
                                                   dtype=np.bool)])
-        mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1, 
+        mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1,
                                                   dtype=np.bool),
                                          mask[0:(-deltachan - 1)]])
-        
 
     if outerwindow is not None:
         mask[(spaxis > (v0 + outerwindow + voffs.max()))] = True
@@ -132,7 +132,7 @@ def robustBaseline(y, baselineIndex, blorder=1, noiserms=None):
 
 def rebaseline(filename, blorder=3,
                baselineRegion=[slice(0, 262, 1), slice(-512, 0, 1)],
-               windowFunction=None, blankBaseline=False, 
+               windowFunction=None, blankBaseline=False,
                flagSpike=True, **kwargs):
     """
     Rebaseline a data cube using robust regression of Legendre polynomials.
@@ -177,7 +177,6 @@ def rebaseline(filename, blorder=3,
     runmin = nuindex[-1]
     runmax = nuindex[0]
 
-
     for thisy, thisx in console.ProgressBar(zip(y, x)):
         spectrum = cube[:, thisy, thisx].value
 
@@ -192,16 +191,14 @@ def rebaseline(filename, blorder=3,
             baselineIndex = np.concatenate([nuindex[ss] for
                                             ss in baselineRegion])
 
-            
         runmin = np.min([nuindex[baselineIndex].min(), runmin])
         runmax = np.max([nuindex[baselineIndex].max(), runmax])
 
-
         # Use channel-to-channel difference as the noise value.
         if flagSpike:
-            jumps = (spectrum - np.roll(spectrum, -1)) 
+            jumps = (spectrum - np.roll(spectrum, -1))
             noise = mad1d(jumps) * 2**(-0.5)
-            baselineIndex *= (np.abs(jumps) < 5*noise)
+            baselineIndex *= (np.abs(jumps) < 5 * noise)
             noise = mad1d((spectrum -
                            np.roll(spectrum, -2))[baselineIndex]) * 2**(-0.5)
         else:
@@ -210,15 +207,15 @@ def rebaseline(filename, blorder=3,
 
         if blankBaseline:
             spectrum = robustBaseline(spectrum, baselineIndex,
-                                                      blorder=blorder,
-                                                      noiserms=noise)
-            spectrum[baselineIndex]=np.nan
+                                      blorder=blorder,
+                                      noiserms=noise)
+            spectrum[baselineIndex] = np.nan
             outcube[:, thisy, thisx] = spectrum
         else:
             outcube[:, thisy, thisx] = robustBaseline(spectrum, baselineIndex,
                                                       blorder=blorder,
                                                       noiserms=noise)
-        
+
     outsc = SpectralCube(outcube, cube.wcs, header=cube.header)
     outsc = outsc[runmin:runmax, :, :]  # cut beyond baseline edges
     # Return to original spectral unit
