@@ -188,8 +188,9 @@ def rebaseline(filename, blorder=3,
             baselineIndex = windowFunction(spectrum, spaxis,
                                            v0=v0, **kwargs)
         else:
-            baselineIndex = np.concatenate([nuindex[ss] for
-                                            ss in baselineRegion])
+            baselineIndex = np.zeros_like(spectrum,dtype=np.bool)
+            for ss in baselineRegion:
+                baselineIndex[ss] = True
 
         runmin = np.min([nuindex[baselineIndex].min(), runmin])
         runmax = np.max([nuindex[baselineIndex].max(), runmax])

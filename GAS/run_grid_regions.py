@@ -1570,7 +1570,7 @@ def run_rebaseline(region='NGC1333', file_extension='DR1.fits',
 
         elif 'NH3_33' in line:
             baseline.rebaseline(filename,
-                                winfunc=baseline.ammoniaWindow,
+                                windowFunction=baseline.ammoniaWindow,
                                 outerwindow=nh3outer, blorder=blorder,
                                 line='threethree', **kwargs)
         else:
