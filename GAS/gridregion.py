@@ -12,6 +12,7 @@ import astropy.units as u
 import astropy.constants as con
 import numpy.polynomial.legendre as legendre
 import warnings
+import baseline
 from . import __version__
 
 
@@ -132,7 +133,8 @@ def griddata(pixPerBeam=3.0,
              baselineRegion=[slice(762, 1024, 1), slice(3072, 3584, 1)],
              blorder=1,
              Sessions=None,
-             file_extension=None):
+             file_extension=None,
+             rebase=False, **kwargs):
 
     if not Sessions:
         filelist = glob.glob(rootdir + '/' + region + '/' + dirname + '/*fits')
@@ -307,3 +309,24 @@ def griddata(pixPerBeam=3.0,
     hdr2 = fits.Header(w2.to_header())
     hdu2 = fits.PrimaryHDU(outWts, header=hdr2)
     hdu2.writeto(dirname + file_extension + '_wts.fits', clobber=True)
+
+    if rebase:
+        if 'NH3_11' in dirname:
+            baseline.rebaseline(dirname + file_extension + '.fits',
+                                windowFunction=baseline.ammoniaWindow,
+                                line='oneone', **kwargs)
+
+        if 'NH3_22' in dirname:
+            winfunc = baseline.ammoniaWindow
+            baseline.rebaseline(dirname + file_extension + '.fits',
+                                windowFunction=baseline.ammoniaWindow,
+                                line='twotwo', **kwargs)
+
+        if 'NH3_33' in dirname:
+            baseline.rebaseline(dirname + file_extension + '.fits',
+                                winfunc = baseline.ammoniaWindow,
+                                line='threethree', **kwargs)
+        else:
+            baseline.rebaseline(dirname + file_extension + '.fits',
+                                windowFunction=baseline.tightWindow, 
+                                **kwargs)

@@ -8,7 +8,6 @@ import astropy.units as u
 import astropy.utils.console as console
 import pyspeckit.spectrum.models.ammonia_constants as acons
 
-
 def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
                   window=2, v0=8.5, line='oneone', outerwindow=None):
     """
@@ -41,20 +40,24 @@ def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
     for voff in voffs:
         mask[(spaxis > (v0 + voff - window)) *
              (spaxis < (v0 + voff + window))] = True
+
     deltachan = freqthrow / ((spaxis[1] - spaxis[0]) / 299792.458 *
                              acons.freq_dict[line] * u.Hz)
     deltachan = deltachan.to(u.dimensionless_unscaled).value
     deltachan = (np.floor(np.abs(deltachan))).astype(np.int)
 
-    mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
-                                     np.zeros(deltachan + 1, dtype=np.bool)])
-    mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1, dtype=np.bool),
-                                     mask[0:(-deltachan - 1)]])
-    # TODO get in frequency switch throw
+    if (deltachan < spaxis.size):
+        mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
+                                         np.zeros(deltachan + 1, 
+                                                  dtype=np.bool)])
+        mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1, 
+                                                  dtype=np.bool),
+                                         mask[0:(-deltachan - 1)]])
+        
+
     if outerwindow is not None:
         mask[(spaxis > (v0 + outerwindow + voffs.max()))] = True
-        mask[(spaxis < (v0 - outerwindow - voffs.min()))] = True
-
+        mask[(spaxis < (v0 - outerwindow + voffs.min()))] = True
     return ~mask
 
 
@@ -89,13 +92,17 @@ def tightWindow(spectrum, spaxis,
     mask[(spaxis > (v0 - window)) * (spaxis < (v0 + window))] = True
     deltachan = freqthrow / ((spaxis[1] - spaxis[0]) /
                              299792.458 * 23.5 * u.GHz)
-    deltachan.to(u.dimensionless_unscaled).value
+    deltachan = deltachan.to(u.dimensionless_unscaled).value
     deltachan = (np.floor(np.abs(deltachan))).astype(np.int)
 
-    mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
-                                     np.zeros(deltachan + 1, dtype=np.bool)])
-    mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1, dtype=np.bool),
-                                     mask[0:(-deltachan - 1)]])
+    if (deltachan < spaxis.size):
+
+        mask = np.logical_or(mask, np.r_[mask[deltachan:-1],
+                                         np.zeros(deltachan + 1,
+                                                  dtype=np.bool)])
+        mask = np.logical_or(mask, np.r_[np.zeros(deltachan + 1,
+                                                  dtype=np.bool),
+                                         mask[0:(-deltachan - 1)]])
     if outerwindow is not None:
         mask[(spaxis > (v0 + outerwindow))] = True
         mask[(spaxis < (v0 - outerwindow))] = True
@@ -123,9 +130,10 @@ def robustBaseline(y, baselineIndex, blorder=1, noiserms=None):
     return y - legendre.legval(x, opts.x)
 
 
-def rebaseline(filename, blorder=1,
+def rebaseline(filename, blorder=3,
                baselineRegion=[slice(0, 262, 1), slice(-512, 0, 1)],
-               windowFunction=None, **kwargs):
+               windowFunction=None, blankBaseline=False, 
+               flagSpike=True, **kwargs):
     """
     Rebaseline a data cube using robust regression of Legendre polynomials.
 
@@ -143,6 +151,8 @@ def rebaseline(filename, blorder=1,
         velocity axis and will return a binary mask of the channels to be used
         in the  baseline fitting.  Extra **kwargs are passed to windowFunction
         to do with as it must.
+    blankBaseline : boolean
+        Blank the baseline region on a per-spectrum basis
 
     Returns
     -------
@@ -153,6 +163,7 @@ def rebaseline(filename, blorder=1,
     cube = SpectralCube.read(filename)
     originalUnit = cube.spectral_axis.unit
     cube = cube.with_spectral_unit(u.km / u.s, velocity_convention='radio')
+    spaxis = cube.spectral_axis.to(u.km / u.s).value
 
     goodposition = np.isfinite(cube.apply_numpy_function(np.max, axis=0))
     y, x = np.where(goodposition)
@@ -165,6 +176,8 @@ def rebaseline(filename, blorder=1,
     nuindex = np.arange(cube.shape[0])
     runmin = nuindex[-1]
     runmax = nuindex[0]
+
+
     for thisy, thisx in console.ProgressBar(zip(y, x)):
         spectrum = cube[:, thisy, thisx].value
 
@@ -173,22 +186,39 @@ def rebaseline(filename, blorder=1,
             # This determines a v0 appropriate for the region
             v0 = VlsrByCoord(RA.value, Dec.value, RegionName,
                              regionCatalog=catalog)
-            baselineIndex = windowFunction(spectrum,
-                                           cube.spectral_axis.to(u.km /
-                                                                 u.s).value,
+            baselineIndex = windowFunction(spectrum, spaxis,
                                            v0=v0, **kwargs)
         else:
             baselineIndex = np.concatenate([nuindex[ss] for
                                             ss in baselineRegion])
+
+            
         runmin = np.min([nuindex[baselineIndex].min(), runmin])
         runmax = np.max([nuindex[baselineIndex].max(), runmax])
-        # Use channel-to-channel difference as the noise value.
-        noise = mad1d((spectrum -
-                       np.roll(spectrum, -2))[baselineIndex]) * 2**(-0.5)
 
-        outcube[:, thisy, thisx] = robustBaseline(spectrum, baselineIndex,
-                                                  blorder=blorder,
-                                                  noiserms=noise)
+
+        # Use channel-to-channel difference as the noise value.
+        if flagSpike:
+            jumps = (spectrum - np.roll(spectrum, -1)) 
+            noise = mad1d(jumps) * 2**(-0.5)
+            baselineIndex *= (np.abs(jumps) < 5*noise)
+            noise = mad1d((spectrum -
+                           np.roll(spectrum, -2))[baselineIndex]) * 2**(-0.5)
+        else:
+            noise = mad1d((spectrum -
+                           np.roll(spectrum, -2))[baselineIndex]) * 2**(-0.5)
+
+        if blankBaseline:
+            spectrum = robustBaseline(spectrum, baselineIndex,
+                                                      blorder=blorder,
+                                                      noiserms=noise)
+            spectrum[baselineIndex]=np.nan
+            outcube[:, thisy, thisx] = spectrum
+        else:
+            outcube[:, thisy, thisx] = robustBaseline(spectrum, baselineIndex,
+                                                      blorder=blorder,
+                                                      noiserms=noise)
+        
     outsc = SpectralCube(outcube, cube.wcs, header=cube.header)
     outsc = outsc[runmin:runmax, :, :]  # cut beyond baseline edges
     # Return to original spectral unit
