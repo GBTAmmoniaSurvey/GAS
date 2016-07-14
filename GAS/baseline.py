@@ -10,7 +10,7 @@ import pyspeckit.spectrum.models.ammonia_constants as acons
 
 
 def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
-                  window=2, v0=8.5, line='oneone', outerwindow=None):
+                  window=3, v0=8.5, line='oneone', outerwindow=None):
     """
     This defines a narrow window around the v0 value for ammonia hyperfines.
 
@@ -62,7 +62,7 @@ def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
 
 
 def tightWindow(spectrum, spaxis,
-                window=5,
+                window=4,
                 outerwindow=None,
                 v0=8.5, freqthrow=4.11 * u.MHz):
     """
@@ -133,7 +133,7 @@ def robustBaseline(y, baselineIndex, blorder=1, noiserms=None):
 def rebaseline(filename, blorder=3,
                baselineRegion=[slice(0, 262, 1), slice(-512, 0, 1)],
                windowFunction=None, blankBaseline=False,
-               flagSpike=True, **kwargs):
+               flagSpike=True, v0=None, **kwargs):
     """
     Rebaseline a data cube using robust regression of Legendre polynomials.
 
@@ -180,7 +180,10 @@ def rebaseline(filename, blorder=3,
     for thisy, thisx in console.ProgressBar(zip(y, x)):
         spectrum = cube[:, thisy, thisx].value
 
-        if hasattr(windowFunction, '__call__'):
+        if v0 is not None:
+            baselineIndex = windowFunction(spectrum, spaxis,
+                                           v0=v0, **kwargs)
+        elif hasattr(windowFunction, '__call__'):
             _, Dec, RA = cube.world[0, thisy, thisx]
             # This determines a v0 appropriate for the region
             v0 = VlsrByCoord(RA.value, Dec.value, RegionName,
