@@ -574,40 +574,40 @@ def FirstLook_NGC1333(file_extension='_all'):
     Function to create First Look products for NGC1333. The file_extension 
     parameter is used to select the proper files to be processed. 
     """
-    region_name='NGC1333'
-    print("Now NH3(1,1)")
-    file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                             '_base'+file_extension+'.fits')
-    a_rms = [  0, 158, 315, 428, 530, 693, 751]
-    b_rms = [ 60, 230, 327, 438, 604, 735, 760]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(326,430)
-    first_look.baseline( file_in, file_out, index_clean=index_rms, 
-                                  polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
 
-    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+
+    region_name='NGC1333'
     vsys = 7.9*u.km/u.s
     throw = 2.0*u.km/u.s
+
+    print("Now NH3(1,1)")
+    
+    file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
+
+    s = SpectralCube.read(file_in)
+    s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+    spaxis = s.spectral_axis.value
+    index_rms = baseline.ammoniaWindow(spaxis,spaxis,window=4,v0=vsys.value)
+    index_peak= ~baseline.tightWindow(spaxis,spaxis,window=3,v0=vsys.value)
+    first_look.peak_rms( file_in, index_rms=index_rms, index_peak=index_peak)
+
+    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+
     for line in linelist:
         file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
         s = SpectralCube.read(file_in)
         s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
-        a_rms = [s.closest_spectral_channel(vsys+20*throw),
-                 s.closest_spectral_channel(vsys-20*throw)]
-        b_rms = [s.closest_spectral_channel(vsys+2*throw),
+        a_rms = [s.closest_spectral_channel(vsys+2*throw),
+                 s.closest_spectral_channel(vsys-throw)]
+        b_rms = [s.closest_spectral_channel(vsys+throw),
                  s.closest_spectral_channel(vsys-2*throw)]
-        index_peak = np.arange(s.closest_spectral_channel(vsys+throw),
-                              s.closest_spectral_channel(vsys-throw))
+        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                              s.closest_spectral_channel(vsys-3*u.km/u.s))
         index_rms=first_look.create_index( a_rms, b_rms)
-        #
-        file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-        first_look.baseline( file_in, file_out, 
-                                      index_clean=index_rms, polyorder=1)
-        first_look.peak_rms( file_out, index_rms=index_rms, 
+        first_look.peak_rms( file_in, index_rms=index_rms, 
                              index_peak=index_peak)
+
+
 
 def FirstLook_B1(file_extension='_all'):
     """
