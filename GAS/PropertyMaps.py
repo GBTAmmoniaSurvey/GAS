@@ -725,13 +725,14 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     if file_extension:
         root = file_extension
     else:
-        root = 'base{0}'.format(blorder)
+        # root = 'base{0}'.format(blorder)
+        root = 'all'
 
-    OneOneIntegrated = '{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,root)
-    OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,root)
-    RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,root)
-    TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,root)
-    ThreeThreeFile = '{0}/{0}_NH3_33_base{1}.fits'.format(region,root)
+    OneOneIntegrated = '{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
+    OneOneFile = '{0}/{0}_NH3_11_{1}.fits'.format(region,root)
+    RMSFile = '{0}/{0}_NH3_11_{1}_rms.fits'.format(region,root)
+    TwoTwoFile = '{0}/{0}_NH3_22_{1}.fits'.format(region,root)
+    ThreeThreeFile = '{0}/{0}_NH3_33_{1}.fits'.format(region,root)
         
     cube11sc = SpectralCube.read(OneOneFile)
     cube22sc = SpectralCube.read(TwoTwoFile)

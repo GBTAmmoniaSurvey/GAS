@@ -9,6 +9,7 @@ from pyspeckit.spectrum.models.ammonia_constants import voff_lines_dict
 from . import first_look
 from . import gasPipeline
 from . import catalogs
+from . import baseline
 
 def FirstLook(regions=None, file_extension=None, release='all'):
     """
@@ -298,73 +299,105 @@ def FirstLook_L1688(file_extension='_all'):
     parameter is used to select the proper files to be processed. 
     """
     region_name='L1688'
+    vsys = 3.5*u.km/u.s
+    throw = 5*u.km/u.s
+
     print("Now NH3(1,1)")
-    a_rms = [  0, 121, 290, 404, 505, 665]
-    b_rms = [ 74, 239, 332, 447, 611, 749]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(350,377)
+    #a_rms = [  0, 121, 290, 404, 505, 665]
+    #b_rms = [ 74, 239, 332, 447, 611, 749]
+    #index_rms=first_look.create_index( a_rms, b_rms)
+    #index_peak=np.arange(350,377)
+    
     file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                             '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
-    #
-    print("Now NH3(2,2)")
-    a_rms = [   0, 349]
-    b_rms = [ 285, 649]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(298,342)
-    line='NH3_22'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
-    #
-    print("Now NH3(3,3)")
-    a_rms = [   0, 395]
-    b_rms = [ 272, 649]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(298,342)
-    line='NH3_33'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
-    #
-    print("Now CCS")
-    a_rms = [   0, 369]
-    b_rms = [ 278, 649]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(307,325)
-    line='C2S'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
-    #
-    print("Now HC5N")
-    a_rms = [   0, 358]
-    b_rms = [ 288, 649]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(306,317)
-    line='HC5N'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
-    #
-    #HC7N (21-20) shows an absorption feature at ~ 91 km/s (at 23.6951 GHz)
-    #from its rest frequency (used 23.6879 GHz). There's no emission line.
-    #Below are the channel indeces for the absorption feature.
-    #a_rms = [  0, 520]
-    #b_rms = [480, 650]
-    #index_peak = np.arange(485,510)
-    #
-    #The code didn't produce the fits file for HC7N (22-21).
+    # file_out=file_in.replace(file_extension+'.fits',
+    #                          '_base'+file_extension+'.fits')
+    # first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    s = SpectralCube.read(file_in)
+    s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+    spaxis = s.spectral_axis.value
+    index_rms = baseline.ammoniaWindow(spaxis,spaxis,window=4,v0=vsys.value)
+    index_peak= ~baseline.tightWindow(spaxis,spaxis,window=3,v0=vsys.value)
+    first_look.peak_rms( file_in, index_rms=index_rms, index_peak=index_peak)
+
+    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+
+
+    for line in linelist:
+        file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+        s = SpectralCube.read(file_in)
+        s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+        a_rms = [s.closest_spectral_channel(vsys+2*throw),
+                 s.closest_spectral_channel(vsys-throw)]
+        b_rms = [s.closest_spectral_channel(vsys+throw),
+                 s.closest_spectral_channel(vsys-2*throw)]
+        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                              s.closest_spectral_channel(vsys-3*u.km/u.s))
+        index_rms=first_look.create_index( a_rms, b_rms)
+
+        #file_out=file_in.replace(file_extension+'.fits',
+        #                         '_base'+file_extension+'.fits')
+        # first_look.baseline( file_in, file_out, 
+        #                               index_clean=index_rms, polyorder=1)
+        first_look.peak_rms( file_in, index_rms=index_rms, 
+                             index_peak=index_peak)
+
+
+    # print("Now NH3(2,2)")
+    # a_rms = [   0, 349]
+    # b_rms = [ 285, 649]
+    # index_rms=first_look.create_index( a_rms, b_rms)
+    # index_peak=np.arange(298,342)
+    # line='NH3_22'
+    # file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    # file_out=file_in.replace(file_extension+'.fits',
+    #                              '_base'+file_extension+'.fits')
+    # first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    # first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    # #
+    # print("Now NH3(3,3)")
+    # a_rms = [   0, 395]
+    # b_rms = [ 272, 649]
+    # index_rms=first_look.create_index( a_rms, b_rms)
+    # index_peak=np.arange(298,342)
+    # line='NH3_33'
+    # file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    # file_out=file_in.replace(file_extension+'.fits',
+    #                              '_base'+file_extension+'.fits')
+    # first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    # first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    # #
+    # print("Now CCS")
+    # a_rms = [   0, 369]
+    # b_rms = [ 278, 649]
+    # index_rms=first_look.create_index( a_rms, b_rms)
+    # index_peak=np.arange(307,325)
+    # line='C2S'
+    # file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    # file_out=file_in.replace(file_extension+'.fits',
+    #                              '_base'+file_extension+'.fits')
+    # first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    # first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    # #
+    # print("Now HC5N")
+    # a_rms = [   0, 358]
+    # b_rms = [ 288, 649]
+    # index_rms=first_look.create_index( a_rms, b_rms)
+    # index_peak=np.arange(306,317)
+    # line='HC5N'
+    # file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    # file_out=file_in.replace(file_extension+'.fits',
+    #                              '_base'+file_extension+'.fits')
+    # first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    # first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    # #
+    # #HC7N (21-20) shows an absorption feature at ~ 91 km/s (at 23.6951 GHz)
+    # #from its rest frequency (used 23.6879 GHz). There's no emission line.
+    # #Below are the channel indeces for the absorption feature.
+    # #a_rms = [  0, 520]
+    # #b_rms = [480, 650]
+    # #index_peak = np.arange(485,510)
+    # #
+    # #The code didn't produce the fits file for HC7N (22-21).
 
 def FirstLook_L1689(file_extension='_all'):
     """
@@ -541,40 +574,40 @@ def FirstLook_NGC1333(file_extension='_all'):
     Function to create First Look products for NGC1333. The file_extension 
     parameter is used to select the proper files to be processed. 
     """
-    region_name='NGC1333'
-    print("Now NH3(1,1)")
-    file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                             '_base'+file_extension+'.fits')
-    a_rms = [  0, 158, 315, 428, 530, 693, 751]
-    b_rms = [ 60, 230, 327, 438, 604, 735, 760]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(326,430)
-    first_look.baseline( file_in, file_out, index_clean=index_rms, 
-                                  polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
 
-    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+
+    region_name='NGC1333'
     vsys = 7.9*u.km/u.s
     throw = 2.0*u.km/u.s
+
+    print("Now NH3(1,1)")
+    
+    file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
+
+    s = SpectralCube.read(file_in)
+    s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+    spaxis = s.spectral_axis.value
+    index_rms = baseline.ammoniaWindow(spaxis,spaxis,window=4,v0=vsys.value)
+    index_peak= ~baseline.tightWindow(spaxis,spaxis,window=3,v0=vsys.value)
+    first_look.peak_rms( file_in, index_rms=index_rms, index_peak=index_peak)
+
+    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+
     for line in linelist:
         file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
         s = SpectralCube.read(file_in)
         s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
-        a_rms = [s.closest_spectral_channel(vsys+20*throw),
-                 s.closest_spectral_channel(vsys-20*throw)]
-        b_rms = [s.closest_spectral_channel(vsys+2*throw),
+        a_rms = [s.closest_spectral_channel(vsys+2*throw),
+                 s.closest_spectral_channel(vsys-throw)]
+        b_rms = [s.closest_spectral_channel(vsys+throw),
                  s.closest_spectral_channel(vsys-2*throw)]
-        index_peak = np.arange(s.closest_spectral_channel(vsys+throw),
-                              s.closest_spectral_channel(vsys-throw))
+        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                              s.closest_spectral_channel(vsys-3*u.km/u.s))
         index_rms=first_look.create_index( a_rms, b_rms)
-        #
-        file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-        first_look.baseline( file_in, file_out, 
-                                      index_clean=index_rms, polyorder=1)
-        first_look.peak_rms( file_out, index_rms=index_rms, 
+        first_look.peak_rms( file_in, index_rms=index_rms, 
                              index_peak=index_peak)
+
+
 
 def FirstLook_B1(file_extension='_all'):
     """
