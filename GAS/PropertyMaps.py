@@ -109,24 +109,24 @@ def run_plot_fit_all():
                  vcmin=4.5, vcmax=6.0, file_extension='base_DR1')
 
     cubefit(region='NGC1333', blorder=1, do_plot=True, snr_min=3, multicore=1,
-            vmax=9.5, vmin=4.2, file_extension='base_DR1')
+            vmax=9.5, vmin=4.2, file_extension='DR1_rebase3')
     plot_cubefit(region='NGC1333', distance=250*u.pc, dvmin=0.05, dvmax=0.6, 
-                 vcmin=6.4, vcmax=9.3, file_extension='base_DR1')
+                 vcmin=6.4, vcmax=9.3, file_extension='DR1_rebase3')
 
     cubefit(region='B18', vmin=4.5, vmax=7.5, do_plot=False, snr_min=3.0, 
-            multicore=1, file_extension='base_DR1')
+            multicore=1, file_extension='DR1_rebase3')
     plot_cubefit(region='B18', distance=137*u.pc, dvmin=0.05, dvmax=0.3, 
-                 vcmin=5.7, vcmax=6.7, file_extension='base_DR1')
+                 vcmin=5.7, vcmax=6.7, file_extension='DR1_rebase3')
 
     cubefit(region='L1688', vmin=2.5, vmax=5.5, do_plot=False, snr_min=3.0, 
-            multicore=1, file_extension='base_DR1')
+            multicore=1, file_extension='DR1_rebase3')
     plot_cubefit(region='L1688', distance=120*u.pc, dvmin=0.05, dvmax=0.7, 
-                 vcmin=2.7, vcmax=4.8, file_extension='base_DR1')
+                 vcmin=2.7, vcmax=4.8, file_extension='DR1_rebase3')
 
     cubefit(region='OrionA', vmin=5.6, vmax=13.7, do_plot=False, snr_min=3.0, 
-            multicore=1, file_extension='base_DR1')
+            multicore=1, file_extension='DR1_rebase3')
     plot_cubefit(region='OrionA', distance=450*u.pc, dvmin=0.05, dvmax=0.7, 
-                 vcmin=5.7, vcmax=12.7, file_extension='base_DR1')
+                 vcmin=5.7, vcmax=12.7, file_extension='DR1_rebase3')
 
 
 
