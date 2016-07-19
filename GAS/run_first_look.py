@@ -243,89 +243,119 @@ def FirstLook_B18(file_extension='_all'):
     parameter is used to select the proper files to be processed. 
     """
     region_name='B18'
-    print("Now NH3(1,1)")
-    a_rms = [  0, 115, 280, 385, 490, 655]
-    b_rms = [ 80, 230, 345, 455, 625, 760]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(352,381)
-    file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                             '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
-    #
+    vsys = 6.*u.km/u.s
+    throw = 2.0*u.km/u.s
 
-    print("Now NH3(2,2)")
-    a_rms = [   0, 440]
-    b_rms = [ 409, 870]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(420,435)
-    line='NH3_22'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    print("Now NH3(1,1)")
+    
+    file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
+
+    s = SpectralCube.read(file_in)
+    s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+    spaxis = s.spectral_axis.value
+    index_rms = baseline.ammoniaWindow(spaxis,spaxis,window=4,v0=vsys.value)
+    index_peak= ~baseline.tightWindow(spaxis,spaxis,window=3,v0=vsys.value)
+    first_look.peak_rms( file_in, index_rms=index_rms, index_peak=index_peak)
+
+    linelist = ['NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+
+    for line in linelist:
+        file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+        s = SpectralCube.read(file_in)
+        s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+        a_rms = [s.closest_spectral_channel(vsys+2*throw),
+                 s.closest_spectral_channel(vsys-throw)]
+        b_rms = [s.closest_spectral_channel(vsys+throw),
+                 s.closest_spectral_channel(vsys-2*throw)]
+        index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
+                              s.closest_spectral_channel(vsys-3*u.km/u.s))
+        index_rms=first_look.create_index( a_rms, b_rms)
+        first_look.peak_rms( file_in, index_rms=index_rms, 
+                             index_peak=index_peak)
+
+    #region_name='B18'
+    #print("Now NH3(1,1)")
+    #a_rms = [  0, 115, 280, 385, 490, 655]
+    #b_rms = [ 80, 230, 345, 455, 625, 760]
+    #index_rms=first_look.create_index( a_rms, b_rms)
+    #index_peak=np.arange(352,381)
+    #file_in='{0}/{0}_NH3_11{1}.fits'.format(region_name,file_extension)
+    #file_out=file_in.replace(file_extension+'.fits',
+    #                         '_base'+file_extension+'.fits')
+    #first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    #first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
     #
-    print("Now NH3(3,3)")
-    a_rms = [   0, 530]
-    b_rms = [ 409, 960]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(410,485)
-    line='NH3_33'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    #print("Now NH3(2,2)")
+    #a_rms = [   0, 440]
+    #b_rms = [ 409, 870]
+    #index_rms=first_look.create_index( a_rms, b_rms)
+    #index_peak=np.arange(420,435)
+    #line='NH3_22'
+    #file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    #file_out=file_in.replace(file_extension+'.fits',
+    #                             '_base'+file_extension+'.fits')
+    #first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    #first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
     #
-    print("Now CCS")
-    a_rms = [   0, 245]
-    b_rms = [ 210, 490]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(225,243)
-    line='C2S'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    #print("Now NH3(3,3)")
+    #a_rms = [   0, 530]
+    #b_rms = [ 409, 960]
+    #index_rms=first_look.create_index( a_rms, b_rms)
+    #index_peak=np.arange(410,485)
+    #line='NH3_33'
+    #file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    #file_out=file_in.replace(file_extension+'.fits',
+    #                             '_base'+file_extension+'.fits')
+    #first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    #first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
     #
-    print("Now HC5N")
-    a_rms = [  10, 435]
-    b_rms = [ 409, 540]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(414,430)
-    line='HC5N'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    #print("Now CCS")
+    #a_rms = [   0, 245]
+    #b_rms = [ 210, 490]
+    #index_rms=first_look.create_index( a_rms, b_rms)
+    #index_peak=np.arange(225,243)
+    #line='C2S'
+    #file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    #file_out=file_in.replace(file_extension+'.fits',
+    #                             '_base'+file_extension+'.fits')
+    #first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    #first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
     #
-    print("Now HC7N_21_20")
-    a_rms = [  10, 435]
-    b_rms = [ 409, 540]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(412,430)
-    line='HC7N_21_20'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    #print("Now HC5N")
+    #a_rms = [  10, 435]
+    #b_rms = [ 409, 540]
+    #index_rms=first_look.create_index( a_rms, b_rms)
+    #index_peak=np.arange(414,430)
+    #line='HC5N'
+    #file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    #file_out=file_in.replace(file_extension+'.fits',
+    #                             '_base'+file_extension+'.fits')
+    #first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    #first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
     #
-    print("Now HC7N_22_21")
-    a_rms = [  10, 435]
-    b_rms = [ 409, 540]
-    index_rms=first_look.create_index( a_rms, b_rms)
-    index_peak=np.arange(412,430)
-    line='HC7N_22_21'
-    file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
-    file_out=file_in.replace(file_extension+'.fits',
-                                 '_base'+file_extension+'.fits')
-    first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-    first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    #print("Now HC7N_21_20")
+    #a_rms = [  10, 435]
+    #b_rms = [ 409, 540]
+    #index_rms=first_look.create_index( a_rms, b_rms)
+    #index_peak=np.arange(412,430)
+    #line='HC7N_21_20'
+    #file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    #file_out=file_in.replace(file_extension+'.fits',
+    #                             '_base'+file_extension+'.fits')
+    #first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    #first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+    #
+    #print("Now HC7N_22_21")
+    #a_rms = [  10, 435]
+    #b_rms = [ 409, 540]
+    #index_rms=first_look.create_index( a_rms, b_rms)
+    #index_peak=np.arange(412,430)
+    #line='HC7N_22_21'
+    #file_in = '{0}/{0}_{1}{2}.fits'.format(region_name,line,file_extension)
+    #file_out=file_in.replace(file_extension+'.fits',
+    #                             '_base'+file_extension+'.fits')
+    #first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+    #first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
 
 
 def FirstLook_L1688(file_extension='_all'):
