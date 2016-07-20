@@ -16,7 +16,7 @@ from ._astropy_init import *
 if not _ASTROPY_SETUP_:
     import gasPipeline
 #    import gridregion
-    import run_grid_regions
+#    import run_grid_regions
     import first_look
     import run_first_look
 #    import PropertyMaps
