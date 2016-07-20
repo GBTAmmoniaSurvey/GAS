@@ -1,5 +1,6 @@
 matplotlib>=1.5.1
 numpy>=1.8.2
+scipy>=0.17.0
 astropy>=1.1
 aplpy>=1.0
 pyspeckit>=0.1.19
