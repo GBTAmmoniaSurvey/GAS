@@ -15,15 +15,15 @@ from ._astropy_init import *
 # For egg_info test builds to pass, put package imports here.
 if not _ASTROPY_SETUP_:
     import gasPipeline
-    import gridregion
-    import run_grid_regions
-    import first_look
-    import run_first_look
-    import PropertyMaps
-    import gasBinning
-    import voronoi_2d_binning
+#    import gridregion
+#    import run_grid_regions
+#    import first_look
+#    import run_first_look
+#    import PropertyMaps
+#    import gasBinning
+#    import voronoi_2d_binning
     import utils
     import catalogs
-    import baseline
+#    import baseline
 #    import DR1
     pass
