@@ -11,7 +11,7 @@ from skimage.morphology import remove_small_objects,closing,disk,opening
 
 from pyspeckit.spectrum.models import ammonia
 
-def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=None, save_masked=False):
+def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=None, save_masked=False):
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
@@ -35,16 +35,16 @@ def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=Non
 
     Usage: 
     import GAS
-    GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='_DR1', threshold=0.0125, save_masked=True)
+    GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='DR1_rebase3', threshold=0.0125, save_masked=True)
 
     """
     fit_file='{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension)
     for line_i in ['11','22']:
-        file_in ='{0}/{0}_NH3_{2}_base{1}.fits'.format(region_name,file_extension,line_i)
-        file_out='{0}/{0}_NH3_{2}_base{1}_mom0_QA.fits'.format(region_name,file_extension,line_i)
-        file_rms='{0}/{0}_NH3_{2}_base{1}_rms_QA.fits'.format(region_name,file_extension,line_i)
-        file_rms_mom='{0}/{0}_NH3_{2}_base{1}_mom0_sigma_QA.fits'.format(region_name,file_extension,line_i)
-        file_temp='{0}/{0}_NH3_{2}_base{1}_masked_temp.fits'.format(region_name,file_extension,line_i)
+        file_in ='{0}/{0}_NH3_{2}_{1}.fits'.format(region_name,file_extension,line_i)
+        file_out='{0}/{0}_NH3_{2}_{1}_mom0_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms='{0}/{0}_NH3_{2}_{1}_rms_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms_mom='{0}/{0}_NH3_{2}_{1}_mom0_sigma_QA.fits'.format(region_name,file_extension,line_i)
+        file_temp='{0}/{0}_NH3_{2}_{1}_masked_temp.fits'.format(region_name,file_extension,line_i)
         # Load pyspeckit cube
         pycube = pyspeckit.Cube(file_in)
         if 'FITTYPE' in fits.getheader(fit_file):
