@@ -73,9 +73,9 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         sigma_map=pycube.parcube[3,:,:]
         vmean=np.mean(vmap[vmap != 0])*u.km/u.s
         if line_i == '11':
-            sigma_v=( np.mean(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
+            sigma_v=( np.median(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
         else:
-            sigma_v=( np.mean(sigma_map[vmap != 0]))*u.km/u.s
+            sigma_v=( np.median(sigma_map[vmap != 0]))*u.km/u.s
         total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
         # 
         im_mask=np.sum(mask3d, axis=0)
