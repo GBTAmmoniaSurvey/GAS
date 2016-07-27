@@ -620,62 +620,62 @@ def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
     # Tkin
     hd['BUNIT']='K'
     param=cube[0,:,:]
-    file_out="{0}_Tkin_v1.fits".format(region)
+    file_out="{0}_Tkin_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     #Tex
     hd['BUNIT']='K'
     param=cube[1,:,:]
-    file_out="{0}_Tex_v1.fits".format(region)
+    file_out="{0}_Tex_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # N_NH3
     hd['BUNIT']='cm-2'
     param=cube[2,:,:]
-    file_out="{0}_N_NH3_v1.fits".format(region)
+    file_out="{0}_N_NH3_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # sigma
     hd['BUNIT']='km/s'
     param=cube[3,:,:]
-    file_out="{0}_Sigma_v1.fits".format(region)
+    file_out="{0}_Sigma_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Vlsr
     hd['BUNIT']='km/s'
     param=cube[4,:,:]
-    file_out="{0}_Vlsr_v1.fits".format(region)
+    file_out="{0}_Vlsr_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Fortho
     hd['BUNIT']=''
     param=cube[5,:,:]
-    file_out="{0}_Fortho_v1.fits".format(region)
+    file_out="{0}_Fortho_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eTkin
     hd['BUNIT']='K'
     param=cube[6,:,:]
-    file_out="{0}_eTkin_v1.fits".format(region)
+    file_out="{0}_eTkin_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eTex
     hd['BUNIT']='K'
     param=cube[7,:,:]
-    file_out="{0}_eTex_v1.fits".format(region)
+    file_out="{0}_eTex_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eN_NH3
     hd['BUNIT']='cm-2'
     param=cube[8,:,:]
-    file_out="{0}_eN_NH3_v1.fits".format(region)
+    file_out="{0}_eN_NH3_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eSigma
     hd['BUNIT']='km/s'
     param=cube[9,:,:]
-    file_out="{0}_eSigma_v1.fits".format(region)
+    file_out="{0}_eSigma_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eVlsr
     hd['BUNIT']='km/s'
     param=cube[10,:,:]
-    file_out="{0}_eVlsr_v1.fits".format(region)
+    file_out="{0}_eVlsr_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eFortho
     hd['BUNIT']=''
     param=cube[11,:,:]
-    file_out="{0}_eFortho_v1.fits".format(region)
+    file_out="{0}_eFortho_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
 
 def default_masking(snr,snr_min=5.0):
