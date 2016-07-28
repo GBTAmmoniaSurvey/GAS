@@ -72,6 +72,7 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         vmap=pycube.parcube[4,:,:]
         sigma_map=pycube.parcube[3,:,:]
         vmean=np.mean(vmap[vmap != 0])*u.km/u.s
+        print 'Median!'
         if line_i == '11':
             sigma_v=( np.median(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
         else:
