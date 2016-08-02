@@ -148,7 +148,7 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
-def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_extension=None):
+def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
     """
     Flag cubefit results based on S/N in integrated intensity. 
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
@@ -215,9 +215,9 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     m0_11data[ m0_11data == 0. ] = np.nan
     m0_22data[ rms22data > rmsFlag ] = np.nan
     m0_22data[ m0_22data == 0. ] = np.nan
-    fits.writeto("{0}/{0}_NH3_11_base{1}_mom0_flag.fits".format(region,blorder),
+    fits.writeto("{0}/{0}_NH3_11_{1}_mom0_flag.fits".format(region,root),
                  m0_11data,hd11,clobber=True)
-    fits.writeto("{0}/{0}_NH3_22_base{1}_mom0_flag.fits".format(region,blorder),
+    fits.writeto("{0}/{0}_NH3_22_{1}_mom0_flag.fits".format(region,root),
                  m0_22data,hd22,clobber=True)
 
     # Get Tex, Tk files for mask
@@ -239,7 +239,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     param[ tex <= flagMinTex ] = np.nan
     param[ param <= flagMinTk ] = np.nan
     param[ eparam > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     #Tex
     hd['BUNIT']='K'
@@ -249,7 +249,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     param[ tex <= flagMinTex ] = np.nan
     param[ tk == flagMinTk ] = np.nan
     param[ eparam > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # N_NH3
     hd['BUNIT']='cm-2'
@@ -260,7 +260,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     param[ tex <= flagMinTex ] = np.nan
     param[ tk <= flagMinTk ] = np.nan
     param[ etk > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # sigma
     # Use same flags for Vlsr, sigma
@@ -269,7 +269,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     eparam=cube[9,:,:]
     param[ param == 0 ] = np.nan
     param[ sn11 < flagSN11 ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Vlsr
     hd['BUNIT']='km/s'
@@ -277,7 +277,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     eparam=cube[10,:,:]
     param[ param == 0 ] = np.nan
     param[ sn11 < flagSN11 ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
 
 def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, 
