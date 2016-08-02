@@ -137,7 +137,10 @@ def trim_edge_cube( cube):
     """
     # 
     mask = np.isfinite(cube)
-    mask_2d = mask[0,:,:]
+    if len(cube.shape) == 2:
+        mask_2d = mask[:,:]
+    else:
+        mask_2d = mask[0,:,:]
     # remove image edges
     mask_2d[:,0] = mask_2d[:,-1] = False
     mask_2d[0,:] = mask_2d[-1,:] = False

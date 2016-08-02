@@ -9,17 +9,21 @@ from . import catalogs
 def move_files(region='Cepheus_L1251', session=81,
                prefix='Cepheus_L1251_map_1_scan_26_49'):
     """
-    Sometimes the pipeline fails to move the calibrated files into the proper
+    Sometimes the pipeline fails to move the calibrated files into the proper 
     folder.
+
     move_files(region='Cepheus_L1251', session='81', prefix='Cepheus_L1251_map_1_scan_26_49')
 
-    region -- Region name. The files will be moved to folders like
-              region+line_name (eg NGC1333_C2S).
+    region : string
+        Region name. The files will be moved to folders like 
+        region+line_name (eg NGC1333_C2S).
 
-    session -- Integer with session number of the observations. This is
-               added to the original filename.
+    session : int
+        Session number of the observations. This is added to the 
+        original filename.
 
-    prefix -- String with prefix of files to be searched for.
+    prefix : string
+        The prefix of files to be searched for.
     """
     folder=[ region+'_NH3_11',
              region+'_NH3_22',
@@ -37,6 +41,15 @@ def move_files(region='Cepheus_L1251', session=81,
                            file_i.replace('.fits', '_sess{0}.fits'.format(i))))
 
 def fillAll(overwrite=False):
+    """
+    Function to fill in all raw-data into the format needed for the 
+    GBT-pipeline.
+    
+    fillAll(overwrite=False)
+
+    overwrite : bool
+        If True it will overwrite files.
+    """
 
     RawDir = '/lustre/pipeline/scratch/GAS/rawdata/'
     try:
@@ -71,6 +84,18 @@ def fillAll(overwrite=False):
             subprocess.call(permissions,shell=True)
 
 def reduceAll(overwrite=False, release = 'all'):
+    """
+    Function to reduce all data using the GBT-pipeline.
+    
+    reduceAll(overwrite=False, release='all')
+
+    release : string
+        Variable that selects which set of data is to be reduced. 
+        Default value is 'all', while 'DR1' generates the Data Release 1, and 
+        hopefully 'DR2' will be available in the near future.
+    overwrite : bool
+        If True it will overwrite files.
+    """
     catalogs.updateLogs(release=release)
     catalogs.updateCatalog(release=release)
     RegionCatalog = catalogs.GenerateRegions()
@@ -164,7 +189,9 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                RawDataDir = None,
                Gains=None,
                OutputRoot = None, overwrite=False):
-
+    """
+    This is the basic GAS pipeline which in turn uses the gbt pipeline.
+    """
     if RawDataDir is None:
         RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/'
     if Gains is None:
