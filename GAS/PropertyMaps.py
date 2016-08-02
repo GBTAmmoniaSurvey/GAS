@@ -2,6 +2,7 @@ import pyspeckit
 import astropy.io.fits as fits
 import numpy as np
 import os
+from .first_look import trim_edge_cube
 from spectral_cube import SpectralCube
 import astropy.constants as con
 import astropy.units as u
@@ -73,9 +74,9 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         sigma_map=pycube.parcube[3,:,:]
         vmean=np.mean(vmap[vmap != 0])*u.km/u.s
         if line_i == '11':
-            sigma_v=( np.mean(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
+            sigma_v=( np.median(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
         else:
-            sigma_v=( np.mean(sigma_map[vmap != 0]))*u.km/u.s
+            sigma_v=( np.median(sigma_map[vmap != 0]))*u.km/u.s
         total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
         # 
         im_mask=np.sum(mask3d, axis=0)
@@ -129,6 +130,65 @@ def run_plot_fit_all():
                  vcmin=5.7, vcmax=12.7, file_extension='DR1_rebase3')
 
 
+def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,propertyMaps=True):
+    '''
+    Trim cube edges for DR1 release data. Wasn't incorporated into baseline fitting
+    but should be for future baselined data. 
+    Since trim looks for edges in the data, CANNOT use on already flagged data.
+    Also doesn't work for parameter maps, since have zeros rather than NaNs 
+    Use moment map as mask for other files
+    '''
+    if file_extension:
+        root = file_extension
+    else:
+        root = '{0}'.format(blorder)
+
+    # Cubes:
+    line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    #line_list = ['NH3_11']
+    for line in line_list:
+        filein = '{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
+        # trim_edge_cube doesn't work on a spectral cube object. 
+        # cube = SpectralCube.read(filein)
+        cube = fits.open(filein)
+        cube_data = cube[0].data
+        cube_hdr  = cube[0].header
+        cube.close()
+        trim_edge_cube(cube_data)
+        fits.writeto('{0}/{0}_{1}_{2}_trim.fits'.format(region_name,line,file_extension),
+                     cube_data,cube_hdr,clobber=True)
+        moment = fits.open('{0}/{0}_{1}_{2}_mom0.fits'.format(region_name,line,file_extension))
+        moment_data = moment[0].data
+        moment_hdr  = moment[0].header
+        moment.close()
+        trim_edge_cube(moment_data)
+        fits.writeto('{0}/{0}_{1}_{2}_mom0_trim.fits'.format(region_name,line,file_extension),
+                     moment_data,moment_hdr,clobber=True)
+        rms = fits.open('{0}/{0}_{1}_{2}_rms.fits'.format(region_name,line,file_extension))
+        rms_data = rms[0].data
+        rms_hdr  = rms[0].header
+        rms.close()
+        trim_edge_cube(rms_data)
+        fits.writeto('{0}/{0}_{1}_{2}_rms_trim.fits'.format(region_name,line,file_extension),
+                     rms_data,rms_hdr,clobber=True)
+
+    # Use NH3 (1,1) moment map as mask for property map
+    # trim_edge_cube didn't work on full cube
+    # Can loop over planes in cube!
+    moment = fits.open('{0}/{0}_NH3_11_{1}_mom0.fits'.format(region_name,file_extension))
+    moment_data = moment[0].data
+    if propertyMaps:
+        propMap = fits.open('{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension))
+        propMap_data = propMap[0].data
+        propMap_hdr  = propMap[0].header
+        propMap.close()    
+        for plane_i in range(len(propMap_data)):
+            data_i = propMap_data[plane_i,:,:]
+            data_i[~np.isfinite(moment_data)] = np.nan
+            propMap_data[plane_i,:,:] = data_i
+        fits.writeto('{0}/{0}_parameter_maps_{1}_trim.fits'.format(region_name,file_extension),
+                     propMap_data,propMap_hdr,clobber=True)
+    
 
 def _add_plot_text( fig, region, blorder, distance):
     # set nan color and beam size color
@@ -147,7 +207,7 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
-def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_extension=None):
+def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
     """
     Flag cubefit results based on S/N in integrated intensity. 
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
@@ -182,22 +242,22 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     else:
         root = 'base{0}'.format(blorder)
 
-    hdu=fits.open("{0}_parameter_maps_{1}.fits".format(region,root))
+    hdu=fits.open("{0}/{0}_parameter_maps_{1}.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
 
-    rms11hdu = fits.open("{0}/{0}_NH3_11_base{1}_mom0_sigma_QA.fits.fits".format(region,blorder))
+    rms11hdu = fits.open("{0}/{0}_NH3_11_{1}_rms.fits".format(region,root))
     rms11data = rms11hdu[0].data
     rms11hdu.close()
-    m0_11 = fits.open("{0}/{0}_NH3_11_base{1}_mom0.fits".format(region,blorder))
+    m0_11 = fits.open("{0}/{0}_NH3_11_{1}_mom0.fits".format(region,root))
     m0_11data = m0_11[0].data
     hd11 = m0_11[0].header
     m0_11.close()
-    rms22hdu = fits.open("{0}/{0}_NH3_22_base{1}_mom0_sigma_QA.fits".format(region,blorder))
+    rms22hdu = fits.open("{0}/{0}_NH3_22_{1}_rms.fits".format(region,root))
     rms22data = rms22hdu[0].data
     rms22hdu.close()
-    m0_22 = fits.open("{0}/{0}_NH3_22_base{1}_mom0.fits".format(region,blorder))
+    m0_22 = fits.open("{0}/{0}_NH3_22_{1}_mom0.fits".format(region,root))
     m0_22data = m0_22[0].data
     hd22 = m0_22[0].header
     m0_22.close()
@@ -214,9 +274,9 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     m0_11data[ m0_11data == 0. ] = np.nan
     m0_22data[ rms22data > rmsFlag ] = np.nan
     m0_22data[ m0_22data == 0. ] = np.nan
-    fits.writeto("{0}/{0}_NH3_11_base{1}_mom0_flag.fits".format(region,blorder),
+    fits.writeto("{0}/{0}_NH3_11_{1}_mom0_flag.fits".format(region,root),
                  m0_11data,hd11,clobber=True)
-    fits.writeto("{0}/{0}_NH3_22_base{1}_mom0_flag.fits".format(region,blorder),
+    fits.writeto("{0}/{0}_NH3_22_{1}_mom0_flag.fits".format(region,root),
                  m0_22data,hd22,clobber=True)
 
     # Get Tex, Tk files for mask
@@ -238,7 +298,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     param[ tex <= flagMinTex ] = np.nan
     param[ param <= flagMinTk ] = np.nan
     param[ eparam > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     #Tex
     hd['BUNIT']='K'
@@ -248,7 +308,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     param[ tex <= flagMinTex ] = np.nan
     param[ tk == flagMinTk ] = np.nan
     param[ eparam > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # N_NH3
     hd['BUNIT']='cm-2'
@@ -259,7 +319,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     param[ tex <= flagMinTex ] = np.nan
     param[ tk <= flagMinTk ] = np.nan
     param[ etk > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # sigma
     # Use same flags for Vlsr, sigma
@@ -268,7 +328,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     eparam=cube[9,:,:]
     param[ param == 0 ] = np.nan
     param[ sn11 < flagSN11 ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Vlsr
     hd['BUNIT']='km/s'
@@ -276,7 +336,7 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     eparam=cube[10,:,:]
     param[ param == 0 ] = np.nan
     param[ sn11 < flagSN11 ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,version)
+    file_out="{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
 
 def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, 
@@ -442,7 +502,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.close()
 
 def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc, 
-                     version='v1',dvmin=0, 
+                     version='v1',dvmin=0, file_extension='DR1_rebase3',
                      dvmax=None, vcmin=None, vcmax=None):
     """
     Plot from flagged fits files rather than from cubefit output multi-HDU 
@@ -467,36 +527,20 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     vcmax : numpy.float
         Maximum centroid velocity to plot, in km/s. No default.
     """
-    # Assume moment map in different dir, assume has been flagged
-    # Set up directories here
-    # If running in images/ then:
-    regionDir = "{0}/".format(region)
-    parMapDir = "{0}/parameterMaps/".format(region)
+    if file_extension:
+        root = file_extension
+    else:
+        root = '{0}'.format(blorder)
 
-    w11_file = regionDir+ "{0}_NH3_11_base{1}_mom0_flag.fits".format(region,blorder)
+    w11_file = "{0}/{0}_NH3_11_{1}_mom0_flag.fits".format(region,root)
     c_levs=np.arange(0.3,5,0.5)
     #
     # Centroid velocity
     #
-    # First, unmasked file
-    dataFile = parMapDir+"{0}_Vlsr_{1}.fits".format(region,version)
-    color_table='RdYlBu_r'
-    fig = plt.figure()
-    fig0=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.1,0.1,0.4,0.8])
-    fig0.show_colorscale( cmap=color_table, vmin=vcmin, vmax=vcmax)
-    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
-                      zorder=34)
-    _add_plot_text( fig0, region, blorder, distance)
-    fig0.tick_labels.set_style('colons')
-    fig0.tick_labels.set_yformat('dd:mm')
-    fig0.tick_labels.set_xformat('hh:mm')
-    fig0.add_colorbar()
-    fig0.colorbar.set_location('right')
-    fig0.colorbar.set_axis_label_text('V$_\mathrm{LSR}$ (km s$^{-1}$)')    
-    # Save file
     # Masked file
-    dataFile = parMapDir+"{0}_Vlsr_{1}_flag.fits".format(region,version)
-    fig1=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.53,0.1,0.4,0.8])
+    color_table='RdYlBu_r'
+    dataFile = "{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,root)
+    fig1=aplpy.FITSFigure(dataFile)
     fig1.show_colorscale( cmap=color_table, vmin=vcmin, vmax=vcmax)
     fig1.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
                       zorder=34)
@@ -508,30 +552,14 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig1.colorbar.set_location('right')
     fig1.colorbar.set_axis_label_text('V$_\mathrm{LSR}$ (km s$^{-1}$)')    
     # Save file
-    fig.savefig(parMapDir+"{0}_Vc.pdf".format(region),dpi=300)
-    plt.close(fig)
+    fig1.save("{0}/parameterMaps/{0}_Vlsr_{1}_flag.pdf".format(region,root),dpi=300)
+    fig1.close()
     #
     # Sigma
     #
-    # First, unmasked file
-    dataFile = parMapDir+"{0}_Sigma_{1}.fits".format(region,version)
-    color_table='Blues'
-    fig = plt.figure()
-    fig0=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.1,0.1,0.4,0.8])
-    fig0.show_colorscale( cmap=color_table, vmin=dvmin, vmax=dvmax)
-    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
-                      zorder=34)
-    _add_plot_text( fig0, region, blorder, distance)
-    fig0.tick_labels.set_style('colons')
-    fig0.tick_labels.set_yformat('dd:mm')
-    fig0.tick_labels.set_xformat('hh:mm')
-    # Colorbar 
-    fig0.add_colorbar()
-    fig0.colorbar.set_location('right')
-    fig0.colorbar.set_axis_label_text('$\sigma_\mathrm{v}$ (km s$^{-1}$)')
     # Masked file
-    dataFile = parMapDir+"{0}_Sigma_{1}_flag.fits".format(region,version)
-    fig1=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.53,0.1,0.4,0.8])
+    dataFile = "{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,root)
+    fig1=aplpy.FITSFigure(dataFile)
     fig1.show_colorscale( cmap=color_table, vmin=dvmin, vmax=dvmax)
     fig1.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
                       zorder=34)
@@ -543,12 +571,12 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig1.colorbar.set_location('right')
     fig1.colorbar.set_axis_label_text('$\sigma_\mathrm{v}$ (km s$^{-1}$)')
     # Save file
-    fig.savefig(parMapDir+"{0}_sigmaV.pdf".format(region),dpi=300)
-    plt.close(fig)
+    fig1.save("{0}/{0}_Sigma_{1}_flag.pdf".format(region,root),dpi=300)
+    fig1.close()
     #
     # Tkin
     # 
-    dataFile = parMapDir+"{0}_Tkin_{1}_flag.fits".format(region,version)
+    dataFile = "{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,root)
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(dataFile)
     fig0.show_colorscale( cmap=color_table)
@@ -560,12 +588,12 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('T$_\mathrm{kin}$ (K)')
     # Save file
-    fig0.save(parMapDir+"{0}_Tkin.pdf".format(region),dpi=300)
+    fig0.save("{0}/parameterMaps/{0}_Tkin_{1}_flag.pdf".format(region,root),dpi=300)
     fig0.close()
     #
     # Tex
     # 
-    dataFile = parMapDir+"{0}_Tex_{1}_flag.fits".format(region,version)
+    dataFile = "{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,root)
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(dataFile)
     fig0.show_colorscale( cmap=color_table)
@@ -577,12 +605,12 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('T$_\mathrm{ex}$ (K)')
     # Save file
-    fig0.save(parMapDir+"{0}_Tex.pdf".format(region),dpi=300)
+    fig0.save("{0}/parameterMaps/{0}_Tex_{1}_flag.pdf".format(region,root),dpi=300)
     fig0.close()
     #
     # N(NH3)
     # 
-    dataFile = parMapDir+"{0}_N_NH3_{1}_flag.fits".format(region,version)
+    dataFile = "{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,root)
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(dataFile)
     fig0.show_colorscale( cmap=color_table)
@@ -594,7 +622,7 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('N(NH$_3$) (cm$^{-2}$)')
     # Save file
-    fig0.save(parMapDir+"{0}_NNH3.pdf".format(region),dpi=300)
+    fig0.save("{0}/parameterMaps/{0}_NNH3_{1}_flag.pdf".format(region,root),dpi=300)
     fig0.close()
 
 def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
