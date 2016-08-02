@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.polynomial.legendre as legendre
 from .utils import VlsrByCoord
+from .first_look import trim_edge_cube
 import catalogs
 from scipy.optimize import least_squares as lsq
 from spectral_cube import SpectralCube
@@ -130,10 +131,10 @@ def robustBaseline(y, baselineIndex, blorder=1, noiserms=None):
     return y - legendre.legval(x, opts.x)
 
 
-def rebaseline(filename, blorder=3,
+def rebaseline(filename, blorder=3, 
                baselineRegion=[slice(0, 262, 1), slice(-512, 0, 1)],
                windowFunction=None, blankBaseline=False,
-               flagSpike=True, v0=None, **kwargs):
+               flagSpike=True, v0=None, trimEdge=True, **kwargs):
     """
     Rebaseline a data cube using robust regression of Legendre polynomials.
 
@@ -153,6 +154,8 @@ def rebaseline(filename, blorder=3,
         to do with as it must.
     blankBaseline : boolean
         Blank the baseline region on a per-spectrum basis
+    trimEdge : boolean
+        remove the map edges
 
     Returns
     -------
@@ -222,6 +225,8 @@ def rebaseline(filename, blorder=3,
 
     outsc = SpectralCube(outcube, cube.wcs, header=cube.header)
     outsc = outsc[runmin:runmax, :, :]  # cut beyond baseline edges
+    if trimEdge: 
+        trim_edge_cube(cube)
     # Return to original spectral unit
     outsc = outsc.with_spectral_unit(originalUnit)
     outsc.write(filename.replace('.fits', '_rebase{0}.fits'.format(blorder)),
