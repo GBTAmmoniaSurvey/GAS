@@ -12,8 +12,7 @@ from skimage.morphology import remove_small_objects,closing,disk,opening
 
 from pyspeckit.spectrum.models import ammonia
 
-def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=None, save_masked=False,
-                       trimEdge=True):
+def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=None, save_masked=False):
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
@@ -49,8 +48,6 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         file_temp='{0}/{0}_NH3_{2}_{1}_masked_temp.fits'.format(region_name,file_extension,line_i)
         # Load pyspeckit cube
         pycube = pyspeckit.Cube(file_in)
-        if trimEdge:
-            pycube = trim_edge_cube(cube)
         if 'FITTYPE' in fits.getheader(fit_file):
             # 'FITTYPE' is not present in old versions of the parameter files
             pycube.load_model_fit( fit_file, npars=6, npeaks=1)
