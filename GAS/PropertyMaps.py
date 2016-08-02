@@ -130,6 +130,65 @@ def run_plot_fit_all():
                  vcmin=5.7, vcmax=12.7, file_extension='DR1_rebase3')
 
 
+def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,propertyMaps=True):
+    '''
+    Trim cube edges for DR1 release data. Wasn't incorporated into baseline fitting
+    but should be for future baselined data. 
+    Since trim looks for edges in the data, CANNOT use on already flagged data.
+    Also doesn't work for parameter maps, since have zeros rather than NaNs 
+    Use moment map as mask for other files
+    '''
+    if file_extension:
+        root = file_extension
+    else:
+        root = '{0}'.format(blorder)
+
+    # Cubes:
+    line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    #line_list = ['NH3_11']
+    for line in line_list:
+        filein = '{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
+        # trim_edge_cube doesn't work on a spectral cube object. 
+        # cube = SpectralCube.read(filein)
+        cube = fits.open(filein)
+        cube_data = cube[0].data
+        cube_hdr  = cube[0].header
+        cube.close()
+        trim_edge_cube(cube_data)
+        fits.writeto('{0}/{0}_{1}_{2}_trim.fits'.format(region_name,line,file_extension),
+                     cube_data,cube_hdr,clobber=True)
+        moment = fits.open('{0}/{0}_{1}_{2}_mom0.fits'.format(region_name,line,file_extension))
+        moment_data = moment[0].data
+        moment_hdr  = moment[0].header
+        moment.close()
+        trim_edge_cube(moment_data)
+        fits.writeto('{0}/{0}_{1}_{2}_mom0_trim.fits'.format(region_name,line,file_extension),
+                     moment_data,moment_hdr,clobber=True)
+        rms = fits.open('{0}/{0}_{1}_{2}_rms.fits'.format(region_name,line,file_extension))
+        rms_data = rms[0].data
+        rms_hdr  = rms[0].header
+        rms.close()
+        trim_edge_cube(rms_data)
+        fits.writeto('{0}/{0}_{1}_{2}_rms_trim.fits'.format(region_name,line,file_extension),
+                     rms_data,rms_hdr,clobber=True)
+
+    # Use NH3 (1,1) moment map as mask for property map
+    # trim_edge_cube didn't work on full cube
+    # Can loop over planes in cube!
+    moment = fits.open('{0}/{0}_NH3_11_{1}_mom0.fits'.format(region_name,file_extension))
+    moment_data = moment[0].data
+    if propertyMaps:
+        propMap = fits.open('{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension))
+        propMap_data = propMap[0].data
+        propMap_hdr  = propMap[0].header
+        propMap.close()    
+        for plane_i in range(len(propMap_data)):
+            data_i = propMap_data[plane_i,:,:]
+            data_i[~np.isfinite(moment_data)] = np.nan
+            propMap_data[plane_i,:,:] = data_i
+        fits.writeto('{0}/{0}_parameter_maps_{1}_trim.fits'.format(region_name,file_extension),
+                     propMap_data,propMap_hdr,clobber=True)
+    
 
 def _add_plot_text( fig, region, blorder, distance):
     # set nan color and beam size color
