@@ -74,9 +74,9 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         sigma_map=pycube.parcube[3,:,:]
         vmean=np.mean(vmap[vmap != 0])*u.km/u.s
         if line_i == '11':
-            sigma_v=( np.median(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
+            sigma_v=( np.mean(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
         else:
-            sigma_v=( np.median(sigma_map[vmap != 0]))*u.km/u.s
+            sigma_v=( np.mean(sigma_map[vmap != 0]))*u.km/u.s
         total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
         # 
         im_mask=np.sum(mask3d, axis=0)
@@ -137,6 +137,7 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
     Since trim looks for edges in the data, CANNOT use on already flagged data.
     Also doesn't work for parameter maps, since have zeros rather than NaNs 
     Use moment map as mask for other files
+    Revising to use cubes
     '''
     if file_extension:
         root = file_extension
@@ -144,26 +145,26 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
         root = '{0}'.format(blorder)
 
     # Cubes:
-    line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
-    #line_list = ['NH3_11']
+    #line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    line_list = ['NH3_11']
     for line in line_list:
-        filein = '{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
-        # trim_edge_cube doesn't work on a spectral cube object. 
-        # cube = SpectralCube.read(filein)
-        cube = fits.open(filein)
-        cube_data = cube[0].data
-        cube_hdr  = cube[0].header
-        cube.close()
-        trim_edge_cube(cube_data)
-        fits.writeto('{0}/{0}_{1}_{2}_trim.fits'.format(region_name,line,file_extension),
-                     cube_data,cube_hdr,clobber=True)
+        # Moment first to create mask
         moment = fits.open('{0}/{0}_{1}_{2}_mom0.fits'.format(region_name,line,file_extension))
         moment_data = moment[0].data
         moment_hdr  = moment[0].header
         moment.close()
         trim_edge_cube(moment_data)
+        mask = np.isfinite(moment_data)
+        # Write out new moment
         fits.writeto('{0}/{0}_{1}_{2}_mom0_trim.fits'.format(region_name,line,file_extension),
                      moment_data,moment_hdr,clobber=True)
+        # Next cubes
+        filein = '{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
+        # trim_edge_cube doesn't work on a spectral cube object. 
+        cube = SpectralCube.read(filein)
+        cube2 = cube.with_mask(mask)
+        cube2.write('{0}/{0}_{1}_{2}_trim.fits'.format(region_name,line,file_extension),overwrite=True)
+        # And rms
         rms = fits.open('{0}/{0}_{1}_{2}_rms.fits'.format(region_name,line,file_extension))
         rms_data = rms[0].data
         rms_hdr  = rms[0].header
@@ -175,10 +176,18 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
     # Use NH3 (1,1) moment map as mask for property map
     # trim_edge_cube didn't work on full cube
     # Can loop over planes in cube!
-    moment = fits.open('{0}/{0}_NH3_11_{1}_mom0.fits'.format(region_name,file_extension))
-    moment_data = moment[0].data
     if propertyMaps:
-        propMap = fits.open('{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension))
+        fit_file = '{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension)
+        moment = fits.open('{0}/{0}_NH3_11_{1}_mom0_trim.fits'.format(region_name,file_extension))
+        moment_data = moment[0].data
+        #pycube = pyspeckit.Cube('{0}/{0}_NH3_11_{1}_trim.fits'.format(region_name,file_extension))
+        #if 'FITTYPE' in fits.getheader(fit_file):
+        #    pycube.load_model_fit(fit_file,npars=6,npeaks=1)
+        #else:
+        #    if not 'cold_ammonia' in pycube.specfit.Registry.multifitters:
+        #        pycube.specfit.Registry.add_fitter('cold_ammonia',ammonia.cold_ammonia_model(),6)
+        #    pycube.load_model_fit(fit_file,npars=6,npeaks=1,fittype='cold_ammonia')
+        propMap = fits.open(fit_file)
         propMap_data = propMap[0].data
         propMap_hdr  = propMap[0].header
         propMap.close()    
