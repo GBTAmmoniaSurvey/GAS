@@ -162,7 +162,7 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
         cube = SpectralCube.read(filein)
         cube2 = cube.with_mask(mask)
         cube2.write('{0}/{0}_{1}_{2}_trim.fits'.format(region_name,line,file_extension),overwrite=True)
-        # And rms
+        # And rms. Note that QA rms file has interior masked regions for Orion A, others?
         rms = fits.open('{0}/{0}_{1}_{2}_rms_QA.fits'.format(region_name,line,file_extension))
         rms_data = rms[0].data
         rms_hdr  = rms[0].header
@@ -172,19 +172,10 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
                      rms_data,rms_hdr,clobber=True)
 
     # Use NH3 (1,1) moment map as mask for property map
-    # trim_edge_cube didn't work on full cube
-    # Can loop over planes in cube!
     if propertyMaps:
         fit_file = '{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension)
         moment = fits.open('{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region_name,file_extension))
         moment_data = moment[0].data
-        #pycube = pyspeckit.Cube('{0}/{0}_NH3_11_{1}_trim.fits'.format(region_name,file_extension))
-        #if 'FITTYPE' in fits.getheader(fit_file):
-        #    pycube.load_model_fit(fit_file,npars=6,npeaks=1)
-        #else:
-        #    if not 'cold_ammonia' in pycube.specfit.Registry.multifitters:
-        #        pycube.specfit.Registry.add_fitter('cold_ammonia',ammonia.cold_ammonia_model(),6)
-        #    pycube.load_model_fit(fit_file,npars=6,npeaks=1,fittype='cold_ammonia')
         propMap = fits.open(fit_file)
         propMap_data = propMap[0].data
         propMap_hdr  = propMap[0].header
@@ -214,12 +205,14 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
-def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
+def flag_all_data(region='OrionA',blorder='1', file_extension=None):
     """
-    Flag cubefit results based on S/N in integrated intensity. 
+    Flag cubefit results based on S/N in integrated intensity.
+    Edit: flagging based on uncertainties in returned fit parameters. Better?
+    How well do non-detections in NH3 (2,2) constrain parameters in cold_ammonia model?
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
     Outputs five .pdf files: Tkin, Tex, Vc, sigmaV, NNH3
-    Update: flag moment maps while at it. Outputs mom0_flagged.fits
+    Remove moment 0 flagging as update_NH3_moment + edge masking is better
 
     Parameters
     ----------
@@ -227,8 +220,6 @@ def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
         Name of region to reduce
     blorder : int
         order of baseline removed
-    version : str
-        data release version
     file_extension: : str
         filename
     """
@@ -249,7 +240,7 @@ def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
     else:
         root = 'base{0}'.format(blorder)
 
-    hdu=fits.open("{0}/{0}_parameter_maps_{1}.fits".format(region,root))
+    hdu=fits.open("{0}/{0}_parameter_maps_{1}_trim.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
@@ -272,22 +263,9 @@ def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
     sn11 = m0_11data/rms11data
     sn22 = m0_22data/rms22data
 
-    # Flag and write out moment files
-    # Want a much less strict flag here; focus on getting rid of edge effects
-    # Best to base on rms
-    # Is the best place to do this? 
-    rmsFlag = rmsLim
-    m0_11data[ rms11data > rmsFlag ] = np.nan
-    m0_11data[ m0_11data == 0. ] = np.nan
-    m0_22data[ rms22data > rmsFlag ] = np.nan
-    m0_22data[ m0_22data == 0. ] = np.nan
-    fits.writeto("{0}/{0}_NH3_11_{1}_mom0_flag.fits".format(region,root),
-                 m0_11data,hd11,clobber=True)
-    fits.writeto("{0}/{0}_NH3_22_{1}_mom0_flag.fits".format(region,root),
-                 m0_22data,hd22,clobber=True)
-
     # Get Tex, Tk files for mask
     tex  = np.copy(cube[1,:,:])
+    etex = np.copy(cube[7,:,:])
     tk   = np.copy(cube[0,:,:])
     etk  = np.copy(cube[6,:,:])
 
@@ -300,9 +278,10 @@ def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
     hd['BUNIT']='K'
     param=cube[0,:,:]
     eparam = cube[6,:,:]
-    param[ sn22 < flagSN22 ] = np.nan
+    #param[ sn22 < flagSN22 ] = np.nan
     param[ param == 0 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
+    param[ etex > flagMaxeTex ] = np.nan
     param[ param <= flagMinTk ] = np.nan
     param[ eparam > flagMaxeTk ] = np.nan
     file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,root)
@@ -310,11 +289,12 @@ def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
     #Tex
     hd['BUNIT']='K'
     param=cube[1,:,:]
+    eparam=cube[7,:,:]
     param[ param == 0 ] = np.nan
     param[ sn11 < flagSN11 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
+    param[ etex > flagMaxeTex ] = np.nan
     param[ tk == flagMinTk ] = np.nan
-    param[ eparam > flagMaxeTk ] = np.nan
     file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # N_NH3
@@ -322,7 +302,7 @@ def flag_all_data(region='OrionA',blorder='1',rmsLim=0.2, file_extension=None):
     param=cube[2,:,:]
     eparam=cube[8,:,:]
     param[ param == 0 ] = np.nan
-    param[ sn22 < flagSN22 ] = np.nan
+    #param[ sn22 < flagSN22 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
     param[ tk <= flagMinTk ] = np.nan
     param[ etk > flagMaxeTk ] = np.nan
