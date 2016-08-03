@@ -145,8 +145,8 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
         root = '{0}'.format(blorder)
 
     # Cubes:
-    #line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
-    line_list = ['NH3_11']
+    line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    #line_list = ['NH3_11']
     for line in line_list:
         # Moment first to create mask
         moment = fits.open('{0}/{0}_{1}_{2}_mom0.fits'.format(region_name,line,file_extension))
