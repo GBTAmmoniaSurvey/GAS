@@ -135,9 +135,7 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
     Trim cube edges for DR1 release data. Wasn't incorporated into baseline fitting
     but should be for future baselined data. 
     Since trim looks for edges in the data, CANNOT use on already flagged data.
-    Also doesn't work for parameter maps, since have zeros rather than NaNs 
-    Use moment map as mask for other files
-    Revising to use cubes
+    Use updated moment map as mask for other files
     '''
     if file_extension:
         root = file_extension
@@ -149,14 +147,14 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
     line_list = ['NH3_11']
     for line in line_list:
         # Moment first to create mask
-        moment = fits.open('{0}/{0}_{1}_{2}_mom0.fits'.format(region_name,line,file_extension))
+        moment = fits.open('{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region_name,line,file_extension))
         moment_data = moment[0].data
         moment_hdr  = moment[0].header
         moment.close()
         trim_edge_cube(moment_data)
         mask = np.isfinite(moment_data)
         # Write out new moment
-        fits.writeto('{0}/{0}_{1}_{2}_mom0_trim.fits'.format(region_name,line,file_extension),
+        fits.writeto('{0}/{0}_{1}_{2}_mom0_QA_trim.fits'.format(region_name,line,file_extension),
                      moment_data,moment_hdr,clobber=True)
         # Next cubes
         filein = '{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
@@ -165,12 +163,12 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
         cube2 = cube.with_mask(mask)
         cube2.write('{0}/{0}_{1}_{2}_trim.fits'.format(region_name,line,file_extension),overwrite=True)
         # And rms
-        rms = fits.open('{0}/{0}_{1}_{2}_rms.fits'.format(region_name,line,file_extension))
+        rms = fits.open('{0}/{0}_{1}_{2}_rms_QA.fits'.format(region_name,line,file_extension))
         rms_data = rms[0].data
         rms_hdr  = rms[0].header
         rms.close()
         trim_edge_cube(rms_data)
-        fits.writeto('{0}/{0}_{1}_{2}_rms_trim.fits'.format(region_name,line,file_extension),
+        fits.writeto('{0}/{0}_{1}_{2}_rms_QA_trim.fits'.format(region_name,line,file_extension),
                      rms_data,rms_hdr,clobber=True)
 
     # Use NH3 (1,1) moment map as mask for property map
@@ -178,7 +176,7 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
     # Can loop over planes in cube!
     if propertyMaps:
         fit_file = '{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension)
-        moment = fits.open('{0}/{0}_NH3_11_{1}_mom0_trim.fits'.format(region_name,file_extension))
+        moment = fits.open('{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region_name,file_extension))
         moment_data = moment[0].data
         #pycube = pyspeckit.Cube('{0}/{0}_NH3_11_{1}_trim.fits'.format(region_name,file_extension))
         #if 'FITTYPE' in fits.getheader(fit_file):
@@ -644,7 +642,7 @@ def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
     else:
         root = 'base{0}'.format(blorder)
 
-    hdu=fits.open("{0}_parameter_maps_{1}.fits".format(region,root))
+    hdu=fits.open("{0}/{0}_parameter_maps_{1}.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
@@ -657,62 +655,62 @@ def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
     # Tkin
     hd['BUNIT']='K'
     param=cube[0,:,:]
-    file_out="{0}_Tkin_{1}.fits".format(region,root)
+    file_out="{0}/{0}_Tkin_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     #Tex
     hd['BUNIT']='K'
     param=cube[1,:,:]
-    file_out="{0}_Tex_{1}.fits".format(region,root)
+    file_out="{0}/{0}_Tex_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # N_NH3
     hd['BUNIT']='cm-2'
     param=cube[2,:,:]
-    file_out="{0}_N_NH3_{1}.fits".format(region,root)
+    file_out="{0}/{0}_N_NH3_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # sigma
     hd['BUNIT']='km/s'
     param=cube[3,:,:]
-    file_out="{0}_Sigma_{1}.fits".format(region,root)
+    file_out="{0}/{0}_Sigma_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Vlsr
     hd['BUNIT']='km/s'
     param=cube[4,:,:]
-    file_out="{0}_Vlsr_{1}.fits".format(region,root)
+    file_out="{0}/{0}_Vlsr_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Fortho
     hd['BUNIT']=''
     param=cube[5,:,:]
-    file_out="{0}_Fortho_{1}.fits".format(region,root)
+    file_out="{0}/{0}_Fortho_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eTkin
     hd['BUNIT']='K'
     param=cube[6,:,:]
-    file_out="{0}_eTkin_{1}.fits".format(region,root)
+    file_out="{0}/{0}_eTkin_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eTex
     hd['BUNIT']='K'
     param=cube[7,:,:]
-    file_out="{0}_eTex_{1}.fits".format(region,root)
+    file_out="{0}/{0}_eTex_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eN_NH3
     hd['BUNIT']='cm-2'
     param=cube[8,:,:]
-    file_out="{0}_eN_NH3_{1}.fits".format(region,root)
+    file_out="{0}/{0}_eN_NH3_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eSigma
     hd['BUNIT']='km/s'
     param=cube[9,:,:]
-    file_out="{0}_eSigma_{1}.fits".format(region,root)
+    file_out="{0}/{0}_eSigma_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eVlsr
     hd['BUNIT']='km/s'
     param=cube[10,:,:]
-    file_out="{0}_eVlsr_{1}.fits".format(region,root)
+    file_out="{0}/{0}_eVlsr_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eFortho
     hd['BUNIT']=''
     param=cube[11,:,:]
-    file_out="{0}_eFortho_{1}.fits".format(region,root)
+    file_out="{0}/{0}_eFortho_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
 
 def default_masking(snr,snr_min=5.0):
