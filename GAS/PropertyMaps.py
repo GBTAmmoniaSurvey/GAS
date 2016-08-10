@@ -12,7 +12,7 @@ from skimage.morphology import remove_small_objects,closing,disk,opening
 
 from pyspeckit.spectrum.models import ammonia
 
-def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=None, save_masked=False):
+def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=0.0125, save_masked=False):
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
@@ -74,9 +74,9 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         sigma_map=pycube.parcube[3,:,:]
         vmean=np.mean(vmap[vmap != 0])*u.km/u.s
         if line_i == '11':
-            sigma_v=( np.mean(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
+            sigma_v=( np.median(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
         else:
-            sigma_v=( np.mean(sigma_map[vmap != 0]))*u.km/u.s
+            sigma_v=( np.median(sigma_map[vmap != 0]))*u.km/u.s
         total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
         # 
         im_mask=np.sum(mask3d, axis=0)
@@ -96,8 +96,8 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         moment_0.write( file_out, overwrite=True)
         rms=cube3.std(axis=0)
         rms.write( file_rms, overwrite=True)
-        mom_0_rms=rms * dv * np.sqrt(n_chan)
-        mom_0_rms.write( file_rms_mom, overwrite=True)
+        #mom_0_rms=rms * dv * np.sqrt(n_chan)
+        #mom_0_rms.write( file_rms_mom, overwrite=True)
 
 def run_plot_fit_all():
     """
@@ -143,8 +143,8 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
         root = '{0}'.format(blorder)
 
     # Cubes:
-    line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
-    #line_list = ['NH3_11']
+    #line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    line_list = ['NH3_11','NH3_22']
     for line in line_list:
         # Moment first to create mask
         moment = fits.open('{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region_name,line,file_extension))
@@ -245,17 +245,19 @@ def flag_all_data(region='OrionA',blorder='1', file_extension=None):
     cube=hdu[0].data
     hdu.close()
 
-    rms11hdu = fits.open("{0}/{0}_NH3_11_{1}_rms.fits".format(region,root))
+    rms11hdu = fits.open("{0}/{0}_NH3_11_{1}_rms_QA.fits".format(region,root))
     rms11data = rms11hdu[0].data
     rms11hdu.close()
-    m0_11 = fits.open("{0}/{0}_NH3_11_{1}_mom0.fits".format(region,root))
+    m0_11 = fits.open("{0}/{0}_NH3_11_{1}_mom0_QA.fits".format(region,root))
+#    m0_11 = fits.open("{0}/{0}_NH3_11_{1}_Tpeak.fits".format(region,root))
     m0_11data = m0_11[0].data
     hd11 = m0_11[0].header
     m0_11.close()
     rms22hdu = fits.open("{0}/{0}_NH3_22_{1}_rms.fits".format(region,root))
     rms22data = rms22hdu[0].data
     rms22hdu.close()
-    m0_22 = fits.open("{0}/{0}_NH3_22_{1}_mom0.fits".format(region,root))
+#    m0_22 = fits.open("{0}/{0}_NH3_22_{1}_mom0_QA.fits".format(region,root))
+    m0_22 = fits.open("{0}/{0}_NH3_22_{1}_Tpeak.fits".format(region,root))
     m0_22data = m0_22[0].data
     hd22 = m0_22[0].header
     m0_22.close()
@@ -278,12 +280,12 @@ def flag_all_data(region='OrionA',blorder='1', file_extension=None):
     hd['BUNIT']='K'
     param=cube[0,:,:]
     eparam = cube[6,:,:]
-    #param[ sn22 < flagSN22 ] = np.nan
+    param[ sn22 < flagSN22 ] = np.nan
     param[ param == 0 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
-    param[ etex > flagMaxeTex ] = np.nan
+    #param[ etex > flagMaxeTex ] = np.nan
     param[ param <= flagMinTk ] = np.nan
-    param[ eparam > flagMaxeTk ] = np.nan
+    #param[ eparam > flagMaxeTk ] = np.nan
     file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     #Tex
@@ -293,7 +295,7 @@ def flag_all_data(region='OrionA',blorder='1', file_extension=None):
     param[ param == 0 ] = np.nan
     param[ sn11 < flagSN11 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
-    param[ etex > flagMaxeTex ] = np.nan
+    #param[ etex > flagMaxeTex ] = np.nan
     param[ tk == flagMinTk ] = np.nan
     file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
@@ -302,10 +304,10 @@ def flag_all_data(region='OrionA',blorder='1', file_extension=None):
     param=cube[2,:,:]
     eparam=cube[8,:,:]
     param[ param == 0 ] = np.nan
-    #param[ sn22 < flagSN22 ] = np.nan
+    param[ sn22 < flagSN22 ] = np.nan
     param[ tex <= flagMinTex ] = np.nan
     param[ tk <= flagMinTk ] = np.nan
-    param[ etk > flagMaxeTk ] = np.nan
+    #param[ etk > flagMaxeTk ] = np.nan
     file_out="{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # sigma
