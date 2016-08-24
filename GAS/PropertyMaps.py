@@ -99,6 +99,50 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         #mom_0_rms=rms * dv * np.sqrt(n_chan)
         #mom_0_rms.write( file_rms_mom, overwrite=True)
 
+def update_rest_moment0(region_name='L1688', file_extension='DR1_rebase3', v_mean=2.5, sigma_v=0.3):
+    """
+    Update moment calculation for non-NH3 lines. Don't base on NH3 fit; these lines may be
+    offset in velocity. Right now including velocity ranges by hand. 
+    """
+    for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S']:
+        file_in ='{0}/{0}_{2}_{1}.fits'.format(region_name,file_extension,line)
+        file_out='{0}/{0}_{2}_{1}_mom0_QA.fits'.format(region_name,file_extension,line)
+        file_rms='{0}/{0}_{2}_{1}_rms_QA.fits'.format(region_name,file_extension,line)
+        # Load pyspeckit cube
+        pycube = pyspeckit.Cube(file_in)
+        # Use spectral cube to calculate integrated intensity maps
+        cube_raw = SpectralCube.read(file_in)
+        # in km/s not Hz
+        cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+        vaxis=cube.spectral_axis
+        dv=np.abs(vaxis[1]-vaxis[0])
+        vmean = v_mean*u.km/u.s
+        sigmav = sigma_v*u.km/u.s
+        total_spc=np.sqrt( (vaxis-vmean)**2)/sigmav < 3
+        mask3d = np.ones(cube.shape,dtype=bool)
+        for ii in np.arange(cube.shape[2]):
+            for jj in np.arange(cube.shape[1]):
+                mask3d[:,jj,ii] = total_spc
+        # create masked cube
+        cube2 = cube.with_mask(mask3d)
+        cube3 = cube.with_mask(~mask3d)
+        # calculate moment map
+        moment_0 = cube2.moment(axis=0)
+        moment_0.write( file_out, overwrite=True)
+        rms=cube3.std(axis=0)
+        rms.write( file_rms, overwrite=True)
+
+
+def run_moment_rest_all():
+    """
+    Update the moment calculations for all DR1 regions for non-NH3 lines
+    """
+    update_rest_moment0(region_name='B18',file_extension='DR1_rebase3',v_mean=5.9,sigma_v=0.2)
+    update_rest_moment0(region_name='L1688',file_extension='DR1_rebase3',v_mean=3.75,sigma_v=0.15)
+    update_rest_moment0(region_name='NGC1333',file_extension='DR1_rebase3',v_mean=8.4,sigma_v=0.2)
+    update_rest_moment0(region_name='OrionA',file_extension='DR1_rebase3',v_mean=9.8,sigma_v=0.2)
+
+
 def run_plot_fit_all():
     """
     Run the functions for fitting the NH3 line profile and plotting the 
