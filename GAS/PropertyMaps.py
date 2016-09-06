@@ -104,7 +104,7 @@ def update_rest_moment0(region_name='L1688', file_extension='DR1_rebase3', v_mea
     Update moment calculation for non-NH3 lines. Don't base on NH3 fit; these lines may be
     offset in velocity. Right now including velocity ranges by hand. 
     """
-    for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S']:
+    for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S','NH3_33']:
         file_in ='{0}/{0}_{2}_{1}.fits'.format(region_name,file_extension,line)
         file_out='{0}/{0}_{2}_{1}_mom0_QA.fits'.format(region_name,file_extension,line)
         file_rms='{0}/{0}_{2}_{1}_rms_QA.fits'.format(region_name,file_extension,line)
@@ -187,8 +187,8 @@ def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,prope
         root = '{0}'.format(blorder)
 
     # Cubes:
-    #line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
-    line_list = ['NH3_11','NH3_22']
+    line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    #line_list = ['NH3_11','NH3_22']
     for line in line_list:
         # Moment first to create mask
         moment = fits.open('{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region_name,line,file_extension))
