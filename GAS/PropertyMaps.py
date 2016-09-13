@@ -249,14 +249,28 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
-def flag_all_data(region='OrionA',blorder='1', file_extension=None):
+def mask_binary(imageHDU,LowestContour=3,selem=np.array([[0,1,0],[1,1,1],[0,1,0]])):
+    """
+    Way to mask 'island pixels' in property maps
+    """
+    from scipy.ndimage import binary_opening
+    imageMap = imageHDU.data
+    mask = binary_opening(imageMap > LowestContour, selem)
+    #imageHDU.close()
+    #MaskedMap = mask*imageMap
+    #imageHDU[0].data = MaskedMap
+    return mask
+
+def flag_all_data(region='OrionA',blorder='1', file_extension='DR1_rebase3'):
     """
     Flag cubefit results based on S/N in integrated intensity.
-    Edit: flagging based on uncertainties in returned fit parameters. Better?
-    How well do non-detections in NH3 (2,2) constrain parameters in cold_ammonia model?
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
-    Outputs five .pdf files: Tkin, Tex, Vc, sigmaV, NNH3
+    Outputs individual .fits files for parameters and uncertainties: Tkin, Tex, Vc, sigmaV, NNH3
     Remove moment 0 flagging as update_NH3_moment + edge masking is better
+    Update (16/9/13): Include masking of 'island pixels' based on S/N in NH3 (1,1) moment map
+                      Set flagged values to zero rather than NaN
+                      Output masked cube file
+                      Cleaned up
 
     Parameters
     ----------
@@ -285,7 +299,7 @@ def flag_all_data(region='OrionA',blorder='1', file_extension=None):
         root = 'base{0}'.format(blorder)
 
     hdu=fits.open("{0}/{0}_parameter_maps_{1}_trim.fits".format(region,root))
-    hd=hdu[0].header
+    hd_cube=hdu[0].header
     cube=hdu[0].data
     hdu.close()
 
@@ -293,21 +307,25 @@ def flag_all_data(region='OrionA',blorder='1', file_extension=None):
     rms11data = rms11hdu[0].data
     rms11hdu.close()
     m0_11 = fits.open("{0}/{0}_NH3_11_{1}_mom0_QA.fits".format(region,root))
-#    m0_11 = fits.open("{0}/{0}_NH3_11_{1}_Tpeak.fits".format(region,root))
     m0_11data = m0_11[0].data
     hd11 = m0_11[0].header
     m0_11.close()
     rms22hdu = fits.open("{0}/{0}_NH3_22_{1}_rms.fits".format(region,root))
     rms22data = rms22hdu[0].data
     rms22hdu.close()
-#    m0_22 = fits.open("{0}/{0}_NH3_22_{1}_mom0_QA.fits".format(region,root))
     m0_22 = fits.open("{0}/{0}_NH3_22_{1}_Tpeak.fits".format(region,root))
     m0_22data = m0_22[0].data
     hd22 = m0_22[0].header
     m0_22.close()
 
     sn11 = m0_11data/rms11data
+    sn11HDU = fits.PrimaryHDU(sn11,hd11)
     sn22 = m0_22data/rms22data
+
+    # Get binary mask
+    selem=np.array([[0,1,0],[1,1,1],[0,1,0]])
+    LowestContour=3
+    pixel_mask = mask_binary(sn11HDU,LowestContour=LowestContour,selem=selem)
 
     # Get Tex, Tk files for mask
     tex  = np.copy(cube[1,:,:])
@@ -315,62 +333,96 @@ def flag_all_data(region='OrionA',blorder='1', file_extension=None):
     tk   = np.copy(cube[0,:,:])
     etk  = np.copy(cube[6,:,:])
 
+    hd = hd_cube.copy()
     rm_key=['NAXIS3','CRPIX3','CDELT3', 'CUNIT3', 'CTYPE3', 'CRVAL3']
     for key_i in rm_key:
         hd.remove(key_i)
     hd['NAXIS']= 2
     hd['WCSAXES']= 2
+
     # Tkin
     hd['BUNIT']='K'
     param=cube[0,:,:]
     eparam = cube[6,:,:]
-    param[ sn22 < flagSN22 ] = np.nan
-    param[ param == 0 ] = np.nan
-    param[ tex <= flagMinTex ] = np.nan
-    #param[ etex > flagMaxeTex ] = np.nan
-    param[ param <= flagMinTk ] = np.nan
-    #param[ eparam > flagMaxeTk ] = np.nan
+    parMask = ((sn22 >= flagSN22) & (tex >flagMinTex) & (param >flagMinTk) & (param <1e3))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eTkin_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)
+    # Update cube
+    cube[0,:,:] = param
+    cube[6,:,:] = eparam
+
     #Tex
     hd['BUNIT']='K'
     param=cube[1,:,:]
     eparam=cube[7,:,:]
-    param[ param == 0 ] = np.nan
-    param[ sn11 < flagSN11 ] = np.nan
-    param[ tex <= flagMinTex ] = np.nan
-    #param[ etex > flagMaxeTex ] = np.nan
-    param[ tk == flagMinTk ] = np.nan
+    parMask = ((sn11>=flagSN11) & (tex > flagMinTex) & (tk > flagMinTk))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eTex_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)
+    # Update cube
+    cube[1,:,:] = param
+    cube[7,:,:] = eparam
+
     # N_NH3
     hd['BUNIT']='cm-2'
     param=cube[2,:,:]
     eparam=cube[8,:,:]
-    param[ param == 0 ] = np.nan
-    param[ sn22 < flagSN22 ] = np.nan
-    param[ tex <= flagMinTex ] = np.nan
-    param[ tk <= flagMinTk ] = np.nan
-    #param[ etk > flagMaxeTk ] = np.nan
+    parMask = ((sn22 >= flagSN22) & (tex > flagMinTex) & (tk > flagMinTk))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
-    # sigma
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eN_NH3_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)    # sigma
+    # Update cube
+    cube[2,:,:] = param
+    cube[8,:,:] = eparam
+
     # Use same flags for Vlsr, sigma
+    # Sigma
     hd['BUNIT']='km/s'
     param=cube[3,:,:]
     eparam=cube[9,:,:]
-    param[ param == 0 ] = np.nan
-    param[ sn11 < flagSN11 ] = np.nan
+    parMask = ((sn11 >= flagSN11))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eSigma_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)
+    # Update cube
+    cube[3,:,:] = param
+    cube[9,:,:] = eparam
+
     # Vlsr
     hd['BUNIT']='km/s'
     param=cube[4,:,:]
     eparam=cube[10,:,:]
-    param[ param == 0 ] = np.nan
-    param[ sn11 < flagSN11 ] = np.nan
+    parMask = ((sn11 >= flagSN11))
+    param = param * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eVlsr_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)
+    # Update cube
+    cube[4,:,:] = param
+    cube[10,:,:] = eparam
+
+    # Write out new cube
+    cube_out="{0}/{0}_parameter_maps_{1}_flag.fits".format(region,root)
+    fits.writeto(cube_out,cube,hd_cube,clobber=True)
 
 def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, 
                  dvmax=None, vcmin=None, vcmax=None, file_extension=None):
