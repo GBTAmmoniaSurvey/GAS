@@ -9,17 +9,17 @@ from . import catalogs
 def move_files(region='Cepheus_L1251', session=81,
                prefix='Cepheus_L1251_map_1_scan_26_49'):
     """
-    Sometimes the pipeline fails to move the calibrated files into the proper 
+    Sometimes the pipeline fails to move the calibrated files into the proper
     folder.
 
     move_files(region='Cepheus_L1251', session='81', prefix='Cepheus_L1251_map_1_scan_26_49')
 
     region : string
-        Region name. The files will be moved to folders like 
+        Region name. The files will be moved to folders like
         region+line_name (eg NGC1333_C2S).
 
     session : int
-        Session number of the observations. This is added to the 
+        Session number of the observations. This is added to the
         original filename.
 
     prefix : string
@@ -42,9 +42,9 @@ def move_files(region='Cepheus_L1251', session=81,
 
 def fillAll(overwrite=False):
     """
-    Function to fill in all raw-data into the format needed for the 
+    Function to fill in all raw-data into the format needed for the
     GBT-pipeline.
-    
+
     fillAll(overwrite=False)
 
     overwrite : bool
@@ -86,12 +86,12 @@ def fillAll(overwrite=False):
 def reduceAll(overwrite=False, release = 'all'):
     """
     Function to reduce all data using the GBT-pipeline.
-    
+
     reduceAll(overwrite=False, release='all')
 
     release : string
-        Variable that selects which set of data is to be reduced. 
-        Default value is 'all', while 'DR1' generates the Data Release 1, and 
+        Variable that selects which set of data is to be reduced.
+        Default value is 'all', while 'DR1' generates the Data Release 1, and
         hopefully 'DR2' will be available in the near future.
     overwrite : bool
         If True it will overwrite files.
@@ -248,7 +248,7 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                     InputFile = RawDataDir+SessionDir+'AGBT15A_430_'+\
                         str(SessionNumber).zfill(2)+\
                         '.raw.vegas.{0}.fits'.format(bank)
-                    command = 'gbtpipeline-test -i '+InputFile
+                    command = 'gbtpipeline -i '+InputFile
                     for key in OptionDict:
                         command = command+' '+key+' '+OptionDict[key]
                     command = command+' --feed '+feed+' --pol '+pol
