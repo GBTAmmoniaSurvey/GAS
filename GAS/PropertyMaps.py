@@ -411,6 +411,7 @@ def flag_all_data(region='OrionA',blorder='1', file_extension='DR1_rebase3'):
     eparam=cube[10,:,:]
     parMask = ((sn11 >= flagSN11))
     param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Write out uncertainties
