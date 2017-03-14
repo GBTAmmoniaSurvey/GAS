@@ -15,7 +15,7 @@ import warnings
 # import baseline
 import gbtpipe
 from . import __version__
-
+from .utils import VlsrByCoord
 
 def baselineSpectrum(spectrum, order=1, baselineIndex=()):
     x = np.linspace(-1, 1, len(spectrum))
@@ -136,7 +136,7 @@ def griddata(templateHeader=None,
              file_extension=None,
              flagRMS=True,
              flagSpike=True,
-             rebase=False, **kwargs):
+             **kwargs):
 
     if not Sessions:
         filelist = glob.glob(rootdir + '/' + region +
@@ -186,6 +186,8 @@ def griddata(templateHeader=None,
                               endChannel=endChannel,
                               doBaseline=doBaseline,
                               baselineRegion=baselineRegion,
-                              blorder=blorder, flagRMS=flagRMS,
+                              blorder=blorder, rebaseorder=3,
+                              flagRMS=flagRMS,
                               outdir=outdir, outname=outname,
+                              VlsrByCoord=VlsrByCoord,
                               flagSpike=flagSpike, **kwargs)

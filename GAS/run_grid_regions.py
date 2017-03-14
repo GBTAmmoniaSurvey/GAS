@@ -440,7 +440,8 @@ def grid_L1688(release=None,rbflag=True):
         Sessions=mySessions, file_extension=file_extension,
                          rebase=rbflag)
 
-    hd_temp=fits.getheader(region_name+'_NH3_11'+file_extension+'.fits')
+    hd_temp=fits.getheader(data_dir + '/images/' + region_name + '/' +
+                           region_name+'_NH3_11'+file_extension+'.fits')
 
     startChannel = 1024 + 700
     endChannel = 1024 + 1350
