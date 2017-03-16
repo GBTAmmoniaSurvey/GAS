@@ -14,6 +14,7 @@ def ammoniaWindow(spectrum, spaxis, freqthrow=4.11 * u.MHz,
                   window=3, v0=8.5, line='oneone', outerwindow=None):
     """
     This defines a narrow window around the v0 value for ammonia hyperfines.
+
     Parameters
     ----------
     spectrum : np.array
@@ -67,6 +68,7 @@ def tightWindow(spectrum, spaxis,
                 v0=8.5, freqthrow=4.11 * u.MHz):
     """
     This defines a narrow window around the v0 value for the emission region
+
     Parameters
     ----------
     spectrum : np.array
@@ -135,6 +137,7 @@ def rebaseline(filename, blorder=3,
                flagSpike=True, v0=None, trimEdge=True, **kwargs):
     """
     Rebaseline a data cube using robust regression of Legendre polynomials.
+
     Parameters
     ----------
     filename : string
@@ -153,10 +156,12 @@ def rebaseline(filename, blorder=3,
         Blank the baseline region on a per-spectrum basis
     trimEdge : boolean
         remove the map edges
+
     Returns
     -------
     Nothing.  A new FITS file is written out with the suffix 'rebaseN' where N
     is the baseline order
+
     """
     cube = SpectralCube.read(filename)
     originalUnit = cube.spectral_axis.unit

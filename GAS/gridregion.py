@@ -65,13 +65,8 @@ def jincGrid(xpix, ypix, xdata, ydata, pixPerBeam=None):
 #              (pia*distance[ind])
     wt[(d < dmin)] = 0.5  # Peak of the jinc function is 0.5 not 1.0
     return(wt, ind)
-<<<<<<< HEAD
 
 
-=======
-
-
->>>>>>> GBTAmmoniaSurvey/master
 def autoHeader(filelist, beamSize=0.0087, pixPerBeam=3.0):
     RAlist = []
     DEClist = []
@@ -139,11 +134,7 @@ def griddata(pixPerBeam=3.0,
              blorder=1,
              Sessions=None,
              file_extension=None,
-<<<<<<< HEAD
-             rebase=False):
-=======
              rebase=False, **kwargs):
->>>>>>> GBTAmmoniaSurvey/master
 
     if not Sessions:
         filelist = glob.glob(rootdir + '/' + region + '/' + dirname + '/*fits')
@@ -185,15 +176,7 @@ def griddata(pixPerBeam=3.0,
         except:
             warnings.warn('file {0} is corrupted'.format(file_i))
             filelist.remove(file_i)
-<<<<<<< HEAD
-<<<<<<< HEAD
-    #pull a test structure
-=======
     # pull a test structure
->>>>>>> GBTAmmoniaSurvey/master
-=======
-    # pull a test structure
->>>>>>> GBTAmmoniaSurvey/master
     s = fits.getdata(filelist[0])
 
     c = 299792458.
@@ -266,21 +249,9 @@ def griddata(pixPerBeam=3.0,
                                             for ss in baselineRegion])
 
             specData = spectrum['DATA']
-<<<<<<< HEAD
-<<<<<<< HEAD
-            #baseline fit
-            if doBaseline & np.all(np.isfinite(specData)):
-                specData = baselineSpectrum(specData,order=1,
-=======
             # baseline fit
             if doBaseline & np.all(np.isfinite(specData)):
                 specData = baselineSpectrum(specData, order=blorder,
->>>>>>> GBTAmmoniaSurvey/master
-=======
-            # baseline fit
-            if doBaseline & np.all(np.isfinite(specData)):
-                specData = baselineSpectrum(specData, order=blorder,
->>>>>>> GBTAmmoniaSurvey/master
                                             baselineIndex=baselineIndex)
 
             # This part takes the TOPOCENTRIC frequency that is at
@@ -340,14 +311,6 @@ def griddata(pixPerBeam=3.0,
     hdu2.writeto(dirname + file_extension + '_wts.fits', clobber=True)
 
     if rebase:
-<<<<<<< HEAD
-        if 'NH3' in dirname:
-            winfunc = baseline.ammoniaWindow
-        else:
-            winfunc = baseline.tightWindow
-        baseline.rebaseline(dirname + file_extension + '.fits',
-                            windowFunction = winfunc)
-=======
         if 'NH3_11' in dirname:
             baseline.rebaseline(dirname + file_extension + '.fits',
                                 windowFunction=baseline.ammoniaWindow,
@@ -367,4 +330,3 @@ def griddata(pixPerBeam=3.0,
             baseline.rebaseline(dirname + file_extension + '.fits',
                                 windowFunction=baseline.tightWindow, 
                                 **kwargs)
->>>>>>> GBTAmmoniaSurvey/master

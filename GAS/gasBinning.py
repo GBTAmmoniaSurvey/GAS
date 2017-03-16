@@ -5,11 +5,6 @@ import astropy.units as u
 from spectral_cube import SpectralCube
 from GAS import voronoi_2d_binning as v2d
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> GBTAmmoniaSurvey/master
 
 def BinByMask(DataCube, Mask = None, CentroidMap = None,
               CentroidAggregator = np.nanmean, x = None, y = None):
@@ -62,10 +57,6 @@ def BinByMask(DataCube, Mask = None, CentroidMap = None,
 
 
 
-<<<<<<< HEAD
->>>>>>> GBTAmmoniaSurvey/master
-=======
->>>>>>> GBTAmmoniaSurvey/master
 def BinByLabel(DataCube, LabelMap, CentroidMap = None,
                CentroidAggregator = np.nanmean, BackgroundLabels = [0]):
     """
