@@ -15,8 +15,8 @@ def updateLogs(output='ObservationLog.csv',release=None):
         from astropy.utils.data import get_pkg_data_filename
         filename = get_pkg_data_filename('data/ObservationLog_DR1.csv',
                                          package='GAS')
-                                         command = 'cp '+filename+' ./ObservationLog.csv'
-                                         return not subprocess.call(command,shell=True)
+        command = 'cp '+filename+' ./ObservationLog.csv'
+        return not subprocess.call(command,shell=True)
     else:
         warnings.warn('Updating logs failed for non-existent data release.')
         return False
@@ -29,14 +29,14 @@ def updateCatalog(output='RegionCatalog.csv',release=None):
         from astropy.utils.data import get_pkg_data_filename
         filename = get_pkg_data_filename('data/RegionCatalog_DR1.csv',
                                          package='GAS')
-                                         command = 'cp '+filename+' ./'+output
-                                         return not subprocess.call(command,shell=True)
+        command = 'cp '+filename+' ./'+output
+        return not subprocess.call(command,shell=True)
     else:
         warnings.warn('Updating logs failed for non-existent data release.')
         return False
 
 def GenerateRegions(refresh=False,release='all'):
-    
+
     if refresh:
         updateLogs(release=release)
         updateCatalog(release=release)
@@ -48,11 +48,11 @@ def GenerateRegions(refresh=False,release='all'):
     cat = Table.read('RegionCatalog.csv')
 
 # This takes out rows that are empty
-# This needs to be done twice for some reason...
-for idx, row in enumerate(cat):
-    if not row['BoxName']:
-        cat.remove_row(idx)
-    
+# This needs to be done twice for some reason... 
+    for idx, row in enumerate(cat):
+        if not row['BoxName']:
+            cat.remove_row(idx)
+
     for idx, row in enumerate(cat):
         if not row['BoxName']:
             cat.remove_row(idx)
@@ -66,14 +66,14 @@ for idx, row in enumerate(cat):
     vrange = max_values['VLSR']- min_values['VLSR']
     mean_values['VAVG'] = vavg
     mean_values['VRANGE'] = vrange
-    
+
     return(mean_values)
 
 
 def parseLog(logfile='ObservationLog.csv'):
     """
-        Ingests a CSV log file into an astropy table
-        """
+    Ingests a CSV log file into an astropy table
+    """
     try:
         from astropy.table import Table
     except:
