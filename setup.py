@@ -104,17 +104,7 @@ setup(name=PACKAGENAME,
       version=VERSION,
       description=DESCRIPTION,
       scripts=scripts,
-<<<<<<< HEAD
-<<<<<<< HEAD
-      requires=['astropy'],
-      install_requires=['astropy>=1.1','pyspeckit>=0.1.18.1','spectral-cube>=0.3.0', 'scikit-image>=0.11.3','aplpy>=1.0'],
-      provides=[PACKAGENAME],
-=======
-      install_requires=['astropy>=1.1','numpy','matplotlib>=1.5.1'],
->>>>>>> GBTAmmoniaSurvey/master
-=======
       install_requires=['astropy>=1.1','matplotlib>=1.5.1','scipy>=0.17.0'],
->>>>>>> GBTAmmoniaSurvey/master
       author=AUTHOR,
       author_email=AUTHOR_EMAIL,
       license=LICENSE,
