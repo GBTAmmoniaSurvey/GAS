@@ -34,10 +34,17 @@ def VlsrByCoord(RA, Dec, region='OrionA', regionCatalog=None):
         return(v0)
 
     if 'OrionA' in region:
+<<<<<<< HEAD
         coeffs = [-2.8256074, -4.65791997, 9.14502305]
         v0 = coeffs[2] + \
             coeffs[0] * (RA - 83.446122802665869) + \
             coeffs[1] * (Dec + 6.0050560818354661)
+=======
+        coeffs = [3.1792362, 2.36881382, 9.25135413]
+        v0 = coeffs[2] + \
+            coeffs[0] * (RA - 83.8214130221) + \
+            coeffs[1] * (Dec + 5.60497968304)
+>>>>>>> GBTAmmoniaSurvey/master
         return(v0)
 
     if regionCatalog is None:

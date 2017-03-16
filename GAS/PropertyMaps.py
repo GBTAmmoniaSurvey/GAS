@@ -2,6 +2,7 @@ import pyspeckit
 import astropy.io.fits as fits
 import numpy as np
 import os
+from .first_look import trim_edge_cube
 from spectral_cube import SpectralCube
 import astropy.constants as con
 import astropy.units as u
@@ -11,7 +12,11 @@ from skimage.morphology import remove_small_objects,closing,disk,opening
 
 from pyspeckit.spectrum.models import ammonia
 
+<<<<<<< HEAD
 def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=None, save_masked=False):
+=======
+def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=0.0125, save_masked=False):
+>>>>>>> GBTAmmoniaSurvey/master
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
@@ -35,16 +40,28 @@ def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=Non
 
     Usage: 
     import GAS
+<<<<<<< HEAD
     GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='_DR1', threshold=0.0125, save_masked=True)
+=======
+    GAS.PropertyMaps.update_NH3_moment0(region_name='NGC1333', file_extension='DR1_rebase3', threshold=0.0125, save_masked=True)
+>>>>>>> GBTAmmoniaSurvey/master
 
     """
     fit_file='{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension)
     for line_i in ['11','22']:
+<<<<<<< HEAD
         file_in ='{0}/{0}_NH3_{2}_base{1}.fits'.format(region_name,file_extension,line_i)
         file_out='{0}/{0}_NH3_{2}_base{1}_mom0_QA.fits'.format(region_name,file_extension,line_i)
         file_rms='{0}/{0}_NH3_{2}_base{1}_rms_QA.fits'.format(region_name,file_extension,line_i)
         file_rms_mom='{0}/{0}_NH3_{2}_base{1}_mom0_sigma_QA.fits'.format(region_name,file_extension,line_i)
         file_temp='{0}/{0}_NH3_{2}_base{1}_masked_temp.fits'.format(region_name,file_extension,line_i)
+=======
+        file_in ='{0}/{0}_NH3_{2}_{1}.fits'.format(region_name,file_extension,line_i)
+        file_out='{0}/{0}_NH3_{2}_{1}_mom0_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms='{0}/{0}_NH3_{2}_{1}_rms_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms_mom='{0}/{0}_NH3_{2}_{1}_mom0_sigma_QA.fits'.format(region_name,file_extension,line_i)
+        file_temp='{0}/{0}_NH3_{2}_{1}_masked_temp.fits'.format(region_name,file_extension,line_i)
+>>>>>>> GBTAmmoniaSurvey/master
         # Load pyspeckit cube
         pycube = pyspeckit.Cube(file_in)
         if 'FITTYPE' in fits.getheader(fit_file):
@@ -73,9 +90,15 @@ def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=Non
         sigma_map=pycube.parcube[3,:,:]
         vmean=np.mean(vmap[vmap != 0])*u.km/u.s
         if line_i == '11':
+<<<<<<< HEAD
             sigma_v=( np.mean(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
         else:
             sigma_v=( np.mean(sigma_map[vmap != 0]))*u.km/u.s
+=======
+            sigma_v=( np.median(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
+        else:
+            sigma_v=( np.median(sigma_map[vmap != 0]))*u.km/u.s
+>>>>>>> GBTAmmoniaSurvey/master
         total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
         # 
         im_mask=np.sum(mask3d, axis=0)
@@ -95,8 +118,57 @@ def update_NH3_moment0(region_name='L1688', file_extension='_DR1', threshold=Non
         moment_0.write( file_out, overwrite=True)
         rms=cube3.std(axis=0)
         rms.write( file_rms, overwrite=True)
+<<<<<<< HEAD
         mom_0_rms=rms * dv * np.sqrt(n_chan)
         mom_0_rms.write( file_rms_mom, overwrite=True)
+=======
+        #mom_0_rms=rms * dv * np.sqrt(n_chan)
+        #mom_0_rms.write( file_rms_mom, overwrite=True)
+
+def update_rest_moment0(region_name='L1688', file_extension='DR1_rebase3', v_mean=2.5, sigma_v=0.3):
+    """
+    Update moment calculation for non-NH3 lines. Don't base on NH3 fit; these lines may be
+    offset in velocity. Right now including velocity ranges by hand. 
+    """
+    for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S','NH3_33']:
+        file_in ='{0}/{0}_{2}_{1}.fits'.format(region_name,file_extension,line)
+        file_out='{0}/{0}_{2}_{1}_mom0_QA.fits'.format(region_name,file_extension,line)
+        file_rms='{0}/{0}_{2}_{1}_rms_QA.fits'.format(region_name,file_extension,line)
+        # Load pyspeckit cube
+        pycube = pyspeckit.Cube(file_in)
+        # Use spectral cube to calculate integrated intensity maps
+        cube_raw = SpectralCube.read(file_in)
+        # in km/s not Hz
+        cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+        vaxis=cube.spectral_axis
+        dv=np.abs(vaxis[1]-vaxis[0])
+        vmean = v_mean*u.km/u.s
+        sigmav = sigma_v*u.km/u.s
+        total_spc=np.sqrt( (vaxis-vmean)**2)/sigmav < 3
+        mask3d = np.ones(cube.shape,dtype=bool)
+        for ii in np.arange(cube.shape[2]):
+            for jj in np.arange(cube.shape[1]):
+                mask3d[:,jj,ii] = total_spc
+        # create masked cube
+        cube2 = cube.with_mask(mask3d)
+        cube3 = cube.with_mask(~mask3d)
+        # calculate moment map
+        moment_0 = cube2.moment(axis=0)
+        moment_0.write( file_out, overwrite=True)
+        rms=cube3.std(axis=0)
+        rms.write( file_rms, overwrite=True)
+
+
+def run_moment_rest_all():
+    """
+    Update the moment calculations for all DR1 regions for non-NH3 lines
+    """
+    update_rest_moment0(region_name='B18',file_extension='DR1_rebase3',v_mean=5.9,sigma_v=0.2)
+    update_rest_moment0(region_name='L1688',file_extension='DR1_rebase3',v_mean=3.75,sigma_v=0.15)
+    update_rest_moment0(region_name='NGC1333',file_extension='DR1_rebase3',v_mean=8.4,sigma_v=0.2)
+    update_rest_moment0(region_name='OrionA',file_extension='DR1_rebase3',v_mean=9.8,sigma_v=0.2)
+
+>>>>>>> GBTAmmoniaSurvey/master
 
 def run_plot_fit_all():
     """
@@ -109,6 +181,7 @@ def run_plot_fit_all():
                  vcmin=4.5, vcmax=6.0, file_extension='base_DR1')
 
     cubefit(region='NGC1333', blorder=1, do_plot=True, snr_min=3, multicore=1,
+<<<<<<< HEAD
             vmax=9.5, vmin=4.2, file_extension='base_DR1')
     plot_cubefit(region='NGC1333', distance=250*u.pc, dvmin=0.05, dvmax=0.6, 
                  vcmin=6.4, vcmax=9.3, file_extension='base_DR1')
@@ -131,8 +204,85 @@ def run_plot_fit_all():
             multicore=1, file_extension='base_DR1')
     plot_cubefit(region='OrionA', distance=450*u.pc, dvmin=0.05, dvmax=0.7, 
                  vcmin=5.7, vcmax=12.7, file_extension='base_DR1')
+=======
+            vmax=9.5, vmin=4.2, file_extension='DR1_rebase3')
+    plot_cubefit(region='NGC1333', distance=250*u.pc, dvmin=0.05, dvmax=0.6, 
+                 vcmin=6.4, vcmax=9.3, file_extension='DR1_rebase3')
+
+    cubefit(region='B18', vmin=4.5, vmax=7.5, do_plot=False, snr_min=3.0, 
+            multicore=1, file_extension='DR1_rebase3')
+    plot_cubefit(region='B18', distance=137*u.pc, dvmin=0.05, dvmax=0.3, 
+                 vcmin=5.7, vcmax=6.7, file_extension='DR1_rebase3')
+
+    cubefit(region='L1688', vmin=2.5, vmax=5.5, do_plot=False, snr_min=3.0, 
+            multicore=1, file_extension='DR1_rebase3')
+    plot_cubefit(region='L1688', distance=120*u.pc, dvmin=0.05, dvmax=0.7, 
+                 vcmin=2.7, vcmax=4.8, file_extension='DR1_rebase3')
+
+    cubefit(region='OrionA', vmin=5.6, vmax=13.7, do_plot=False, snr_min=3.0, 
+            multicore=1, file_extension='DR1_rebase3')
+    plot_cubefit(region='OrionA', distance=450*u.pc, dvmin=0.05, dvmax=0.7, 
+                 vcmin=5.7, vcmax=12.7, file_extension='DR1_rebase3')
+>>>>>>> GBTAmmoniaSurvey/master
 
 
+def trim_cubes(region_name='OrionA',file_extension='DR1_rebase3',blorder=1,propertyMaps=True):
+    '''
+    Trim cube edges for DR1 release data. Wasn't incorporated into baseline fitting
+    but should be for future baselined data. 
+    Since trim looks for edges in the data, CANNOT use on already flagged data.
+    Use updated moment map as mask for other files
+    '''
+    if file_extension:
+        root = file_extension
+    else:
+        root = '{0}'.format(blorder)
+
+    # Cubes:
+    line_list=['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
+    #line_list = ['NH3_11','NH3_22']
+    for line in line_list:
+        # Moment first to create mask
+        moment = fits.open('{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region_name,line,file_extension))
+        moment_data = moment[0].data
+        moment_hdr  = moment[0].header
+        moment.close()
+        trim_edge_cube(moment_data)
+        mask = np.isfinite(moment_data)
+        # Write out new moment
+        fits.writeto('{0}/{0}_{1}_{2}_mom0_QA_trim.fits'.format(region_name,line,file_extension),
+                     moment_data,moment_hdr,clobber=True)
+        # Next cubes
+        filein = '{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
+        # trim_edge_cube doesn't work on a spectral cube object. 
+        cube = SpectralCube.read(filein)
+        cube2 = cube.with_mask(mask)
+        cube2.write('{0}/{0}_{1}_{2}_trim.fits'.format(region_name,line,file_extension),overwrite=True)
+        # And rms. Note that QA rms file has interior masked regions for Orion A, others?
+        rms = fits.open('{0}/{0}_{1}_{2}_rms_QA.fits'.format(region_name,line,file_extension))
+        rms_data = rms[0].data
+        rms_hdr  = rms[0].header
+        rms.close()
+        trim_edge_cube(rms_data)
+        fits.writeto('{0}/{0}_{1}_{2}_rms_QA_trim.fits'.format(region_name,line,file_extension),
+                     rms_data,rms_hdr,clobber=True)
+
+    # Use NH3 (1,1) moment map as mask for property map
+    if propertyMaps:
+        fit_file = '{0}/{0}_parameter_maps_{1}.fits'.format(region_name,file_extension)
+        moment = fits.open('{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region_name,file_extension))
+        moment_data = moment[0].data
+        propMap = fits.open(fit_file)
+        propMap_data = propMap[0].data
+        propMap_hdr  = propMap[0].header
+        propMap.close()    
+        for plane_i in range(len(propMap_data)):
+            data_i = propMap_data[plane_i,:,:]
+            data_i[~np.isfinite(moment_data)] = np.nan
+            propMap_data[plane_i,:,:] = data_i
+        fits.writeto('{0}/{0}_parameter_maps_{1}_trim.fits'.format(region_name,file_extension),
+                     propMap_data,propMap_hdr,clobber=True)
+    
 
 def _add_plot_text( fig, region, blorder, distance):
     # set nan color and beam size color
@@ -151,12 +301,34 @@ def _add_plot_text( fig, region, blorder, distance):
     fig.ticks.set_color('black')
     fig.ticks.set_minor_frequency(4)
 
+<<<<<<< HEAD
 def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_extension=None):
     """
     Flag cubefit results based on S/N in integrated intensity. 
+=======
+def mask_binary(imageHDU,LowestContour=3,selem=np.array([[0,1,0],[1,1,1],[0,1,0]])):
+    """
+    Way to mask 'island pixels' in property maps
+    """
+    from scipy.ndimage import binary_opening
+    imageMap = imageHDU.data
+    mask = binary_opening(imageMap > LowestContour, selem)
+    #imageHDU.close()
+    #MaskedMap = mask*imageMap
+    #imageHDU[0].data = MaskedMap
+    return mask
+
+def flag_all_data(region='OrionA',blorder='1', file_extension='DR1_rebase3'):
+    """
+    Flag cubefit results based on S/N in integrated intensity.
+>>>>>>> GBTAmmoniaSurvey/master
     Also flag poorly constrained fits (where Tk, Tex hit minimum values)
-    Outputs five .pdf files: Tkin, Tex, Vc, sigmaV, NNH3
-    Update: flag moment maps while at it. Outputs mom0_flagged.fits
+    Outputs individual .fits files for parameters and uncertainties: Tkin, Tex, Vc, sigmaV, NNH3
+    Remove moment 0 flagging as update_NH3_moment + edge masking is better
+    Update (16/9/13): Include masking of 'island pixels' based on S/N in NH3 (1,1) moment map
+                      Set flagged values to zero rather than NaN
+                      Output masked cube file
+                      Cleaned up
 
     Parameters
     ----------
@@ -164,8 +336,11 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
         Name of region to reduce
     blorder : int
         order of baseline removed
+<<<<<<< HEAD
     version : str
         data release version
+=======
+>>>>>>> GBTAmmoniaSurvey/master
     file_extension: : str
         filename
     """
@@ -186,102 +361,145 @@ def flag_all_data(region='OrionA',blorder='1',version='v1',rmsLim=0.2, file_exte
     else:
         root = 'base{0}'.format(blorder)
 
+<<<<<<< HEAD
     hdu=fits.open("{0}_parameter_maps_{1}.fits".format(region,root))
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
 
     rms11hdu = fits.open("{0}/{0}_NH3_11_base{1}_mom0_sigma_QA.fits.fits".format(region,blorder))
+=======
+    hdu=fits.open("{0}/{0}_parameter_maps_{1}_trim.fits".format(region,root))
+    hd_cube=hdu[0].header
+    cube=hdu[0].data
+    hdu.close()
+
+    rms11hdu = fits.open("{0}/{0}_NH3_11_{1}_rms_QA.fits".format(region,root))
+>>>>>>> GBTAmmoniaSurvey/master
     rms11data = rms11hdu[0].data
     rms11hdu.close()
-    m0_11 = fits.open("{0}/{0}_NH3_11_base{1}_mom0.fits".format(region,blorder))
+    m0_11 = fits.open("{0}/{0}_NH3_11_{1}_mom0_QA.fits".format(region,root))
     m0_11data = m0_11[0].data
     hd11 = m0_11[0].header
     m0_11.close()
+<<<<<<< HEAD
     rms22hdu = fits.open("{0}/{0}_NH3_22_base{1}_mom0_sigma_QA.fits".format(region,blorder))
+=======
+    rms22hdu = fits.open("{0}/{0}_NH3_22_{1}_rms.fits".format(region,root))
+>>>>>>> GBTAmmoniaSurvey/master
     rms22data = rms22hdu[0].data
     rms22hdu.close()
-    m0_22 = fits.open("{0}/{0}_NH3_22_base{1}_mom0.fits".format(region,blorder))
+    m0_22 = fits.open("{0}/{0}_NH3_22_{1}_Tpeak.fits".format(region,root))
     m0_22data = m0_22[0].data
     hd22 = m0_22[0].header
     m0_22.close()
 
     sn11 = m0_11data/rms11data
+    sn11HDU = fits.PrimaryHDU(sn11,hd11)
     sn22 = m0_22data/rms22data
 
-    # Flag and write out moment files
-    # Want a much less strict flag here; focus on getting rid of edge effects
-    # Best to base on rms
-    # Is the best place to do this? 
-    rmsFlag = rmsLim
-    m0_11data[ rms11data > rmsFlag ] = np.nan
-    m0_11data[ m0_11data == 0. ] = np.nan
-    m0_22data[ rms22data > rmsFlag ] = np.nan
-    m0_22data[ m0_22data == 0. ] = np.nan
-    fits.writeto("{0}/{0}_NH3_11_base{1}_mom0_flag.fits".format(region,blorder),
-                 m0_11data,hd11,clobber=True)
-    fits.writeto("{0}/{0}_NH3_22_base{1}_mom0_flag.fits".format(region,blorder),
-                 m0_22data,hd22,clobber=True)
+    # Get binary mask
+    selem=np.array([[0,1,0],[1,1,1],[0,1,0]])
+    LowestContour=3
+    pixel_mask = mask_binary(sn11HDU,LowestContour=LowestContour,selem=selem)
 
     # Get Tex, Tk files for mask
     tex  = np.copy(cube[1,:,:])
+    etex = np.copy(cube[7,:,:])
     tk   = np.copy(cube[0,:,:])
     etk  = np.copy(cube[6,:,:])
 
+    hd = hd_cube.copy()
     rm_key=['NAXIS3','CRPIX3','CDELT3', 'CUNIT3', 'CTYPE3', 'CRVAL3']
     for key_i in rm_key:
         hd.remove(key_i)
     hd['NAXIS']= 2
     hd['WCSAXES']= 2
+
     # Tkin
     hd['BUNIT']='K'
     param=cube[0,:,:]
     eparam = cube[6,:,:]
-    param[ sn22 < flagSN22 ] = np.nan
-    param[ param == 0 ] = np.nan
-    param[ tex <= flagMinTex ] = np.nan
-    param[ param <= flagMinTk ] = np.nan
-    param[ eparam > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,version)
+    parMask = ((sn22 >= flagSN22) & (tex >flagMinTex) & (param >flagMinTk) & (param <1e3))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
+    file_out="{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eTkin_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)
+    # Update cube
+    cube[0,:,:] = param
+    cube[6,:,:] = eparam
+
     #Tex
     hd['BUNIT']='K'
     param=cube[1,:,:]
-    param[ param == 0 ] = np.nan
-    param[ sn11 < flagSN11 ] = np.nan
-    param[ tex <= flagMinTex ] = np.nan
-    param[ tk == flagMinTk ] = np.nan
-    param[ eparam > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,version)
+    eparam=cube[7,:,:]
+    parMask = ((sn11>=flagSN11) & (tex > flagMinTex) & (tk > flagMinTk))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
+    file_out="{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eTex_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)
+    # Update cube
+    cube[1,:,:] = param
+    cube[7,:,:] = eparam
+
     # N_NH3
     hd['BUNIT']='cm-2'
     param=cube[2,:,:]
     eparam=cube[8,:,:]
-    param[ param == 0 ] = np.nan
-    param[ sn22 < flagSN22 ] = np.nan
-    param[ tex <= flagMinTex ] = np.nan
-    param[ tk <= flagMinTk ] = np.nan
-    param[ etk > flagMaxeTk ] = np.nan
-    file_out="{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,version)
+    parMask = ((sn22 >= flagSN22) & (tex > flagMinTex) & (tk > flagMinTk))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
+    file_out="{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
-    # sigma
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eN_NH3_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)    # sigma
+    # Update cube
+    cube[2,:,:] = param
+    cube[8,:,:] = eparam
+
     # Use same flags for Vlsr, sigma
+    # Sigma
     hd['BUNIT']='km/s'
     param=cube[3,:,:]
     eparam=cube[9,:,:]
-    param[ param == 0 ] = np.nan
-    param[ sn11 < flagSN11 ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,version)
+    parMask = ((sn11 >= flagSN11))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
+    file_out="{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eSigma_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)
+    # Update cube
+    cube[3,:,:] = param
+    cube[9,:,:] = eparam
+
     # Vlsr
     hd['BUNIT']='km/s'
     param=cube[4,:,:]
     eparam=cube[10,:,:]
-    param[ param == 0 ] = np.nan
-    param[ sn11 < flagSN11 ] = np.nan
-    file_out="{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,version)
+    parMask = ((sn11 >= flagSN11))
+    param = param * pixel_mask * parMask
+    eparam = eparam * pixel_mask * parMask
+    file_out="{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
+    # Write out uncertainties
+    file_out="{0}/parameterMaps/{0}_eVlsr_{1}_flag.fits".format(region,root)
+    fits.writeto(file_out, eparam, hd, clobber=True)
+    # Update cube
+    cube[4,:,:] = param
+    cube[10,:,:] = eparam
+
+    # Write out new cube
+    cube_out="{0}/{0}_parameter_maps_{1}_flag.fits".format(region,root)
+    fits.writeto(cube_out,cube,hd_cube,clobber=True)
 
 def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05, 
                  dvmax=None, vcmin=None, vcmax=None, file_extension=None):
@@ -316,10 +534,17 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
         root = file_extension
     else:
 <<<<<<< HEAD
+<<<<<<< HEAD
         root = 'base{0}'.format(blorder)
 
     data_file = "{0}_parameter_maps.fits".format(region)
     w11_file='{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
+=======
+        root = '{0}'.format(blorder)
+
+    data_file ="{0}_parameter_maps_{1}.fits".format(region,root)
+    w11_file='{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,root)
+>>>>>>> GBTAmmoniaSurvey/master
 =======
         root = '{0}'.format(blorder)
 
@@ -453,7 +678,7 @@ def plot_cubefit(region='NGC1333', blorder=1, distance=145*u.pc, dvmin=0.05,
     fig0.close()
 
 def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc, 
-                     version='v1',dvmin=0, 
+                     version='v1',dvmin=0, file_extension='DR1_rebase3',
                      dvmax=None, vcmin=None, vcmax=None):
     """
     Plot from flagged fits files rather than from cubefit output multi-HDU 
@@ -478,36 +703,28 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     vcmax : numpy.float
         Maximum centroid velocity to plot, in km/s. No default.
     """
+<<<<<<< HEAD
     # Assume moment map in different dir, assume has been flagged
     # Set up directories here
     # If running in images/ then:
     regionDir = "{0}/".format(region)
     parMapDir = "{0}/parameterMaps/".format(region)
+=======
+    if file_extension:
+        root = file_extension
+    else:
+        root = '{0}'.format(blorder)
+>>>>>>> GBTAmmoniaSurvey/master
 
-    w11_file = regionDir+ "{0}_NH3_11_base{1}_mom0_flag.fits".format(region,blorder)
+    w11_file = "{0}/{0}_NH3_11_{1}_mom0_flag.fits".format(region,root)
     c_levs=np.arange(0.3,5,0.5)
     #
     # Centroid velocity
     #
-    # First, unmasked file
-    dataFile = parMapDir+"{0}_Vlsr_{1}.fits".format(region,version)
-    color_table='RdYlBu_r'
-    fig = plt.figure()
-    fig0=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.1,0.1,0.4,0.8])
-    fig0.show_colorscale( cmap=color_table, vmin=vcmin, vmax=vcmax)
-    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
-                      zorder=34)
-    _add_plot_text( fig0, region, blorder, distance)
-    fig0.tick_labels.set_style('colons')
-    fig0.tick_labels.set_yformat('dd:mm')
-    fig0.tick_labels.set_xformat('hh:mm')
-    fig0.add_colorbar()
-    fig0.colorbar.set_location('right')
-    fig0.colorbar.set_axis_label_text('V$_\mathrm{LSR}$ (km s$^{-1}$)')    
-    # Save file
     # Masked file
-    dataFile = parMapDir+"{0}_Vlsr_{1}_flag.fits".format(region,version)
-    fig1=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.53,0.1,0.4,0.8])
+    color_table='RdYlBu_r'
+    dataFile = "{0}/parameterMaps/{0}_Vlsr_{1}_flag.fits".format(region,root)
+    fig1=aplpy.FITSFigure(dataFile)
     fig1.show_colorscale( cmap=color_table, vmin=vcmin, vmax=vcmax)
     fig1.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
                       zorder=34)
@@ -519,30 +736,14 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig1.colorbar.set_location('right')
     fig1.colorbar.set_axis_label_text('V$_\mathrm{LSR}$ (km s$^{-1}$)')    
     # Save file
-    fig.savefig(parMapDir+"{0}_Vc.pdf".format(region),dpi=300)
-    plt.close(fig)
+    fig1.save("{0}/parameterMaps/{0}_Vlsr_{1}_flag.pdf".format(region,root),dpi=300)
+    fig1.close()
     #
     # Sigma
     #
-    # First, unmasked file
-    dataFile = parMapDir+"{0}_Sigma_{1}.fits".format(region,version)
-    color_table='Blues'
-    fig = plt.figure()
-    fig0=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.1,0.1,0.4,0.8])
-    fig0.show_colorscale( cmap=color_table, vmin=dvmin, vmax=dvmax)
-    fig0.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
-                      zorder=34)
-    _add_plot_text( fig0, region, blorder, distance)
-    fig0.tick_labels.set_style('colons')
-    fig0.tick_labels.set_yformat('dd:mm')
-    fig0.tick_labels.set_xformat('hh:mm')
-    # Colorbar 
-    fig0.add_colorbar()
-    fig0.colorbar.set_location('right')
-    fig0.colorbar.set_axis_label_text('$\sigma_\mathrm{v}$ (km s$^{-1}$)')
     # Masked file
-    dataFile = parMapDir+"{0}_Sigma_{1}_flag.fits".format(region,version)
-    fig1=aplpy.FITSFigure(dataFile,figure=fig,subplot=[0.53,0.1,0.4,0.8])
+    dataFile = "{0}/parameterMaps/{0}_Sigma_{1}_flag.fits".format(region,root)
+    fig1=aplpy.FITSFigure(dataFile)
     fig1.show_colorscale( cmap=color_table, vmin=dvmin, vmax=dvmax)
     fig1.show_contour(w11_file, colors='black', linewidths=0.5, levels=c_levs,
                       zorder=34)
@@ -554,12 +755,12 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig1.colorbar.set_location('right')
     fig1.colorbar.set_axis_label_text('$\sigma_\mathrm{v}$ (km s$^{-1}$)')
     # Save file
-    fig.savefig(parMapDir+"{0}_sigmaV.pdf".format(region),dpi=300)
-    plt.close(fig)
+    fig1.save("{0}/{0}_Sigma_{1}_flag.pdf".format(region,root),dpi=300)
+    fig1.close()
     #
     # Tkin
     # 
-    dataFile = parMapDir+"{0}_Tkin_{1}_flag.fits".format(region,version)
+    dataFile = "{0}/parameterMaps/{0}_Tkin_{1}_flag.fits".format(region,root)
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(dataFile)
     fig0.show_colorscale( cmap=color_table)
@@ -571,12 +772,12 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('T$_\mathrm{kin}$ (K)')
     # Save file
-    fig0.save(parMapDir+"{0}_Tkin.pdf".format(region),dpi=300)
+    fig0.save("{0}/parameterMaps/{0}_Tkin_{1}_flag.pdf".format(region,root),dpi=300)
     fig0.close()
     #
     # Tex
     # 
-    dataFile = parMapDir+"{0}_Tex_{1}_flag.fits".format(region,version)
+    dataFile = "{0}/parameterMaps/{0}_Tex_{1}_flag.fits".format(region,root)
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(dataFile)
     fig0.show_colorscale( cmap=color_table)
@@ -588,12 +789,12 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('T$_\mathrm{ex}$ (K)')
     # Save file
-    fig0.save(parMapDir+"{0}_Tex.pdf".format(region),dpi=300)
+    fig0.save("{0}/parameterMaps/{0}_Tex_{1}_flag.pdf".format(region,root),dpi=300)
     fig0.close()
     #
     # N(NH3)
     # 
-    dataFile = parMapDir+"{0}_N_NH3_{1}_flag.fits".format(region,version)
+    dataFile = "{0}/parameterMaps/{0}_N_NH3_{1}_flag.fits".format(region,root)
     color_table='YlOrBr'
     fig0=aplpy.FITSFigure(dataFile)
     fig0.show_colorscale( cmap=color_table)
@@ -605,7 +806,7 @@ def plot_all_flagged(region='OrionA', blorder=1, distance=450.*u.pc,
     fig0.colorbar.set_location('right')
     fig0.colorbar.set_axis_label_text('N(NH$_3$) (cm$^{-2}$)')
     # Save file
-    fig0.save(parMapDir+"{0}_NNH3.pdf".format(region),dpi=300)
+    fig0.save("{0}/parameterMaps/{0}_NNH3_{1}_flag.pdf".format(region,root),dpi=300)
     fig0.close()
 
 def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
@@ -618,7 +819,11 @@ def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
     else:
         root = 'base{0}'.format(blorder)
 
+<<<<<<< HEAD
     hdu=fits.open("{0}_parameter_maps_{1}.fits".format(region,root))
+=======
+    hdu=fits.open("{0}/{0}_parameter_maps_{1}.fits".format(region,root))
+>>>>>>> GBTAmmoniaSurvey/master
     hd=hdu[0].header
     cube=hdu[0].data
     hdu.close()
@@ -631,62 +836,62 @@ def update_cubefit(region='NGC1333', blorder=1, file_extension=None):
     # Tkin
     hd['BUNIT']='K'
     param=cube[0,:,:]
-    file_out="{0}_Tkin_v1.fits".format(region)
+    file_out="{0}/{0}_Tkin_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     #Tex
     hd['BUNIT']='K'
     param=cube[1,:,:]
-    file_out="{0}_Tex_v1.fits".format(region)
+    file_out="{0}/{0}_Tex_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # N_NH3
     hd['BUNIT']='cm-2'
     param=cube[2,:,:]
-    file_out="{0}_N_NH3_v1.fits".format(region)
+    file_out="{0}/{0}_N_NH3_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # sigma
     hd['BUNIT']='km/s'
     param=cube[3,:,:]
-    file_out="{0}_Sigma_v1.fits".format(region)
+    file_out="{0}/{0}_Sigma_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Vlsr
     hd['BUNIT']='km/s'
     param=cube[4,:,:]
-    file_out="{0}_Vlsr_v1.fits".format(region)
+    file_out="{0}/{0}_Vlsr_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # Fortho
     hd['BUNIT']=''
     param=cube[5,:,:]
-    file_out="{0}_Fortho_v1.fits".format(region)
+    file_out="{0}/{0}_Fortho_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eTkin
     hd['BUNIT']='K'
     param=cube[6,:,:]
-    file_out="{0}_eTkin_v1.fits".format(region)
+    file_out="{0}/{0}_eTkin_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eTex
     hd['BUNIT']='K'
     param=cube[7,:,:]
-    file_out="{0}_eTex_v1.fits".format(region)
+    file_out="{0}/{0}_eTex_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eN_NH3
     hd['BUNIT']='cm-2'
     param=cube[8,:,:]
-    file_out="{0}_eN_NH3_v1.fits".format(region)
+    file_out="{0}/{0}_eN_NH3_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eSigma
     hd['BUNIT']='km/s'
     param=cube[9,:,:]
-    file_out="{0}_eSigma_v1.fits".format(region)
+    file_out="{0}/{0}_eSigma_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eVlsr
     hd['BUNIT']='km/s'
     param=cube[10,:,:]
-    file_out="{0}_eVlsr_v1.fits".format(region)
+    file_out="{0}/{0}_eVlsr_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
     # eFortho
     hd['BUNIT']=''
     param=cube[11,:,:]
-    file_out="{0}_eFortho_v1.fits".format(region)
+    file_out="{0}/{0}_eFortho_{1}.fits".format(region,root)
     fits.writeto(file_out, param, hd, clobber=True)
 
 def default_masking(snr,snr_min=5.0):
@@ -736,21 +941,29 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     if file_extension:
         root = file_extension
     else:
+<<<<<<< HEAD
         root = 'base{0}'.format(blorder)
 
 <<<<<<< HEAD
+=======
+        # root = 'base{0}'.format(blorder)
+        root = 'all'
+>>>>>>> GBTAmmoniaSurvey/master
 
     OneOneIntegrated = '{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,root)
     OneOneFile = '{0}/{0}_NH3_11_{1}.fits'.format(region,root)
     RMSFile = '{0}/{0}_NH3_11_{1}_rms.fits'.format(region,root)
     TwoTwoFile = '{0}/{0}_NH3_22_{1}.fits'.format(region,root)
     ThreeThreeFile = '{0}/{0}_NH3_33_{1}.fits'.format(region,root)
+<<<<<<< HEAD
 =======
     OneOneIntegrated = '{0}/{0}_NH3_11_base{1}_mom0.fits'.format(region,root)
     OneOneFile = '{0}/{0}_NH3_11_base{1}.fits'.format(region,root)
     RMSFile = '{0}/{0}_NH3_11_base{1}_rms.fits'.format(region,root)
     TwoTwoFile = '{0}/{0}_NH3_22_base{1}.fits'.format(region,root)
     ThreeThreeFile = '{0}/{0}_NH3_33_base{1}.fits'.format(region,root)
+>>>>>>> GBTAmmoniaSurvey/master
+=======
 >>>>>>> GBTAmmoniaSurvey/master
         
     cube11sc = SpectralCube.read(OneOneFile)
@@ -819,6 +1032,7 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
                   errmap=errmap11, multicore=multicore)
 
     fitcubefile = fits.PrimaryHDU(data=np.concatenate([cubes.parcube,cubes.errcube]), header=cubes.header)
+<<<<<<< HEAD
     fitcubefile.header.update('PLANE1','TKIN')
     fitcubefile.header.update('PLANE2','TEX')
     fitcubefile.header.update('PLANE3','COLUMN')
@@ -838,5 +1052,24 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
 <<<<<<< HEAD
     fitcubefile.writeto("{0}_parameter_maps.fits".format(region),clobber=True)
 =======
+    fitcubefile.writeto("{0}/{0}_parameter_maps_{1}.fits".format(region,root),clobber=True)
+>>>>>>> GBTAmmoniaSurvey/master
+=======
+    fitcubefile.header.set('PLANE1','TKIN')
+    fitcubefile.header.set('PLANE2','TEX')
+    fitcubefile.header.set('PLANE3','COLUMN')
+    fitcubefile.header.set('PLANE4','SIGMA')
+    fitcubefile.header.set('PLANE5','VELOCITY')
+    fitcubefile.header.set('PLANE6','FORTHO')
+    fitcubefile.header.set('PLANE7','eTKIN')
+    fitcubefile.header.set('PLANE8','eTEX')
+    fitcubefile.header.set('PLANE9','eCOLUMN')
+    fitcubefile.header.set('PLANE10','eSIGMA')
+    fitcubefile.header.set('PLANE11','eVELOCITY')
+    fitcubefile.header.set('PLANE12','eFORTHO')
+    fitcubefile.header.set('CDELT3',1)
+    fitcubefile.header.set('CTYPE3','FITPAR')
+    fitcubefile.header.set('CRVAL3',0)
+    fitcubefile.header.set('CRPIX3',1)
     fitcubefile.writeto("{0}/{0}_parameter_maps_{1}.fits".format(region,root),clobber=True)
 >>>>>>> GBTAmmoniaSurvey/master

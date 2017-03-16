@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-Line Fitting
-============
-
-The line fitting is done using ``pyspeckit``
-=======
 ############
 Line Fitting
 ############
@@ -38,4 +32,3 @@ If you want to make some quick plots showing the fit results, then do the follow
                  vcmin=5.7, vcmax=12.7, file_extension='base_DR1')
 
 The result from this line fitting will most likely include pixels that don't have a good fit (because of the default value for the minimum snr), however, we only need to do this fit once and now we clean-up the parameter fit to keep only those that are reliable.
->>>>>>> GBTAmmoniaSurvey/master

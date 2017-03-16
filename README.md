@@ -10,7 +10,11 @@ using the gbt-pipeline, imaging carried out with a custom made gridding package,
 carried out using pyspeckit.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 More information is available in the documentation, avaliable [online at readthedocs.org](http://gas.readthedocs.org).
+=======
+More information is available in the documentation, avaliable [online at readthedocs.io](http://gas.readthedocs.io).
+>>>>>>> GBTAmmoniaSurvey/master
 =======
 More information is available in the documentation, avaliable [online at readthedocs.io](http://gas.readthedocs.io).
 >>>>>>> GBTAmmoniaSurvey/master
@@ -31,6 +35,7 @@ Dependencies
 
 * astropy (>=1.1)
 <<<<<<< HEAD
+<<<<<<< HEAD
 * pyspeckit (>0.1.18.1)
 * matplotlib (>=1.4)
 * aplpy (>=1.0)
@@ -38,10 +43,15 @@ Dependencies
 * radio_beam
 * scikit-image (>=0.11.3)
 =======
+=======
+>>>>>>> GBTAmmoniaSurvey/master
 * pyspeckit (>=0.1.19)
 * matplotlib (>=1.5.1)
 * aplpy (>=1.0)
 * spectral_cube (>=0.3.0)
 * radio_beam
 * scikit-image (>=0.12.3)
+<<<<<<< HEAD
+>>>>>>> GBTAmmoniaSurvey/master
+=======
 >>>>>>> GBTAmmoniaSurvey/master

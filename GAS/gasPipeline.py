@@ -1,5 +1,4 @@
-import pdb
-import os 
+import os
 import subprocess
 import glob
 import warnings
@@ -7,6 +6,7 @@ from astropy.time import Time
 from . import catalogs
 
 
+<<<<<<< HEAD
 def move_files(region='Cepheus_L1251', session=81, 
                prefix='Cepheus_L1251_map_1_scan_26_49'):
     """
@@ -93,27 +93,161 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
             window=['0','1','2','3','4','5','6'],
             overwrite=False,startdate = '2015-01-1',
             enddate='2020-12-31',release='all',obslog = None):
+=======
+def move_files(region='Cepheus_L1251', session=81,
+               prefix='Cepheus_L1251_map_1_scan_26_49'):
+>>>>>>> GBTAmmoniaSurvey/master
     """
-    This is the GAS pipeline which chomps the observation logs and
-    then batch calibrates the data.  It requires AstroPy because
-    their tables are pretty nifty.
-    
-    wrapper(logfile='../ObservationLog.csv',region='NGC1333',window=['3'])
+    Sometimes the pipeline fails to move the calibrated files into the proper
+    folder.
 
+    move_files(region='Cepheus_L1251', session='81',
+    prefix='Cepheus_L1251_map_1_scan_26_49')
+
+    region : string
+        Region name. The files will be moved to folders like
+        region+line_name (eg NGC1333_C2S).
+
+    session : int
+        Session number of the observations. This is added to the
+        original filename.
+
+    prefix : string
+        The prefix of files to be searched for.
+    """
+    folder = [region + '_NH3_11',
+              region + '_NH3_22',
+              region + '_NH3_33',
+              region + '_C2S',
+              region + '_HC5N',
+              region + '_HC7N_22_21',
+              region + ' _HC7N_21_20']
+    window = ['0', '3', '4', '2', '5', '6', '1']
+    for i in range(len(folder)):
+        file_list=glob.glob('{0}*window{1}*fits'.format(prefix, window[i]))
+        if len(file_list) > 0:
+            for file_i in file_list:
+                os.rename(file_i, '{0}/{1}'.format(folder[i],
+                          file_i.replace('.fits', '_sess{0}.fits'.format(i))))
+
+
+def fillAll(overwrite=False):
+    """
+    Function to fill in all raw-data into the format needed for the
+    GBT-pipeline.
+
+    fillAll(overwrite=False)
+
+<<<<<<< HEAD
     region : string 
         Region name as given in logs
     window : list of strings
         List of spectral windows to calibrate
     logfile : string 
+=======
+    overwrite : bool
+        If True it will overwrite files.
+    """
+
+    RawDir = '/lustre/pipeline/scratch/GAS/rawdata/'
+    try:
+        os.chdir(RawDir)
+    except OSError:
+        warnings.warn("fillAll() must be run on GB machines " +
+                      "with access to lustre")
+        return
+
+    catalogs.updateLogs(release = release)
+    log = catalogs.parseLog()
+    uniqSess = set(log['Session'].data.data)
+    for session in uniqSess:
+        if not overwrite:
+            SessionName = 'AGBT15A_430_{0}'.format(session)
+            OutputDir = SessionName + '.raw.vegas'
+            if not os.access(OutputDir, os.W_OK):
+                command = 'sdfits -backends=vegas ' +\
+                    'AGBT15A_430_{0}'.format(session)
+                subprocess.call(command, shell=True)
+                groupchange = 'chgrp gas -R ' + OutputDir
+                subprocess.call(groupchange, shell=True)
+                permissions = 'chmod g+rw -R ' + OutputDir
+                subprocess.call(permissions, shell=True)
+        else:
+            SessionName = 'AGBT15A_430_{0}'.format(session)
+            OutputDir = SessionName + '.raw.vegas'
+            subprocess.call('rm -rf ' + OutputDir, shell=True)
+            command = 'sdfits -backends=vegas AGBT15A_430_{0}'.format(session)
+            subprocess.call(command, shell=True)
+            groupchange = 'chgrp gas -R ' + OutputDir
+            subprocess.call(groupchange, shell=True)
+            permissions = 'chmod g+rw -R ' + OutputDir
+            subprocess.call(permissions, shell=True)
+
+
+def reduceAll(overwrite = False, release = 'all'):
+    """
+    Function to reduce all data using the GBT-pipeline.
+
+    reduceAll(overwrite=False, release='all')
+
+    release : string
+        Variable that selects which set of data is to be reduced.
+        Default value is 'all', while 'DR1' generates the Data Release 1, and
+        hopefully 'DR2' will be available in the near future.
+    overwrite : bool
+        If True it will overwrite files.
+    """
+    catalogs.updateLogs(release=release)
+    catalogs.updateCatalog(release=release)
+    RegionCatalog = catalogs.GenerateRegions()
+    Log = catalogs.parseLog()
+    uniqSrc = RegionCatalog['Region name']
+    cwd = os.getcwd()
+    for region in uniqSrc:
+        if region != 'none':
+            try:
+                os.chdir(cwd + '/' + region)
+            except OSError:
+                os.mkdir(cwd + '/' + region)
+                os.chdir(cwd + '/' + region)
+            wrapper(region=region, overwrite=overwrite,
+                    release=release, obslog=Log)
+            os.chdir(cwd)
+
+
+def wrapper(logfile='ObservationLog.csv', region='NGC1333',
+            window=['0', '1', '2', '3', '4', '5', '6'],
+            overwrite=False, startdate='2015-01-1',
+            enddate='2020-12-31', release='all', obslog=None):
+    """
+    This is the GAS pipeline which chomps the observation logs and
+    then batch calibrates the data.  It requires AstroPy because
+    their tables are pretty nifty.
+
+    wrapper(logfile='../ObservationLog.csv',region='NGC1333',window=['3'])
+
+    region : string
+        Region name as given in logs
+    window : list of strings
+        List of spectral windows to calibrate
+    logfile : string
+>>>>>>> GBTAmmoniaSurvey/master
         Full path to CSV version of the logfile (optional)
     obslog : astropy.Table
         Table representing an already parsed observation log
     overwrite : bool
         If True, carries out calibration for files already present on disk.
+<<<<<<< HEAD
     startdate : string 
         representation of date in format YYYY-MM-DD for beginning calibration 
     enddate : string 
         date in format YYYY-MM-DD for ending calibration 
+=======
+    startdate : string
+        representation of date in format YYYY-MM-DD for beginning calibration
+    enddate : string
+        date in format YYYY-MM-DD for ending calibration
+>>>>>>> GBTAmmoniaSurvey/master
     release : string
         name of column in the log file that is filled with boolean
         values indicating whether a given set of scans belongs to the data
@@ -122,7 +256,11 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
     """
     StartDate = Time(startdate)
     EndDate = Time(enddate)
+<<<<<<< HEAD
     if not os.access(logfile,os.R_OK):
+=======
+    if not os.access(logfile, os.R_OK):
+>>>>>>> GBTAmmoniaSurvey/master
         catalogs.updateLogs(release=release)
 
     if obslog is None:
@@ -143,14 +281,16 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
                     Gains = observation['Beam Gains']
                 if str(observation['Special RawDir']) == '--':
                     doPipeline(SessionNumber=observation['Session'],
-                           StartScan=observation['Start Scan'],
-                           EndScan=observation['End Scan'],
-                           Source=observation['Source'],
-                           Gains=Gains,
-                           Region=region,
-                           Window=str(thisWindow),overwrite=overwrite)
+                               StartScan=observation['Start Scan'],
+                               EndScan=observation['End Scan'],
+                               Source=observation['Source'],
+                               Gains=Gains,
+                               Region=region,
+                               Window=str(thisWindow),
+                               overwrite=overwrite)
                 else :
                         doPipeline(SessionNumber=observation['Session'],
+<<<<<<< HEAD
                            StartScan=observation['Start Scan'],
                            EndScan=observation['End Scan'],
                            Source=observation['Source'],
@@ -161,9 +301,27 @@ def wrapper(logfile='ObservationLog.csv',region='NGC1333',
 
 <<<<<<< HEAD
 def parseLog(logfile='ObservationLog.csv'):
+=======
+                                   StartScan=observation['Start Scan'],
+                                   EndScan=observation['End Scan'],
+                                   Source=observation['Source'],
+                                   Gains=Gains,
+                                   Region=region,
+                                   RawDataDir=observation['Special RawDir'],
+                                   Window=str(thisWindow),
+                                   overwrite=overwrite)
+
+def doPipeline(SessionNumber=1, StartScan = 11, EndScan=58,
+               Source='Perseus_map_NGC1333-A', Window='0',
+               Region='NGC1333', OptionDict=None,
+               RawDataDir=None,
+               Gains=None,
+               OutputRoot=None, overwrite=False):
+>>>>>>> GBTAmmoniaSurvey/master
     """
-    Ingests a CSV log file into an astropy table
+    This is the basic GAS pipeline which in turn uses the gbt pipeline.
     """
+<<<<<<< HEAD
     try:
         from astropy.table import Table
     except:
@@ -211,84 +369,102 @@ def doPipeline(SessionNumber=1,StartScan = 11, EndScan=58,
                Gains=None,
                OutputRoot = None, overwrite=False):
 
+=======
+>>>>>>> GBTAmmoniaSurvey/master
     if RawDataDir is None:
-        RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/' 
+        RawDataDir = '/lustre/pipeline/scratch/GAS/rawdata/'
     if Gains is None:
         Gains = '1,1,1,1,1,1,1,1,1,1,1,1,1,1'
-    SessionDir = 'AGBT15A_430_'+str(SessionNumber).zfill(2)+'.raw.vegas/'
-    BankNames = ['A','B','C','D','E','F','G','H']
-    print('Reducing '+SessionDir)
-    WindowDict = {'0':'NH3_11',
-                  '1':'HC7N_21_20',
-                  '2':'C2S',
-                  '3':'NH3_22',
-                  '4':'NH3_33',
-                  '5':'HC5N',
-                  '6':'HC7N_22_21'}
-    
+    SessionDir = 'AGBT15A_430_' + str(SessionNumber).zfill(2) +\
+        '.raw.vegas/'
+    BankNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    print('Reducing ' + SessionDir)
+    WindowDict = {'0': 'NH3_11',
+                  '1': 'HC7N_21_20',
+                  '2': 'C2S',
+                  '3': 'NH3_22',
+                  '4': 'NH3_33',
+                  '5': 'HC5N',
+                  '6': 'HC7N_22_21'}
+
     # Set default pipeline options as a dictionary
     if OptionDict is None:
-        OptionDict = {'--window':Window,
-                      '--imaging-off':'',
-                      '--clobber':'',
-                      '-v':'4',
-                      '-m':'{0}:{1}'.format(StartScan,EndScan),
-                      '--units':'tmb',
-                      '--smoothing-kernel-size':'0',
-                      '--keep-temporary-files':'',
-                      '--beam-scaling':Gains}
+        OptionDict = {'--window': Window,
+                      '--imaging-off': '',
+                      '--clobber': '',
+                      '-v': '4',
+                      '-m': '{0}:{1}'.format(StartScan, EndScan),
+                      '--units': 'tmb',
+                      '--smoothing-kernel-size': '0',
+                      '--keep-temporary-files': '',
+                      '--beam-scaling': Gains}
     if OutputRoot is None:
-        OutputRoot = os.getcwd()+'/'
+        OutputRoot = os.getcwd() + '/'
     # Try to make the output directory
     print('Region {0}'.format(Region))
-    OutputDirectory = OutputRoot+Region+'_'+WindowDict[Window]
-    if not os.access(OutputDirectory,os.W_OK):
+    OutputDirectory = OutputRoot + Region + '_' + WindowDict[Window]
+    if not os.access(OutputDirectory, os.W_OK):
         try:
             os.mkdir(OutputDirectory)
             print('Made directory {0}'.format(OutputDirectory))
         except:
-            warnings.warn('Unable to make output directory '+OutputDirectory)
+            warnings.warn('Unable to make output directory ' + OutputDirectory)
             raise
 
     for bank in BankNames:
         # Loop over each feed and polarization
-        # we check if a pipeline call is necessary. 
-        for feed in ['0','1','2','3','4','5','6']:
-            for pol in ['0','1']:
+        # we check if a pipeline call is necessary.
+        for feed in ['0', '1', '2', '3', '4', '5', '6']:
+            for pol in ['0', '1']:
                 FilesIntact = True
                 if not overwrite:
-                    outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
-                        format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
-                    FilesIntact = FilesIntact and os.path.exists(OutputDirectory+'/'+outputfile)
+                    outputfile = Source +\
+                        '_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
+                        format(StartScan,
+                               EndScan,
+                               Window,
+                               feed,
+                               pol,
+                               SessionNumber)
+                    FilesIntact = FilesIntact and \
+                        os.path.exists(OutputDirectory + '/' + outputfile)
                     if FilesIntact:
-                        print('Data for Polarization {0} of Feed {1} appear on disk... skipping'.format(pol,feed))
-                #
-                if (not FilesIntact) or (overwrite):
-                    InputFile = RawDataDir+SessionDir+'AGBT15A_430_'+\
-                        str(SessionNumber).zfill(2)+\
-                        '.raw.vegas.{0}.fits'.format(bank)
-                    command = 'gbtpipeline-test -i '+InputFile
-                    for key in OptionDict:
-                        command = command+' '+key+' '+OptionDict[key]
-                    command = command+' --feed '+feed+' --pol '+pol
-                    print(command)
-                    subprocess.call(command,shell=True)
+                        print('Data for Polarization ' +
+                              '{0} of Feed {1} appear on disk... skipping'.
+                              format(pol,feed))
 
-                    indexname    = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
-                        format(StartScan,EndScan,Window,feed,pol) 
-                    outindexname = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.index'.\
-                        format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
+                if (not FilesIntact) or (overwrite):
+                    InputFile = RawDataDir + SessionDir + 'AGBT15A_430_' +\
+                        str(SessionNumber).zfill(2) +\
+                        '.raw.vegas.{0}.fits'.format(bank)
+                    command = 'gbtpipeline -i ' + InputFile
+                    for key in OptionDict:
+                        command = command + ' ' + key + ' ' + OptionDict[key]
+                    command = command + ' --feed ' + feed + ' --pol ' + pol
+                    print(command)
+                    subprocess.call(command, shell=True)
+                    indexname = Source +\
+                        '_scan_{0}_{1}_window{2}_feed{3}_pol{4}.index'.\
+                        format(StartScan, EndScan, Window, feed, pol)
+                    outindexname = Source + '_scan_' +\
+                        '{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.index'.\
+                        format(StartScan, EndScan, Window,
+                               feed, pol, SessionNumber)
                     try:
-                        os.rename(indexname,OutputDirectory+'/'+outindexname)
+                        os.rename(indexname,
+                                  OutputDirectory + '/' + outindexname)
                     except:
                         pass
-                    
-                    filename   = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
-                        format(StartScan,EndScan,Window,feed,pol) 
-                    outputfile = Source+'_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
-                        format(StartScan,EndScan,Window,feed,pol,SessionNumber) 
+
+                    filename = Source + '_scan_' +\
+                        '{0}_{1}_window{2}_feed{3}_pol{4}.fits'.\
+                        format(StartScan, EndScan, Window, feed, pol)
+                    outputfile = Source +\
+                        '_scan_{0}_{1}_window{2}_feed{3}_pol{4}_sess{5}.fits'.\
+                        format(StartScan, EndScan, Window,
+                               feed, pol, SessionNumber)
                     try:
-                        os.rename(filename,OutputDirectory+'/'+outputfile)
-                        os.chown(OutputDirectory+'/'+outputfile,0774)
+                        os.rename(filename, OutputDirectory + '/' + outputfile)
+                        os.chown(OutputDirectory + '/' + outputfile, 0774)
                     except:
                         pass
