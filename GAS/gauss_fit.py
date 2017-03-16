@@ -10,7 +10,7 @@ import pprocess
 from astropy.convolution import convolve
 import radio_beam
 
-def gauss_fitter(region = 'Cepheus_L1251', direct = '/Users/jkeown/Desktop/GAS_dendro/', SN_thresh = 3.0, mol = 'C2S', peak_channels = [222,270], convolve=False, use_old_conv=False, parallel = 3):
+def gauss_fitter(region = 'Cepheus_L1251', direct = '/Users/jkeown/Desktop/GAS_dendro/', SN_thresh = 3.0, mol = 'C2S', peak_channels = [222,270], convolve=False, use_old_conv=False, parallel = 3, file_extension = '_base_DR2'):
 
     	"""
     	Fit a Gaussian to non-NH3 emission lines from GAS.
@@ -36,26 +36,28 @@ def gauss_fitter(region = 'Cepheus_L1251', direct = '/Users/jkeown/Desktop/GAS_d
 		Beam-size must be given in arcseconds
     	use_old_conv : bool
         	If True, use an already convolved map with name:
-		region + '_' + mol + '_conv.fits'
+		region + '_' + mol + file_extension + '_conv.fits'
 		This convolved map must be in units of km/s
     	parallel : int
-		Maximum number of simultaneous processes desired 
+		Maximum number of simultaneous processes desired
+	file_extension: str
+		filename extension 
     	"""
 
 	# Load the spectral cube and convert to velocity units
-	cube = SpectralCube.read(direct + region + '_' + mol + '_base_DR2.fits')
+	cube = SpectralCube.read(direct + region + '_' + mol + file_extension + '.fits')
 	cube_km = cube.with_spectral_unit(u.km / u.s, velocity_convention='radio')
 
 	# If desired, convolve map with larger beam 
 	# or load previously created convolved cube
 	if convolve!=False:
-		cube = SpectralCube.read(direct + region + '_' + mol + '_base_DR2.fits')
+		cube = SpectralCube.read(direct + region + '_' + mol + file_extension + '.fits')
 		cube_km_1 = cube.with_spectral_unit(u.km / u.s, velocity_convention='radio')
 		beam = radio_beam.Beam(major=convolve*u.arcsec, minor=convolve*u.arcsec, pa=0*u.deg)
 		cube_km = cube_km_1.convolve_to(beam)
-		cube_km.write(direct + region + '_' + mol + '_conv.fits', format='fits', overwrite=True)
+		cube_km.write(direct + region + '_' + mol + file_extension + '_conv.fits', format='fits', overwrite=True)
 	if use_old_conv!=False:
-		cube_km = SpectralCube.read(direct + region + '_' + mol + '_conv.fits')
+		cube_km = SpectralCube.read(direct + region + '_' + mol + file_extension + '_conv.fits')
 	
 	# Define the spectral axis in km/s
 	spectra_x_axis_kms = np.array(cube_km.spectral_axis) 
@@ -175,9 +177,9 @@ def gauss_fitter(region = 'Cepheus_L1251', direct = '/Users/jkeown/Desktop/GAS_d
 
 	# Save final cubes
 	cube_final_gauss = SpectralCube(data=cube_gauss, wcs=cube_km.wcs, header=cube_km.header)
-	cube_final_gauss.write(direct + 'gauss_cube_' + mol + '.fits', format='fits', overwrite=True)
+	cube_final_gauss.write(direct + region + '_' + mol + file_extension + '_gauss_cube.fits', format='fits', overwrite=True)
 	cube_final_gauss_noise = SpectralCube(data=cube_gauss_noise, wcs=cube_km.wcs, header=cube_km.header)
-	cube_final_gauss_noise.write(direct + 'gauss_cube_noise_' + mol + '.fits', format='fits', overwrite=True)
+	cube_final_gauss_noise.write(direct + region + '_' + mol + file_extension + '_gauss_cube_noise.fits', format='fits', overwrite=True)
 
 	# Construct appropriate header for param_cube 
 	param_header['NAXIS3'] = len(nan_array2)
@@ -192,13 +194,11 @@ def gauss_fitter(region = 'Cepheus_L1251', direct = '/Users/jkeown/Desktop/GAS_d
 	param_header['PLANE6'] = 'VLSR_err'
 	param_header['PLANE7'] = 'sigma_err'
 
-	cube_final_param = SpectralCube(data=param_cube, wcs=cube_km.wcs, header=param_header)
-	cube_final_param.write(direct + 'param_cube_' + mol + '.fits', format='fits', overwrite=True)
-	fits.writeto(direct + 'param_cube_' + mol + '.fits', param_cube, header=param_header, clobber=True)
+	fits.writeto(direct + region + '_' + mol + file_extension + '_param_cube.fits', param_cube, header=param_header, clobber=True)
 
 ### Examples ###
 # Fit the HC5N data in Cepheus_L1251, without convolution
-#gauss_fitter(region = 'Cepheus_L1251', direct = '/Users/jkeown/Desktop/GAS_dendro/', SN_thresh = 3.0, mol = 'HC5N', peak_channels = [402,460], convolve=False, use_old_conv=False)
+gauss_fitter(region = 'Cepheus_L1251', direct = '/Users/jkeown/Desktop/GAS_dendro/', SN_thresh = 7.0, mol = 'HC5N', peak_channels = [402,460], convolve=False, use_old_conv=False)
 
 # Convolve the HC5N data in Cepheus_L1251 to a spatial resolution of 64 arcseconds,
 # then fit a Gaussian to all pixels above SNR=3
