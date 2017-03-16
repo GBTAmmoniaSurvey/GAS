@@ -187,7 +187,9 @@ def griddata(templateHeader=None,
                               doBaseline=doBaseline,
                               baselineRegion=baselineRegion,
                               blorder=blorder, rebaseorder=3,
-                              flagRMS=flagRMS,
+                              flagRMS=flagRMS, rmsThresh=1.5,
                               outdir=outdir, outname=outname,
                               VlsrByCoord=VlsrByCoord,
                               flagSpike=flagSpike, **kwargs)
+    # Convolve the beam size up by 10% in size
+    gbtpipe.Gridding.postConvolve(outdir+outname)
