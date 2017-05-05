@@ -15,8 +15,8 @@ from ._astropy_init import *
 # For egg_info test builds to pass, put package imports here.
 if not _ASTROPY_SETUP_:
     import gasPipeline
-#    import gridregion
-#    import run_grid_regions
+    import gridregion
+    import run_grid_regions
 #    import first_look
 #    import run_first_look
 #    import PropertyMaps
