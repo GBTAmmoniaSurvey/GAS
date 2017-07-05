@@ -189,6 +189,7 @@ def griddata(templateHeader=None,
                               blorder=blorder, rebaseorder=3,
                               flagRMS=flagRMS, rmsThresh=1.5,
                               outdir=outdir, outname=outname,
+                              templateHeader=templateHeader,
                               VlsrByCoord=VlsrByCoord,
                               flagSpike=flagSpike, **kwargs)
     # Convolve the beam size up by 10% in size
