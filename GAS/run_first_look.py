@@ -140,8 +140,7 @@ def plot_all_moments(file_extension='base_all'):
                     fig=aplpy.FITSFigure(file_mom0, hdu=0)
                     if line_i == 'NH3_11':
                         fig.show_colorscale(cmap=color_table,vmin=v_min, vmax=v_max, stretch='log',
-                                            vmid=v_min-(1.*np.abs(v_min)))
-                                            cbar_ticks = [0,3,6,12,24,48,96]
+                                            vmid=v_min-(1.*np.abs(v_min)),cbar_ticks = [0,3,6,12,24,48,96])
                         # add colorbar
                         fig.add_colorbar()
                         #fig.colorbar.set_width(0.15)
