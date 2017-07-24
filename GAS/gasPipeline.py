@@ -32,7 +32,7 @@ def move_files(region='Cepheus_L1251', session=81,
               region + '_C2S',
               region + '_HC5N',
               region + '_HC7N_22_21',
-              region + ' _HC7N_21_20']
+              region + '_HC7N_21_20']
     window = ['0', '3', '4', '2', '5', '6', '1']
     for i in range(len(folder)):
         file_list=glob.glob('{0}*window{1}*fits'.format(prefix, window[i]))
