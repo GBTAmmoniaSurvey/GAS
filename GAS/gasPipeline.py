@@ -39,7 +39,7 @@ def move_files(region='Cepheus_L1251', session=81,
         if len(file_list) > 0:
             for file_i in file_list:
                 os.rename(file_i, '{0}/{1}'.format(folder[i],
-                          file_i.replace('.fits', '_sess{0}.fits'.format(i))))
+                          file_i.replace('.fits', '_sess{0}.fits'.format(session))))
 
 
 def fillAll(overwrite=False):
