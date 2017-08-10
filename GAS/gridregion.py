@@ -12,9 +12,10 @@ import astropy.units as u
 import astropy.constants as con
 import numpy.polynomial.legendre as legendre
 import warnings
-import baseline
+# import baseline
+import gbtpipe
 from . import __version__
-
+from .utils import VlsrByCoord
 
 def baselineSpectrum(spectrum, order=1, baselineIndex=()):
     x = np.linspace(-1, 1, len(spectrum))
@@ -122,8 +123,7 @@ def addHeader_nonStd(hdr, beamSize, Data_Unit):
     return(hdr)
 
 
-def griddata(pixPerBeam=3.0,
-             templateHeader=None,
+def griddata(templateHeader=None,
              gridFunction=jincGrid,
              rootdir='/lustre/pipeline/scratch/GAS/',
              region='NGC1333',
@@ -134,10 +134,13 @@ def griddata(pixPerBeam=3.0,
              blorder=1,
              Sessions=None,
              file_extension=None,
-             rebase=False, **kwargs):
+             flagRMS=True,
+             flagSpike=True,
+             **kwargs):
 
     if not Sessions:
-        filelist = glob.glob(rootdir + '/' + region + '/' + dirname + '/*fits')
+        filelist = glob.glob(rootdir + '/' + region +
+                             '/' + dirname + '/*fits')
         if not file_extension:
             file_extension = '_all'
         history_message = 'Gridding of data using all sessions'
@@ -176,157 +179,18 @@ def griddata(pixPerBeam=3.0,
         except:
             warnings.warn('file {0} is corrupted'.format(file_i))
             filelist.remove(file_i)
-    # pull a test structure
-    s = fits.getdata(filelist[0])
-
-    c = 299792458.
-    nu0 = s[0]['RESTFREQ']
-
-    Data_Unit = s[0]['TUNIT7']
-    beamSize = 1.22 * (c / nu0 / 100.0) * 180 / np.pi  # in degrees
-
-    naxis3 = len(s[0]['DATA'][startChannel:endChannel])
-
-    # Default behavior is to park the object velocity at
-    # the center channel in the VRAD-LSR frame
-
-    crval3 = s[0]['RESTFREQ'] * (1 - s[0]['VELOCITY'] / c)
-    crpix3 = s[0]['CRPIX1'] - startChannel
-    ctype3 = s[0]['CTYPE1']
-    cdelt3 = s[0]['CDELT1']
-
-    w = wcs.WCS(naxis=3)
-
-    w.wcs.restfrq = nu0
-    w.wcs.radesys = s[0]['RADESYS']
-    w.wcs.equinox = s[0]['EQUINOX']
-    # We are forcing this conversion to make nice cubes.
-    w.wcs.specsys = 'LSRK'
-    w.wcs.ssysobs = 'TOPOCENT'
-
-    if templateHeader is None:
-        wcsdict = autoHeader(filelist, beamSize=beamSize,
-                             pixPerBeam=pixPerBeam)
-        w.wcs.crpix = [wcsdict['CRPIX1'], wcsdict['CRPIX2'], crpix3]
-        w.wcs.cdelt = np.array([wcsdict['CDELT1'], wcsdict['CDELT2'], cdelt3])
-        w.wcs.crval = [wcsdict['CRVAL1'], wcsdict['CRVAL2'], crval3]
-        w.wcs.ctype = [wcsdict['CTYPE1'], wcsdict['CTYPE2'], ctype3]
-        naxis2 = wcsdict['NAXIS2']
-        naxis1 = wcsdict['NAXIS1']
-    else:
-        w.wcs.crpix = [templateHeader['CRPIX1'],
-                       templateHeader['CRPIX2'], crpix3]
-        w.wcs.cdelt = np.array([templateHeader['CDELT1'],
-                                templateHeader['CDELT2'], cdelt3])
-        w.wcs.crval = [templateHeader['CRVAL1'],
-                       templateHeader['CRVAL2'], crval3]
-        w.wcs.ctype = [templateHeader['CTYPE1'],
-                       templateHeader['CTYPE2'], ctype3]
-        naxis2 = templateHeader['NAXIS2']
-        naxis1 = templateHeader['NAXIS1']
-    outCube = np.zeros((int(naxis3), int(naxis2), int(naxis1)))
-    outWts = np.zeros((int(naxis2), int(naxis1)))
-
-    xmat, ymat = np.meshgrid(np.arange(naxis1), np.arange(naxis2),
-                             indexing='ij')
-    xmat = xmat.reshape(xmat.size)
-    ymat = ymat.reshape(ymat.size)
-    xmat = xmat.astype(np.int)
-    ymat = ymat.astype(np.int)
-
-    ctr = 0
-    for thisfile in filelist:
-        ctr += 1
-        s = fits.open(thisfile)
-        print("Now processing {0}".format(thisfile))
-        print("This is file {0} of {1}".format(ctr, len(filelist)))
-
-        nuindex = np.arange(len(s[1].data['DATA'][0]))
-
-        for spectrum in console.ProgressBar((s[1].data)):
-            # Generate Baseline regions
-            baselineIndex = np.concatenate([nuindex[ss]
-                                            for ss in baselineRegion])
-
-            specData = spectrum['DATA']
-            # baseline fit
-            if doBaseline & np.all(np.isfinite(specData)):
-                specData = baselineSpectrum(specData, order=blorder,
-                                            baselineIndex=baselineIndex)
-
-            # This part takes the TOPOCENTRIC frequency that is at
-            # CRPIX1 (i.e., CRVAL1) and calculates the what frequency
-            # that would have in the LSRK frame with freqShiftValue.
-            # This then compares to the desired frequency CRVAL3.
-
-            DeltaNu = freqShiftValue(spectrum['CRVAL1'],
-                                     -spectrum['VFRAME']) - crval3
-            DeltaChan = DeltaNu / cdelt3
-            specData = channelShift(specData, -DeltaChan)
-            outslice = (specData)[startChannel:endChannel]
-            spectrum_wt = np.isfinite(outslice).astype(np.float)
-            outslice = np.nan_to_num(outslice)
-            xpoints, ypoints, zpoints = w.wcs_world2pix(spectrum['CRVAL2'],
-                                                        spectrum['CRVAL3'],
-                                                        spectrum['CRVAL1'], 0)
-            tsys = spectrum['TSYS']
-            if (tsys > 10) and (xpoints > 0) and (xpoints < naxis1) \
-                    and (ypoints > 0) and (ypoints < naxis2):
-                pixelWeight, Index = gridFunction(xmat, ymat,
-                                                  xpoints, ypoints,
-                                                  pixPerBeam=pixPerBeam)
-                vector = np.outer(outslice * spectrum_wt,
-                                  pixelWeight / tsys**2)
-                wts = pixelWeight / tsys**2
-                outCube[:, ymat[Index], xmat[Index]] += vector
-                outWts[ymat[Index], xmat[Index]] += wts
-        # Temporarily do a file write for every batch of scans.
-        outWtsTemp = np.copy(outWts)
-        outWtsTemp.shape = (1,) + outWtsTemp.shape
-        outCubeTemp = np.copy(outCube)
-        outCubeTemp /= outWtsTemp
-
-        hdr = fits.Header(w.to_header())
-        hdr = addHeader_nonStd(hdr, beamSize, Data_Unit)
-        #
-        hdu = fits.PrimaryHDU(outCubeTemp, header=hdr)
-        hdu.writeto(dirname + file_extension + '.fits', clobber=True)
-
-    outWts.shape = (1,) + outWts.shape
-    outCube /= outWts
-
-    # Create basic fits header from WCS structure
-    hdr = fits.Header(w.to_header())
-    # Add non standard fits keyword
-    hdr = addHeader_nonStd(hdr, beamSize, Data_Unit)
-    # Adds history message
-    hdr.add_history(history_message)
-    hdr.add_history('Using GAS pipeline version {0}'.format(__version__))
-    hdu = fits.PrimaryHDU(outCube, header=hdr)
-    hdu.writeto(dirname + file_extension + '.fits', clobber=True)
-
-    w2 = w.dropaxis(2)
-    hdr2 = fits.Header(w2.to_header())
-    hdu2 = fits.PrimaryHDU(outWts, header=hdr2)
-    hdu2.writeto(dirname + file_extension + '_wts.fits', clobber=True)
-
-    if rebase:
-        if 'NH3_11' in dirname:
-            baseline.rebaseline(dirname + file_extension + '.fits',
-                                windowFunction=baseline.ammoniaWindow,
-                                line='oneone', **kwargs)
-
-        if 'NH3_22' in dirname:
-            winfunc = baseline.ammoniaWindow
-            baseline.rebaseline(dirname + file_extension + '.fits',
-                                windowFunction=baseline.ammoniaWindow,
-                                line='twotwo', **kwargs)
-
-        if 'NH3_33' in dirname:
-            baseline.rebaseline(dirname + file_extension + '.fits',
-                                winfunc = baseline.ammoniaWindow,
-                                line='threethree', **kwargs)
-        else:
-            baseline.rebaseline(dirname + file_extension + '.fits',
-                                windowFunction=baseline.tightWindow, 
-                                **kwargs)
+    outdir= rootdir + '/images/' + region + '/' 
+    outname = dirname + file_extension
+    gbtpipe.Gridding.griddata(filelist,
+                              startChannel=startChannel,
+                              endChannel=endChannel,
+                              doBaseline=doBaseline,
+                              baselineRegion=baselineRegion,
+                              blorder=blorder, rebaseorder=3,
+                              flagRMS=flagRMS, rmsThresh=1.5,
+                              outdir=outdir, outname=outname,
+                              templateHeader=templateHeader,
+                              VlsrByCoord=VlsrByCoord,
+                              flagSpike=flagSpike, **kwargs)
+    # Convolve the beam size up by 10% in size
+    gbtpipe.Gridding.postConvolve(outdir+outname)
