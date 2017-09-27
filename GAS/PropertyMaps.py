@@ -80,9 +80,12 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
         # 
         im_mask=np.sum(mask3d, axis=0)
+        # Here checking for bad fits. Places where parameter uncertainties are zero or unreasonably low
+        # Probably a more elegant way to do this! 
         for ii in np.arange( im_mask.shape[1]):
             for jj in np.arange( im_mask.shape[0]):
-                if (im_mask[jj,ii] == 0) or (pycube.parcube[3,jj,ii] < 3*pycube.errcube[3,jj,ii]):
+                if ((im_mask[jj,ii] == 0) or (pycube.parcube[3,jj,ii] < 3*pycube.errcube[3,jj,ii]) or
+                    (pycube.errcube[4,jj,ii] == 0) or (pycube.errcube[1,jj,ii] < 0.01)):
                     mask3d[:,jj,ii] = total_spc
         n_chan=np.sum(mask3d, axis=0)
         # create masked cube
