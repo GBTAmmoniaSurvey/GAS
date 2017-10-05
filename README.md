@@ -32,3 +32,4 @@ Dependencies
 * spectral_cube (>=0.3.0)
 * radio_beam
 * scikit-image (>=0.12.3)
+* pprocess
