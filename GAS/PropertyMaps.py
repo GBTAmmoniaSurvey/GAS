@@ -9,6 +9,7 @@ import astropy.units as u
 import matplotlib.pyplot as plt
 import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
+from .gauss_fit import gauss_fitter
 
 from pyspeckit.spectrum.models import ammonia
 
@@ -803,7 +804,7 @@ def default_masking(snr,snr_min=5.0):
 
 
 def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False, 
-            snr_min=5.0, multicore=1, file_extension=None, mask_function = None):
+            snr_min=5.0, multicore=1, file_extension=None, mask_function = None, gauss_fit=False):
     """
     Fit NH3(1,1) and (2,2) cubes for the requested region. 
     It fits all pixels with SNR larger than requested. 
@@ -934,3 +935,8 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     fitcubefile.header.set('CRVAL3',0)
     fitcubefile.header.set('CRPIX3',1)
     fitcubefile.writeto("{0}/{0}_parameter_maps_{1}.fits".format(region,root),clobber=True)
+
+    if gauss_fit==True:
+	molecules = ['C2S', 'HC7N_22_21', 'HC7N_21_20', 'HC5N']
+	for i in molecules:
+        	gauss_fit.gauss_fitter(region=region, mol=i, vmin=vmin, vmax=vmax, snr_min=snr_min, multicore=multicore, file_extension=file_extension)
