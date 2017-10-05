@@ -939,4 +939,4 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
     if gauss_fit==True:
 	molecules = ['C2S', 'HC7N_22_21', 'HC7N_21_20', 'HC5N']
 	for i in molecules:
-        	gauss_fit.gauss_fitter(region=region, mol=i, vmin=vmin, vmax=vmax, snr_min=snr_min, multicore=multicore, file_extension=file_extension)
+        	gauss_fitter(region=region, mol=i, vmin=vmin, vmax=vmax, snr_min=snr_min, multicore=multicore, file_extension=file_extension)
