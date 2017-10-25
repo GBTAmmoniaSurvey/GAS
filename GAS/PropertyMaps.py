@@ -136,6 +136,92 @@ def update_rest_moment0(region_name='L1688', file_extension='DR1_rebase3', v_mea
         rms=cube3.std(axis=0)
         rms.write( file_rms, overwrite=True)
 
+def update_rest_moment0_2(region_name='L1688', file_extension='base_all_rebase3', threshold=0.0125, save_masked=False):
+    """
+    Function to update moment calculation based on centroid velocity from line fit.
+    For a given line cube, we check which channels have flux in the model cube, 
+    and then use those channels as the appropiate channels for integration.
+
+    Based on code provided by Vlas Sokolov
+
+    Parameters
+    ----------
+    region : str
+        Name of region to re-calculate moment map
+    file_extension : str
+        filename extension
+    threshold : float
+        minimum threshold in model cube used to identify channels with emission
+        Default is down to the machine precision, a better result could be 
+        obtained with 0.0125
+    save_masked : Boolean
+        Keyword to store the masked cube used in the integrated intensity calculation.
+        This is useful to 
+
+    Usage: 
+    import GAS
+    GAS.PropertyMaps.update_rest_moment0_2(region_name='NGC1333', file_extension='DR1_rebase3', threshold=0.0125, save_masked=True)
+
+    """
+    # Add NH3 (3,3) to this list once change Gaussian fits to fit this line as well
+    for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S']:
+        fit_file='{0}/{0}_{1}_{2}_param_cube.fits'.format(region_name,line,file_extension)
+        fit_model_file='{0}/{0}_{1}_{2}_gauss_cube.fits'.format(region_name,line,file_extension)
+        file_in ='{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
+        file_out='{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region_name,line,file_extension)
+        file_rms='{0}/{0}_{1}_{2}_rms_QA.fits'.format(region_name,line,file_extension)
+        file_rms_mom='{0}/{0}_{1}_{2}_mom0_sigma_QA.fits'.format(region_name,line,file_extension)
+        file_temp='{0}/{0}_{1}_{2}_masked_temp.fits'.format(region_name,line,file_extension)
+        # Load pyspeckit cube
+        # Might be able to just load the Gaussian cube here.. 
+        pycube = pyspeckit.Cube(file_in)
+        pycube.load_model_fit( fit_file, npars=3, npeaks=1, fittype='gaussian')
+        # If threshold is not defined, then use the machine accuracy
+        if threshold == None:
+            threshold=np.finfo(pycube.data.dtype).eps
+        # Get model cube from pyspeckit. Is completely zero for Gaussian fits. Why? 
+        #modelcube = pycube.get_modelcube()
+        # Using output model file from the Gaussian fitter instead
+        model = pyspeckit.Cube(fit_model_file)
+        modelcube = model.cube
+        # Use spectral cube to calculate integrated intensity maps
+        cube_raw = SpectralCube.read(file_in)
+        # in km/s not Hz
+        cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+        vaxis=cube.spectral_axis
+        dv=np.abs(vaxis[1]-vaxis[0])
+        # define mask 
+        mask3d = modelcube > threshold
+        # What to do with pixels without signal
+        # Calculate mean velocity and velocity dispersion
+        vmap=pycube.parcube[1,:,:]
+        sigma_map=pycube.parcube[2,:,:]
+        vmean=np.nanmean(vmap[vmap != 0])*u.km/u.s
+        sigma_v=( np.nanmedian(sigma_map[vmap != 0]))*u.km/u.s
+        total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
+        # 
+        im_mask=np.sum(mask3d, axis=0)
+        # Here checking for bad fits. Places where parameter uncertainties are zero or unreasonably low
+        # Probably a more elegant way to do this! 
+        # For Gaussian fits: parameters are [amp, vlsr, sigma]
+        for ii in np.arange( im_mask.shape[1]):
+            for jj in np.arange( im_mask.shape[0]):
+                if ((im_mask[jj,ii] == 0) or (pycube.parcube[2,jj,ii] < 3*pycube.errcube[2,jj,ii]) or
+                    (pycube.errcube[1,jj,ii] == 0) or (pycube.errcube[1,jj,ii] > 0.2)):
+                    mask3d[:,jj,ii] = total_spc
+        n_chan=np.sum(mask3d, axis=0)
+        # create masked cube
+        cube2 = cube.with_mask(mask3d)
+        cube3 = cube.with_mask(~mask3d)
+        #
+        if save_masked:
+            cube2.write( file_temp, overwrite=True)
+        # calculate moment map
+        moment_0 = cube2.moment(axis=0)
+        moment_0.write( file_out, overwrite=True)
+        rms=cube3.std(axis=0)
+        rms.write( file_rms, overwrite=True)
+
 
 def run_moment_rest_all():
     """
