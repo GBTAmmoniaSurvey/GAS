@@ -111,13 +111,13 @@ def plot_moments_QA(file_extension='base_all'):
                     fig.scalebar.set_label('{0:4.2f}'.format(plot_param['scalebar_size']))
                     '''
                     # Labels
-                    fig.add_label(0.025, 0.55,
+                    fig.add_label(0.025, 0.95,
                                   '{0}\n{1}'.format(region,label_i),
                                   relative=True, color=text_color,
                                   horizontalalignment='left',
                                   family='sans_serif',size=text_size)
                     # fig.set_system_latex(True)
-                    fig.save( 'figures/{0}_{1}_{2}_mom0_QA_map.pdf'.format(region,line_i,extension),adjust_bbox=True)
+                    fig.save( 'figures/{0}_{1}_{2}_mom0_QA_map.pdf'.format(region,line_i,extension),adjust_bbox=True,dpi=200)
                     fig.close()
             else:
                 print('File {0} not found'.format(file_mom0))
