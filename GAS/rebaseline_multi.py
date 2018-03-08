@@ -121,7 +121,7 @@ def robustBaseline_chi(y, baselineIndex, blorder_max=3, noiserms=None):
     #plt.show()
     return y - low_model
 
-def rebase(ch, i, length, data, mask_percent=0.4, blorder_max=3):
+def rebase(ch, i, data, mask_percent=0.4, blorder_max=3):
 	"""  
  Parallelizable function to feed into pprocess. Returns a baseline-subtracted
  spectrum and its indices on the image plane.    
@@ -132,7 +132,7 @@ def rebase(ch, i, length, data, mask_percent=0.4, blorder_max=3):
  blorder_max = largest order polynomial to fit (fit from blorder_max down to order of 1) 
 	"""
 	for ii in i:
-		for j in range(length):
+		for j in range(data.shape[2]):
 			spectra=np.array(data[:,ii,j])
 			if (False in np.isnan(spectra)): #and (m/std > 10.):
 				mask = get_mask(spectra, mask_percent=mask_percent)
@@ -149,23 +149,18 @@ def rebase_multi(filename, nproc=8, mask_percent=0.4, blorder_max=3):
  blorder_max = largest order polynomial to fit (fit from blorder_max down to order of 1) 
 	"""
 	cube = SpectralCube.read(filename)
-	data = np.array(cube.unmasked_data[:,:,:])	
 
 	queue = pprocess.Queue(limit=nproc, continuous=1)
 	calc = queue.manage(rebase)
 	tic = time.time()
 
 	# create cube to store rebaselined data
-	#cube_out = data.copy()
 	cube_out = np.zeros(cube.shape) * np.nan
-	shape = np.shape(data)
-	pixels = shape[1] * shape[2]
+	pixels = cube.shape[1] * cube.shape[2]
 
 	counter = 0
-	for i in np.array_split(range(shape[1]), nproc):
-		calc(i, length = shape[2], data=data, mask_percent=mask_percent, blorder_max=blorder_max)
-	#for (i,j), value in np.ndenumerate(data[0]):
-	#	calc(i,j, spectra=np.array(data[:,i,j]), mask_percent=mask_percent, blorder_max=blorder_max)
+	for i in np.array_split(range(cube.shape[1]), nproc):
+		calc(i, data=cube, mask_percent=mask_percent, blorder_max=blorder_max)
 
 	for i, j, ss in queue:
 		cube_out[:,i,j]=ss
