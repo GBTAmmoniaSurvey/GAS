@@ -10,7 +10,7 @@ import pprocess
 import time
 import sys
 import skimage
-from GAS.baseline import mad1d, legendreLoss
+from keystone.baseline import mad1d, legendreLoss
 
 def get_mask(spectra, mask_percent=0.4, window_size=31):
       	"""  
@@ -25,8 +25,8 @@ def get_mask(spectra, mask_percent=0.4, window_size=31):
        	""" 
 	spec_len = len(spectra)
 	sample = int(spec_len*mask_percent)
-	left = np.zeros(15)+np.nanstd(spectra[0:window_size]) # For the first 15 entries, use first window
-	right = np.zeros(15)+np.nanstd(spectra[-window_size:]) # For the last 15 entries, use last window
+	left = np.zeros(int(window_size/2))+np.nanstd(spectra[0:window_size]) # For the first few channels without a full window, use first window
+	right = np.zeros(int(window_size/2))+np.nanstd(spectra[-window_size:]) # For the last few channels without a full window, use last window
 	middle = np.nanstd(skimage.util.view_as_windows(spectra, window_size, 1),axis=1)
 	stds = np.concatenate((left, middle, right))
 	mask = np.arange(spec_len)[np.argsort(stds)[:sample]]
@@ -121,7 +121,7 @@ def robustBaseline_chi(y, baselineIndex, blorder_max=3, noiserms=None):
     #plt.show()
     return y - low_model
 
-def rebase(ch, i, data, mask_percent=0.4, blorder_max=3):
+def rebase(ch, i, data, mask_percent=0.4, blorder_max=3, window_size=31):
 	"""  
  Parallelizable function to feed into pprocess. Returns a baseline-subtracted
  spectrum and its indices on the image plane.    
@@ -135,11 +135,11 @@ def rebase(ch, i, data, mask_percent=0.4, blorder_max=3):
 		for j in range(data.shape[2]):
 			spectra=np.array(data[:,ii,j])
 			if (False in np.isnan(spectra)): #and (m/std > 10.):
-				mask = get_mask(spectra, mask_percent=mask_percent)
+				mask = get_mask(spectra, mask_percent=mask_percent, window_size=window_size)
 				spectra = robustBaseline_chi(spectra, mask, blorder_max=blorder_max, noiserms=None)
 			ch.send((ii, j, spectra))
 
-def rebase_multi(filename, nproc=8, mask_percent=0.4, blorder_max=3):
+def rebase_multi(filename, nproc=8, mask_percent=0.4, blorder_max=3, window_size=31):
 	"""  
  Returns a baseline-subtracted cube. Can be run with parallel processes.    
    
@@ -160,7 +160,7 @@ def rebase_multi(filename, nproc=8, mask_percent=0.4, blorder_max=3):
 
 	counter = 0
 	for i in np.array_split(range(cube.shape[1]), nproc):
-		calc(i, data=cube, mask_percent=mask_percent, blorder_max=blorder_max)
+		calc(i, data=cube, mask_percent=mask_percent, blorder_max=blorder_max, window_size=window_size)
 
 	for i, j, ss in queue:
 		cube_out[:,i,j]=ss
