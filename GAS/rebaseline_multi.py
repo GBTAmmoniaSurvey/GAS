@@ -10,7 +10,7 @@ import pprocess
 import time
 import sys
 import skimage
-from keystone.baseline import mad1d, legendreLoss
+from GAS.baseline import mad1d, legendreLoss
 
 def get_mask(spectra, mask_percent=0.4, window_size=31):
       	"""  
