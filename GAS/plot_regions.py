@@ -20,13 +20,16 @@ def mask_binary(imageHDU,LowestContour,selem):
     imageHDU[0].data = MaskedMap
     return imageHDU, mask
 
-def plot_moments_QA(file_extension='base_all'):
+def plot_moments_QA(regions='all',file_extension='base_all'):
     # Get list of regions - run from images/ directory
     # Assume directories correspond to regions to be imaged
     # Update - use catalog?
-    region_list = glob.glob("*/")
-    for i in range(len(region_list)):
-        region_list[i] = region_list[i].strip("/")
+    if regions == 'all':
+        region_list = glob.glob("*/")
+        for i in range(len(region_list)):
+            region_list[i] = region_list[i].strip("/")
+    else:
+        region_list = [regions]
 
     line_list  = ['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
     label_list = ['NH$_3$(1,1)','NH$_3$(2,2)','NH$_3$(3,3)','C$_2$S','HC$_5$N',
@@ -133,13 +136,16 @@ def plot_moments_QA(file_extension='base_all'):
         print('File {0} not found'.format(file_w11))
 
 
-def plot_rms_QA(file_extension='base_all'):
+def plot_rms_QA(regions='all',file_extension='base_all'):
     # Get list of regions - run from images/ directory
     # Assume directories correspond to regions to be imaged
     # Update - use catalog?
-    region_list = glob.glob("*/")
-    for i in range(len(region_list)):
-        region_list[i] = region_list[i].strip("/")
+    if regions == 'all':
+        region_list = glob.glob("*/")
+        for i in range(len(region_list)):
+            region_list[i] = region_list[i].strip("/")
+    else:
+        region_list = [regions]
 
     line_list  = ['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
     label_list = ['NH$_3$(1,1)','NH$_3$(2,2)','NH$_3$(3,3)','C$_2$S','HC$_5$N',
@@ -218,13 +224,16 @@ def plot_rms_QA(file_extension='base_all'):
         print('File {0} not found'.format(file_r11))
 
 
-def plot_property_maps(file_extension='base_all'):
+def plot_property_maps(regions='all',file_extension='base_all'):
     # Get list of regions - run from images/ directory
     # Assume directories correspond to regions to be imaged
     # Update - use catalog?
-    region_list = glob.glob("*/")
-    for i in range(len(region_list)):
-        region_list[i] = region_list[i].strip("/")
+    if regions == 'all':
+        region_list = glob.glob("*/")
+        for i in range(len(region_list)):
+            region_list[i] = region_list[i].strip("/")
+    else:
+        region_list = [regions]
 
     ext_list  = [4,3,0,1,2]
     label_list = ['$v_{LSR}$ (km s$^{-1}$)','$\sigma_v$ (km s$^{-1}$)','$T_K$ (K)','$T_{ex}$ (K)','log N(para-NH$_3$)']

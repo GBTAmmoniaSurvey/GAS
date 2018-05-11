@@ -11,7 +11,7 @@ from . import gasPipeline
 from . import catalogs
 from . import baseline
 
-def FirstLook(regions=None, file_extension=None, release='all'):
+def FirstLook(regions=None, file_extension=None, release='all',overwrite=True):
     """
     This runs through cubes in a directory tree and generates first
     look products for each of them.  This assumes a directory naming
@@ -61,14 +61,25 @@ def FirstLook(regions=None, file_extension=None, release='all'):
             s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
             mask = np.ones(s.shape[0],dtype=np.bool)
             for deltav in voff11:
-                mask*=(np.abs(s.spectral_axis-deltav*u.km/u.s) > throw)
+                mask*=(np.abs(s.spectral_axis-(deltav*u.km/u.s+vsys)) > throw)
+            '''
             a_rms = (np.where(mask != np.roll(mask,1)))[0]
             b_rms = (np.where(mask != np.roll(mask,-1)))[0]
             index_rms=first_look.create_index(a_rms, b_rms)
             index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
                                    s.closest_spectral_channel(vsys-3*u.km/u.s))
-            first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
-            first_look.peak_rms( file_out, index_rms=index_rms, index_peak=index_peak)
+            #first_look.baseline( file_in, file_out, index_clean=index_rms, polyorder=1)
+            first_look.peak_rms( file_in, index_rms=index_rms, index_peak=index_peak)
+            '''
+            cube_rms = s.with_mask(mask[:,None,None])
+            rms = cube_rms.std(axis=0)
+            mom_mask = ~mask
+            cube_mom = s.with_mask(mom_mask[:,None,None])
+            mom_0 = cube_mom.moment(order=0)
+            mom_1 = cube_mom.moment(order=1)
+            rms.write(file_in.replace('.fits','_rms.fits'),overwrite=overwrite)
+            mom_0.write(file_in.replace('.fits','_mom0.fits'),overwrite=overwrite)
+            mom_1.write(file_in.replace('.fits','_mom1.fits'),overwrite=overwrite)
 
         except IOError:
             warnings.warn("File not found: {0}".format(file_in))
@@ -80,6 +91,8 @@ def FirstLook(regions=None, file_extension=None, release='all'):
             try:
                 s = SpectralCube.read(file_in)
                 s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+                mask = (np.abs(s.spectral_axis-vsys) > throw)
+                '''
                 a_rms = [s.closest_spectral_channel(vsys+2*throw),
                          s.closest_spectral_channel(vsys-throw)]
                 b_rms = [s.closest_spectral_channel(vsys+throw),
@@ -87,13 +100,22 @@ def FirstLook(regions=None, file_extension=None, release='all'):
                 index_peak = np.arange(s.closest_spectral_channel(vsys+3*u.km/u.s),
                                        s.closest_spectral_channel(vsys-3*u.km/u.s))
                 index_rms=first_look.create_index( a_rms, b_rms)
-
                 file_out=file_in.replace(file_extension+'.fits',
                                          '_base'+file_extension+'.fits')
                 first_look.baseline( file_in, file_out, 
                                      index_clean=index_rms, polyorder=1)
-                first_look.peak_rms( file_out, index_rms=index_rms, 
+                first_look.peak_rms( file_in, index_rms=index_rms, 
                                      index_peak=index_peak)
+                '''
+                cube_rms = s.with_mask(mask[:,None,None])
+                rms = cube_rms.std(axis=0)
+                mom_mask = ~mask
+                cube_mom = s.with_mask(mom_mask[:,None,None])
+                mom_0 = cube_mom.moment(order=0)
+                mom_1 = cube_mom.moment(order=1)
+                rms.write(file_in.replace('.fits','_rms.fits'),overwrite=overwrite)
+                mom_0.write(file_in.replace('.fits','_mom0.fits'),overwrite=overwrite)
+                mom_1.write(file_in.replace('.fits','_mom1.fits'),overwrite=overwrite)
             except IOError:
                 warnings.warn("File not found {0}".format(file_in))
 
