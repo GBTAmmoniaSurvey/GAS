@@ -63,13 +63,13 @@ def gauss_fitter(region = 'Cepheus_L1251', snr_min = 3.0, mol = 'C2S', vmin = 5.
 
 	# If desired, convolve map with larger beam 
 	# or load previously created convolved cube
-	if convolve!=False:
+	if convolve:
 		cube = SpectralCube.read(MolFile)
 		cube_km_1 = cube.with_spectral_unit(u.km / u.s, velocity_convention='radio')
 		beam = radio_beam.Beam(major=convolve*u.arcsec, minor=convolve*u.arcsec, pa=0*u.deg)
 		cube_km = cube_km_1.convolve_to(beam)
 		cube_km.write(ConvFile, format='fits', overwrite=True)
-	if use_old_conv!=False:
+	if use_old_conv:
 		cube_km = SpectralCube.read(ConvFile)
 	
 	# Define the spectral axis in km/s
@@ -91,9 +91,7 @@ def gauss_fitter(region = 'Cepheus_L1251', snr_min = 3.0, mol = 'C2S', vmin = 5.
 	shape = np.shape(cube_gauss)
 
 	# Set up a cube for storing fitted parameters
-	param_cube = cube_gauss[0]
-	param_cube = param_cube.reshape((1,) + param_cube.shape)
-	param_cube = np.concatenate((param_cube, param_cube, param_cube, param_cube, param_cube, 	param_cube), axis=0)
+	param_cube = np.zeros(6, shape[1], shape[2])
 	param_header = cube_km.header
 
 	# Define the Gaussian profile
@@ -114,11 +112,12 @@ def gauss_fitter(region = 'Cepheus_L1251', snr_min = 3.0, mol = 'C2S', vmin = 5.
 	pixels = 0
 	for (i,j), value in np.ndenumerate(cube_gauss[0]):
      		spectra=np.array(cube_km.unmasked_data[:,i,j])
-     		rms = np.std(np.append(spectra[0:(peak_channels[0]-1)], spectra[(peak_channels[1]+1):len(spectra)]))
-     		if (max(spectra[peak_channels[0]:peak_channels[1]]) / rms) > snr_min:
-            		pixels+=1
-	    		x.append(i)
-	    		y.append(j)
+		if (False in np.isnan(spectra)):
+     			rms = np.nanstd(np.append(spectra[0:(peak_channels[0]-1)], spectra[(peak_channels[1]+1):len(spectra)]))
+     			if (max(spectra[peak_channels[0]:peak_channels[1]]) / rms) > snr_min:
+            			pixels+=1
+	    			x.append(i)
+	    			y.append(j)
      		else:	
 	    		cube_gauss[:,i,j]=nan_array
 	    		param_cube[:,i,j]=nan_array2
@@ -131,15 +130,16 @@ def gauss_fitter(region = 'Cepheus_L1251', snr_min = 3.0, mol = 'C2S', vmin = 5.
 		spectra = np.array(cube_km.unmasked_data[:,i,j])
 		# Use the peak brightness Temp within specified channel 
 		# range as the initial guess for Gaussian height
-		Tpeak = max(spectra[peak_channels[0]:peak_channels[1]])
+		max_ch = np.argmax(spectra[peak_channels[0]:peak_channels[1]])
+		Tpeak = spectra[peak_channels[0]:peak_channels[1]][max_ch]
 		# Use the velocity of the brightness Temp peak as 
 		# initial guess for Gaussian mean
-		vpeak = spectra_x_axis_kms[peak_channels[0]:peak_channels[1]][np.where(spectra[peak_channels[0]:peak_channels[1]]==Tpeak)]
+		vpeak = spectra_x_axis_kms[peak_channels[0]:peak_channels[1]][max_ch]
 		rms = np.std(np.append(spectra[0:(peak_channels[0]-1)], spectra[(peak_channels[1]+1):len(spectra)]))
 		err1 = np.zeros(shape[0])+rms
 		# Create a noise spectrum based on rms of off-line channels
 		# This will be added to best-fit Gaussian to obtain a noisy Gaussian 
-		noise=np.random.uniform(-1.*rms,rms,len(spectra_x_axis_kms))
+		noise=np.random.normal(0.,rms,len(spectra_x_axis_kms))
 		# Define initial guesses for Gaussian fit
 		guess = [Tpeak, vpeak, 0.3] # [height, mean, sigma]
 		try:
