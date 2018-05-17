@@ -65,7 +65,6 @@ def FirstLook(regions=None, file_extension=None, release='all', trim_edge=True, 
             s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
             if trim_edge:
                 s = trim_edge_spectral_cube(s)
-                s.write(file_in.replace('.fits','_erode.fits'),overwrite=overwrite)
             mask = np.ones(s.shape[0],dtype=np.bool)
             for deltav in voff11:
                 mask*=(np.abs(s.spectral_axis-(deltav*u.km/u.s+vsys)) > throw)
