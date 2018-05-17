@@ -6,12 +6,13 @@ from astropy.table import Table, join
 import astropy.units as u
 from spectral_cube import SpectralCube
 from pyspeckit.spectrum.models.ammonia_constants import voff_lines_dict
+from skimage.morphology import disk,erosion
 from . import first_look
 from . import gasPipeline
 from . import catalogs
 from . import baseline
 
-def FirstLook(regions=None, file_extension=None, release='all',overwrite=True):
+def FirstLook(regions=None, file_extension=None, release='all', trim_edge=True, overwrite=True):
     """
     This runs through cubes in a directory tree and generates first
     look products for each of them.  This assumes a directory naming
@@ -25,6 +26,9 @@ def FirstLook(regions=None, file_extension=None, release='all',overwrite=True):
         Observation Log.
     file_extension : string
         Name of file extensions to be searched for.  Defaults to release name.  
+    trim_edge : boolean
+        If true, use disk erosion to mask noisy map edges
+    overwrite : boolean
 
     Note: The GAS file naming convention is
     REGION_LINENAME_EXTENSION.fits.  For example, for NGC1333 in
@@ -59,6 +63,9 @@ def FirstLook(regions=None, file_extension=None, release='all',overwrite=True):
         try:
             s = SpectralCube.read(file_in)
             s = s.with_spectral_unit(u.km/u.s,velocity_convention='radio')
+            if trim_edge:
+                s = trim_edge_spectral_cube(s)
+                s.write(file_in.replace('.fits','_erode.fits'),overwrite=overwrite)
             mask = np.ones(s.shape[0],dtype=np.bool)
             for deltav in voff11:
                 mask*=(np.abs(s.spectral_axis-(deltav*u.km/u.s+vsys)) > throw)
@@ -118,6 +125,32 @@ def FirstLook(regions=None, file_extension=None, release='all',overwrite=True):
                 mom_1.write(file_in.replace('.fits','_mom1.fits'),overwrite=overwrite)
             except IOError:
                 warnings.warn("File not found {0}".format(file_in))
+
+def trim_edge_spectral_cube(scube):
+    """  trim_edge_cube: Function that reads in a spectral cube and removes the edges 
+    in the cube. 
+    It runs the erode function to make sure that pixels within 3 pixels away 
+    from the edges are blanked. 
+    This is useful to remove very noisy pixels due to lower coverage by KFPA.
+    Updated earlier function to work with spectral cube instance
+    ----------------------------------------
+    Warning: This function modifies the cube.
+    """
+    # 
+    mask = np.isfinite(scube)
+    if len(scube.shape) == 2:
+        mask_2d = mask[:,:]
+    else:
+        mask_2d = mask[0,:,:]
+    # remove image edges
+    mask_2d[:,0] = mask_2d[:,-1] = False
+    mask_2d[0,:] = mask_2d[-1,:] = False
+    # now erode image (using disk) and convert back to 3D mask
+    # then replace all voxels with NaN
+    mask &= erosion(mask_2d,disk(3))
+    scube = scube.with_mask(mask)
+    scube_erode = scube.with_fill_value(np.nan)
+    return scube_erode
 
 def plot_all_moments(file_extension='base_all'):
     # Get list of regions - run from images/ directory

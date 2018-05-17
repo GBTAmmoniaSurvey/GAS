@@ -10,10 +10,11 @@ import matplotlib.pyplot as plt
 import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 from .gauss_fit import gauss_fitter
+from .run_first_look import trim_edge_spectral_cube
 
 from pyspeckit.spectrum.models import ammonia
 
-def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=0.0125, save_masked=False):
+def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=0.0125, trim_edge=True, save_masked=False):
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
@@ -31,6 +32,8 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         minimum threshold in model cube used to identify channels with emission
         Default is down to the machine precision, a better result could be 
         obtained with 0.0125
+    trim_edge : Boolean
+        Keyword to trim noisy edges of output maps using disk erode 
     save_masked : Boolean
         Keyword to store the masked cube used in the integrated intensity calculation.
         This is useful to 
@@ -65,6 +68,8 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         cube_raw = SpectralCube.read(file_in)
         # in km/s not Hz
         cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+        if trim_edge:
+            cube = trim_edge_spectral_cube(cube)
         vaxis=cube.spectral_axis
         dv=np.abs(vaxis[1]-vaxis[0])
         # define mask 
