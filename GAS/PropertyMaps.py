@@ -91,7 +91,8 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         for ii in np.arange( im_mask.shape[1]):
             for jj in np.arange( im_mask.shape[0]):
                 if ((im_mask[jj,ii] == 0) or (pycube.parcube[3,jj,ii] < 3*pycube.errcube[3,jj,ii]) or
-                    (pycube.errcube[4,jj,ii] == 0) or (pycube.errcube[1,jj,ii] < 0.01)):
+                    (pycube.errcube[4,jj,ii] == 0) or (pycube.errcube[1,jj,ii] < 0.01) or 
+		    (pycube.parcube[0,jj,ii] == 5)):
                     mask3d[:,jj,ii] = total_spc
         n_chan=np.sum(mask3d, axis=0)
         # create masked cube
