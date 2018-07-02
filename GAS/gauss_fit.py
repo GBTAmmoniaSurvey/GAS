@@ -11,6 +11,42 @@ from astropy.convolution import convolve
 import radio_beam
 import sys
 
+
+def run_gauss_fits_all(file_extension='all_rebase3'):
+        """
+        Run the Gaussian fits on all observed regions
+        """
+        mol_list = ['C2S','HC5N','HC7N_22_21','HC7N_21_20','NH3_33']
+        for mol in mol_list:
+                print mol
+                gauss_fitter(region="B1",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="B1E",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="B18",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="B59",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="Cepheus_L1228",mol=mol,vmin=-12,vmax=0,file_extension=file_extension)
+                gauss_fitter(region="Cepheus_L1251",mol=mol,vmin=-12,vmax=0,file_extension=file_extension)
+                gauss_fitter(region="CrAeast",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="CrAwest",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="HC2",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="IC348",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="IC5146",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="L1448",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="L1451",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="L1455",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="L1688",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="L1689",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="L1712",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="NGC1333",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="OrionA",mol=mol,vmin=0,vmax=15,file_extension=file_extension)
+                gauss_fitter(region="OrionA_S",mol=mol,vmin=0,vmax=15,file_extension=file_extension)
+                gauss_fitter(region="OrionB_NGC2023-2024",mol=mol,vmin=0,vmax=15,file_extension=file_extension)
+                gauss_fitter(region="OrionB_NGC2068-2071",mol=mol,vmin=0,vmax=15,file_extension=file_extension)
+                gauss_fitter(region="Perseus",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="Pipe_Core40",mol=mol,vmin=0,vmax=10,file_extension=file_extension)
+                gauss_fitter(region="Serpens_Aquila",mol=mol,vmin=0,vmax=12,file_extension=file_extension)
+                gauss_fitter(region="Serpens_MWC297",mol=mol,vmin=0,vmax=12,file_extension=file_extension)
+                
+
 def gauss_fitter(region = 'Cepheus_L1251', snr_min = 3.0, mol = 'C2S', vmin = 5.0, vmax=10.0, convolve=False, use_old_conv=False, multicore = 1, file_extension = None):
 
     	"""
@@ -91,7 +127,7 @@ def gauss_fitter(region = 'Cepheus_L1251', snr_min = 3.0, mol = 'C2S', vmin = 5.
 	shape = np.shape(cube_gauss)
 
 	# Set up a cube for storing fitted parameters
-	param_cube = np.zeros(6, shape[1], shape[2])
+	param_cube = np.zeros((6, shape[1], shape[2]))
 	param_header = cube_km.header
 
 	# Define the Gaussian profile
