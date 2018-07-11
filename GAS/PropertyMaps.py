@@ -169,8 +169,7 @@ def update_rest_moment0_2(region_name='L1688', file_extension='base_all_rebase3'
     GAS.PropertyMaps.update_rest_moment0_2(region_name='NGC1333', file_extension='DR1_rebase3', threshold=0.0125, save_masked=True)
 
     """
-    # Add NH3 (3,3) to this list once change Gaussian fits to fit this line as well
-    for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S']:
+    for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S','NH3_33']:
         fit_file='{0}/{0}_{1}_{2}_param_cube.fits'.format(region_name,line,file_extension)
         fit_model_file='{0}/{0}_{1}_{2}_gauss_cube.fits'.format(region_name,line,file_extension)
         file_in ='{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
