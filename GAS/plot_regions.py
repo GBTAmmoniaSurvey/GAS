@@ -238,7 +238,7 @@ def plot_property_maps(regions='all',file_extension='base_all'):
     ext_list  = [4,3,0,1,2]
     label_list = ['$v_{LSR}$ (km s$^{-1}$)','$\sigma_v$ (km s$^{-1}$)','$T_K$ (K)','$T_{ex}$ (K)','log N(para-NH$_3$)']
     file_list = ['vlsr','sigv','Tk','Tex','N_NH3']
-    ctable_list = ['RdYlBu_r','Blues_r','plasma','hot','plasma'] #'YlGnBu_r'
+    ctable_list = ['RdYlBu_r','plasma','plasma','hot','plasma'] #'YlGnBu_r'
     text_color='black'
     text_size = 12
     beam_color='#d95f02'  # previously used '#E31A1C'
