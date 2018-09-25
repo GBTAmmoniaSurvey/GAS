@@ -4,6 +4,7 @@ import numpy as np
 import os
 from .first_look import trim_edge_cube
 from spectral_cube import SpectralCube
+from pyspeckit.spectrum.models.ammonia_constants import voff_lines_dict
 import astropy.constants as con
 import astropy.units as u
 import matplotlib.pyplot as plt
@@ -13,8 +14,9 @@ from .gauss_fit import gauss_fitter
 from .run_first_look import trim_edge_spectral_cube
 
 from pyspeckit.spectrum.models import ammonia
+from config import plottingDictionary
 
-def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=0.0125, trim_edge=True, save_masked=False):
+def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=0.0125, trim_edge=True, save_masked=False, save_model=False):
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given NH3(1,1) cube, we check which channels have flux in the model cube, 
@@ -47,11 +49,14 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
     for line_i in ['11','22']:
         file_in ='{0}/{0}_NH3_{2}_{1}.fits'.format(region_name,file_extension,line_i)
         file_out='{0}/{0}_NH3_{2}_{1}_mom0_QA.fits'.format(region_name,file_extension,line_i)
+        file_rms_init = '{0}/{0}_NH3_{2}_{1}_rms.fits'.format(region_name,file_extension,line_i)
         file_rms='{0}/{0}_NH3_{2}_{1}_rms_QA.fits'.format(region_name,file_extension,line_i)
         file_rms_mom='{0}/{0}_NH3_{2}_{1}_mom0_sigma_QA.fits'.format(region_name,file_extension,line_i)
         file_temp='{0}/{0}_NH3_{2}_{1}_masked_temp.fits'.format(region_name,file_extension,line_i)
+        plot_param = plottingDictionary[region_name]
         # Load pyspeckit cube
         pycube = pyspeckit.Cube(file_in)
+        rms_init = fits.getdata(file_rms_init)
         if 'FITTYPE' in fits.getheader(fit_file):
             # 'FITTYPE' is not present in old versions of the parameter files
             pycube.load_model_fit( fit_file, npars=6, npeaks=1)
@@ -72,6 +77,9 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
             cube = trim_edge_spectral_cube(cube)
         vaxis=cube.spectral_axis
         dv=np.abs(vaxis[1]-vaxis[0])
+        if save_model:
+            model_scube = SpectralCube(data=modelcube,wcs=cube.wcs)
+            model_scube.write('{0}/{0}_NH3_{2}_{1}_model.fits'.format(region_name,file_extension,line_i),overwrite=True)
         # define mask 
         mask3d = modelcube > threshold
         # What to do with pixels without signal
@@ -80,20 +88,48 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         sigma_map=pycube.parcube[3,:,:]
         vmean=np.mean(vmap[vmap != 0])*u.km/u.s
         if line_i == '11':
+            voff11 = voff_lines_dict['oneone']
             sigma_v=( np.median(sigma_map[vmap != 0]) + 0.15)*u.km/u.s
+            total_spc = np.ones(cube.shape[0],dtype=np.bool)
+            for deltav in voff11:
+                total_spc *= (np.abs(cube.spectral_axis-(deltav*u.km/u.s+vmean))) > plot_param['sigma_mult'] * sigma_v
+            total_spc = ~total_spc
         else:
             sigma_v=( np.median(sigma_map[vmap != 0]))*u.km/u.s
-        total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
+            total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < plot_param['sigma_mult']
         # 
         im_mask=np.sum(mask3d, axis=0)
-        # Here checking for bad fits. Places where parameter uncertainties are zero or unreasonably low
-        # Probably a more elegant way to do this! 
+        # Here checking for bad fits:
+        # No fits. Places where parameter uncertainties are zero or unreasonably low
+        # Where Tk, Tex hit minimum allowed values
+        # Fitted line width < 3 * error in line width
+        # Added check on model fit amplitude vs. spectrum rms
         for ii in np.arange( im_mask.shape[1]):
             for jj in np.arange( im_mask.shape[0]):
                 if ((im_mask[jj,ii] == 0) or (pycube.parcube[3,jj,ii] < 3*pycube.errcube[3,jj,ii]) or
-                    (pycube.errcube[4,jj,ii] == 0) or (pycube.errcube[1,jj,ii] < 0.01) or 
+                    (pycube.errcube[4,jj,ii] == 0) or (pycube.errcube[0,jj,ii] > 5) or
+                    (pycube.errcube[1,jj,ii] < 0.01) or 
+                    (max(modelcube[:,jj,ii]) < (3.*rms_init[jj,ii])) or 
 		    (pycube.parcube[0,jj,ii] == 5) or (pycube.parcube[1,jj,ii] < 3)):
-                    mask3d[:,jj,ii] = total_spc
+                    # Find vlsr of nearby fits
+                    vmap_loc = vmap[jj-20:jj+20,ii-20:ii+20]
+                    vmean_loc = np.mean(vmap_loc[vmap_loc != 0])*u.km/u.s
+                    if np.isfinite(vmean_loc):
+                        vshift = np.int((vmean - vmean_loc)/dv)
+                        # Shift total_spc to match local vlsr
+                        total_spc_shift = np.roll(total_spc,vshift)
+                    else:
+                        # Try bigger window
+                        vmap_loc = vmap[jj-50:jj+50,ii-50:ii+50]
+                        vmean_loc = np.mean(vmap_loc[vmap_loc != 0])*u.km/u.s
+                        if np.isfinite(vmean_loc):
+                            vshift = np.int((vmean - vmean_loc)/dv)
+                            # Shift total_spc to match local vlsr
+                            total_spc_shift = np.roll(total_spc,vshift)
+                        else:
+                            # Use original window if no good fits nearby
+                            total_spc_shift = total_spc
+                    mask3d[:,jj,ii] = total_spc_shift
         n_chan=np.sum(mask3d, axis=0)
         # create masked cube
         cube2 = cube.with_mask(mask3d)
@@ -106,8 +142,8 @@ def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', thresh
         moment_0.write( file_out, overwrite=True)
         rms=cube3.std(axis=0)
         rms.write( file_rms, overwrite=True)
-        #mom_0_rms=rms * dv * np.sqrt(n_chan)
-        #mom_0_rms.write( file_rms_mom, overwrite=True)
+        mom_0_rms=rms * dv * np.sqrt(n_chan)
+        mom_0_rms.write( file_rms_mom, overwrite=True)
 
 def update_rest_moment0(region_name='L1688', file_extension='DR1_rebase3', v_mean=2.5, sigma_v=0.3):
     """
@@ -1004,7 +1040,7 @@ def cubefit(region='NGC1333', blorder=1, vmin=5, vmax=15, do_plot=False,
                   limitedmin=[T,T,T,T,T,T],
                   minpars=[5,2.8,12.0,0.04,vmin,0],
                   start_from_point=(xmax,ymax),
-                  use_neighbor_as_guess=True, 
+                  use_neighbor_as_guess=False, 
                   position_order = 1/peaksnr,
                   errmap=errmap11, multicore=multicore)
 
