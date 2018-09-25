@@ -14,7 +14,7 @@ from .gauss_fit import gauss_fitter
 from .run_first_look import trim_edge_spectral_cube
 
 from pyspeckit.spectrum.models import ammonia
-from config import plottingDictionary
+from .config import plottingDictionary
 
 def update_NH3_moment0(region_name='L1688', file_extension='DR1_rebase3', threshold=0.0125, trim_edge=True, save_masked=False, save_model=False):
     """
