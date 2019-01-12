@@ -208,7 +208,7 @@ def plot_rms_QA(regions='all',file_extension='base_all'):
                     # Scale bar
                     # magic line of code to obtain scale in arcsec obtained from
                     # http://www.astropy.org/astropy-tutorials/Quantities.html
-                    ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies dimensionless_angles())
+                    ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies=dimensionless_angles())
                     fig.add_scalebar(ang_sep.to(u.degree))
                     fig.scalebar.set_corner(plot_param['scalebar_pos'])
                     fig.scalebar.set_font(family='sans_serif',size=text_size)
@@ -332,7 +332,7 @@ def plot_property_maps(regions='all',file_extension='base_all'):
                 # Scale bar
                 # magic line of code to obtain scale in arcsec obtained from
                 # http://www.astropy.org/astropy-tutorials/Quantities.html
-                ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies dimensionless_angles())
+                ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies=dimensionless_angles())
                 fig.add_scalebar(ang_sep.to(u.degree))
                 fig.scalebar.set_corner(plot_param['scalebar_pos'])
                 fig.scalebar.set_font(family='sans_serif',size=text_size)
