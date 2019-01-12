@@ -11,6 +11,10 @@ from . import catalogs
 from scipy.ndimage import binary_opening
 import aplpy
 
+import matplotlib as mpl
+mpl.rcParams['xtick.direction'] = 'in'
+mpl.rcParams['ytick.direction'] = 'in'
+
 from config import plottingDictionary
 
 def mask_binary(imageHDU,LowestContour,selem):
@@ -28,6 +32,7 @@ def plot_moments_QA(regions='all',file_extension='base_all'):
         region_list = glob.glob("*/")
         for i in range(len(region_list)):
             region_list[i] = region_list[i].strip("/")
+        if 'figures' in region_list: region_list.remove('figures')
     else:
         region_list = [regions]
 
@@ -41,7 +46,7 @@ def plot_moments_QA(regions='all',file_extension='base_all'):
     beam_color='#d95f02'  # previously used '#E31A1C'
     # Try single set of contours for first look images
     w11_step = 0.3
-    cont_levs=2**np.arange( 0,20)*w11_step
+    cont_levs=2**np.arange( 0,20)*(w11_step*1.5)
     w11_lw   = 0.5
 
     # Masking of small (noisy) regions
@@ -122,10 +127,12 @@ def plot_moments_QA(regions='all',file_extension='base_all'):
                     fig.scalebar.set(color=text_color)
                     fig.scalebar.set_label('{0:4.2f}'.format(plot_param['scalebar_size']))
                     # Labels
-                    fig.add_label(0.025, 0.95,
+                    label_loc = plot_param['label_loc']
+                    label_ha = plot_param['label_ha']
+                    fig.add_label(label_loc[0],label_loc[1],
                                   '{0}\n{1}'.format(region,label_i),
                                   relative=True, color=text_color,
-                                  horizontalalignment='left',
+                                  horizontalalignment=label_ha,
                                   family='sans_serif',size=text_size)
                     # fig.set_system_latex(True)
                     fig.save( 'figures/{0}_{1}_{2}_mom0_QA_map.pdf'.format(region,line_i,extension),adjust_bbox=True,dpi=200)
@@ -198,7 +205,6 @@ def plot_rms_QA(regions='all',file_extension='base_all'):
                     fig.add_beam(major=0.0088441,minor=0.0088441,angle=0)
                     fig.beam.set_color(beam_color)
                     fig.beam.set_corner('bottom left')
-                    '''
                     # Scale bar
                     # magic line of code to obtain scale in arcsec obtained from
                     # http://www.astropy.org/astropy-tutorials/Quantities.html
@@ -208,12 +214,13 @@ def plot_rms_QA(regions='all',file_extension='base_all'):
                     fig.scalebar.set_font(family='sans_serif',size=text_size)
                     fig.scalebar.set(color=text_color)
                     fig.scalebar.set_label('{0:4.2f}'.format(plot_param['scalebar_size']))
-                    '''
                     # Labels
-                    fig.add_label(0.025, 0.1,
+                    label_loc = plot_param['label_loc']
+                    label_ha = plot_param['label_ha']
+                    fig.add_label(label_loc[0],label_loc[1],
                                   '{0}\n{1}'.format(region,label_i),
                                   relative=True, color=text_color,
-                                  horizontalalignment='left',
+                                  horizontalalignment=label_ha,
                                   family='sans_serif',size=text_size)
                     # fig.set_system_latex(True)
                     fig.save( 'figures/{0}_{1}_{2}_rms_QA_map.pdf'.format(region,line_i,extension),adjust_bbox=True)
@@ -322,22 +329,22 @@ def plot_property_maps(regions='all',file_extension='base_all'):
                 fig.add_beam(major=0.0088441,minor=0.0088441,angle=0)
                 fig.beam.set_color(beam_color)
                 fig.beam.set_corner('bottom left')
-                '''
                 # Scale bar
                 # magic line of code to obtain scale in arcsec obtained from
                 # http://www.astropy.org/astropy-tutorials/Quantities.html
-                #ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies dimensionless_angles())
+                ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies dimensionless_angles())
                 fig.add_scalebar(ang_sep.to(u.degree))
                 fig.scalebar.set_corner(plot_param['scalebar_pos'])
                 fig.scalebar.set_font(family='sans_serif',size=text_size)
                 fig.scalebar.set(color=text_color)
                 fig.scalebar.set_label('{0:4.2f}'.format(plot_param['scalebar_size']))
-                '''
                 # Labels
-                fig.add_label(0.025, 0.95,
+                label_loc = plot_param['label_loc']
+                label_ha = plot_param['label_ha']
+                fig.add_label(label_loc[0],label_loc[1],
                               '{0}\n{1}'.format(region,label),
                               relative=True, color=text_color,
-                              horizontalalignment='left',
+                              horizontalalignment=label_ha,
                               family='sans_serif',size=text_size)
                 # fig.set_system_latex(True)
                 fig.save( 'figures/{0}_{1}_{2}.pdf'.format(region,extension,file_list[i]),adjust_bbox=True,dpi=200)
