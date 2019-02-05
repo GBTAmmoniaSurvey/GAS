@@ -178,7 +178,7 @@ def update_rest_moment0(region_name='L1688', file_extension='DR1_rebase3', v_mea
         rms=cube3.std(axis=0)
         rms.write( file_rms, overwrite=True)
 
-def update_rest_moment0_2(region_name='L1688', file_extension='base_all_rebase3', threshold=0.0125, save_masked=False):
+def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3', threshold=0.0125, save_masked=False,trim_edge=True):
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given line cube, we check which channels have flux in the model cube, 
@@ -229,6 +229,8 @@ def update_rest_moment0_2(region_name='L1688', file_extension='base_all_rebase3'
         cube_raw = SpectralCube.read(file_in)
         # in km/s not Hz
         cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+        if trim_edge:
+            cube = trim_edge_spectral_cube(cube) 
         vaxis=cube.spectral_axis
         dv=np.abs(vaxis[1]-vaxis[0])
         # define mask 
@@ -262,7 +264,8 @@ def update_rest_moment0_2(region_name='L1688', file_extension='base_all_rebase3'
         moment_0.write( file_out, overwrite=True)
         rms=cube3.std(axis=0)
         rms.write( file_rms, overwrite=True)
-
+        mom_0_rms=rms * dv * np.sqrt(n_chan)
+        mom_0_rms.write( file_rms_mom, overwrite=True)
 
 def run_moment_rest_all():
     """
