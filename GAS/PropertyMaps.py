@@ -263,6 +263,7 @@ def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3', thr
             # calculate moment map
             moment_0 = cube2.moment(axis=0)
             moment_0.write( file_out, overwrite=True)
+            cube3.allow_huge_operations=True
             rms=cube3.std(axis=0)
             rms.write( file_rms, overwrite=True)
             mom_0_rms=rms * dv * np.sqrt(n_chan)
