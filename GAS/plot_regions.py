@@ -259,6 +259,7 @@ def plot_property_maps(regions='all',file_extension='base_all'):
 
     for region in region_list:
         print region
+        plot_param = plottingDictionary[region]
         # Want to use updated, rebaselined moment maps where available:
         test_rebase = '{0}/{0}_NH3_11_{1}_rebase3_mom0_QA.fits'.format(region,file_extension)
         if os.path.isfile(test_rebase):
@@ -306,7 +307,7 @@ def plot_property_maps(regions='all',file_extension='base_all'):
                     else:
                         v_min = np.nanpercentile(maskedProp,5)
                         v_max = np.nanpercentile(maskedProp,95)
-                fig=aplpy.FITSFigure(prop_hdu,)
+                fig=aplpy.FITSFigure(prop_hdu)
                 fig.show_colorscale(cmap=ctable_list[i],vmin=v_min, vmax=v_max)
                 # add colorbar
                 fig.add_colorbar()
@@ -332,7 +333,7 @@ def plot_property_maps(regions='all',file_extension='base_all'):
                 # Scale bar
                 # magic line of code to obtain scale in arcsec obtained from
                 # http://www.astropy.org/astropy-tutorials/Quantities.html
-                ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies=dimensionless_angles())
+                ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies=u.dimensionless_angles())
                 fig.add_scalebar(ang_sep.to(u.degree))
                 fig.scalebar.set_corner(plot_param['scalebar_pos'])
                 fig.scalebar.set_font(family='sans_serif',size=text_size)
