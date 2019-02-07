@@ -9,6 +9,7 @@ from scipy import *
 import time
 import pprocess
 from astropy.convolution import convolve
+from scipy.ndimage import binary_opening
 import radio_beam
 import sys
 import os
@@ -298,8 +299,12 @@ def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
                                                     (param_pycube.cube[2,jj,ii] == 0) or (param_pycube.cube[4,jj,ii] > 0.3) or 
                                                     (mom0[jj,ii] < (4*m0sig[jj,ii]))):
                                                         param_pycube.cube[:,jj,ii] = 0
+                        # Add last step to drop small (noisy) regions
+                        selem = np.array([[0,1,0],[1,1,1],[0,1,0]])
+                        mask = binary_opening(param_pycube.cube[0,:,:] > 0, selem)
+                        MaskedMap = mask*param_pycube.cube
                         # create masked parameter cube
-                        masked_param_hdu = fits.PrimaryHDU(param_pycube.cube,header=param_cube.header)
+                        masked_param_hdu = fits.PrimaryHDU(MaskedMap,header=param_cube.header)
                         masked_param_hdu.writeto(maskedfits,overwrite=True)
 
 
