@@ -157,13 +157,13 @@ def calc_all_columns(file_extension='all_rebase3',tex=7.*u.K):
 def plot_property_maps(regions='all',file_extension='all_rebase3'):
     # Get list of regions - run from images/ directory
     # Assume directories correspond to regions to be imaged
-    # Update - use catalog?
+    # Update - use region list
     if regions == 'all':
-        region_list = glob.glob("*/")
-        for i in range(len(region_list)):
-            region_list[i] = region_list[i].strip("/")
-        if 'figures' in region_list: 
-            region_list.remove('figures')
+        region_list = ['B1','B18','B1E','B59','Cepheus_L1228','Cepheus_L1251',
+                       'CrAeast','CrAwest','HC2','IC348','IC5146','L1448','L1451',
+                       'L1455','L1688','L1689','L1712','NGC1333','OrionA','OrionA_S',
+                       'OrionB_NGC2023-2024','OrionB_NGC2068-2071','Perseus','Pipe_Core40',
+                       'Serpens_Aquila','Serpens_MWC297']
     else:
         region_list = [regions]
 
@@ -184,31 +184,104 @@ def plot_property_maps(regions='all',file_extension='all_rebase3'):
     line_list = ['HC5N','C2S','HC7N_21_20','HC7N_22_21','NH3_33']
 
     for region in region_list:
-        print region
-        # Use NH3 (1,1) moment maps for contours? 
-        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
-        plot_param = plottingDictionary[region]
-        for line in line_list:
-            gparamfits = '{0}/{0}_{2}_{1}_param_cube_masked.fits'.format(region,file_extension,line)
-            if os.path.isfile(gparamfits):
-                par_hdu = fits.open(gparamfits)
-                # Get NH3 (1,1) moment contours
-                LowestContour= cont_levs[0]*0.5
-                nh3mom0_hdu = fits.open(file_w11)
-                nh3mom0 = nh3mom0_hdu[0].data
-                mask = binary_opening(nh3mom0 > LowestContour, selem)
-                MaskedMap = mask*nh3mom0
-                nh3mom0_hdu[0].data = MaskedMap
-                for i in range(len(ext_list)):
+        if os.path.isdir(region):
+            print region
+            # Use NH3 (1,1) moment maps for contours? 
+            file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
+            plot_param = plottingDictionary[region]
+            for line in line_list:
+                gparamfits = '{0}/{0}_{2}_{1}_param_cube_masked.fits'.format(region,file_extension,line)
+                if os.path.isfile(gparamfits):
+                    par_hdu = fits.open(gparamfits)
+                    # Get NH3 (1,1) moment contours
+                    LowestContour= cont_levs[0]*0.5
+                    nh3mom0_hdu = fits.open(file_w11)
+                    nh3mom0 = nh3mom0_hdu[0].data
+                    mask = binary_opening(nh3mom0 > LowestContour, selem)
+                    MaskedMap = mask*nh3mom0
+                    nh3mom0_hdu[0].data = MaskedMap
+                    for i in range(len(ext_list)):
+                        # Use percentiles to set initial plot colourscale ranges
+                        # Need to omit zeros from calculation
+                        plane = par_hdu[0].data[i,:,:]
+                        v_min=np.nanpercentile(plane[np.where(plane !=0)],2.5)
+                        v_max=np.nanpercentile(plane[np.where(plane !=0)],97.5)
+                        fig=aplpy.FITSFigure(par_hdu,slices=[i])
+                        fig.show_colorscale(cmap=ctable_list[i],vmin=v_min, vmax=v_max)
+                        # For some reason having set_nan_color *after* colorbar messes up the tick locations! 
+                        fig.set_nan_color('0.99')
+                        # add colorbar
+                        fig.add_colorbar()
+                        fig.colorbar.show(box_orientation='horizontal', width=0.1, pad=0.0,
+                                          location='top')
+                        fig.colorbar.set_font(family='sans_serif',size=text_size)
+                        fig.colorbar.set_axis_label_font(family='sans_serif',size=text_size)
+                        #
+                        fig.show_contour(nh3mom0_hdu, colors='gray', levels=cont_levs, linewidths=w11_lw)
+                        # Axis labels
+                        fig.axis_labels.set_font(family='sans_serif',size=text_size)
+                        # Ticks
+                        fig.ticks.set_color(text_color)
+                        fig.tick_labels.set_font(family='sans_serif',size=text_size)
+                        fig.tick_labels.set_style('colons')
+                        fig.tick_labels.set_xformat('hh:mm:ss')
+                        fig.tick_labels.set_yformat('dd:mm')
+                        # Add beam
+                        fig.add_beam(major=0.0088441,minor=0.0088441,angle=0)
+                        fig.beam.set_color(beam_color)
+                        fig.beam.set_corner('bottom left')
+                        # Scale bar
+                        # magic line of code to obtain scale in arcsec obtained from
+                        # http://www.astropy.org/astropy-tutorials/Quantities.html
+                        ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies=u.dimensionless_angles())
+                        fig.add_scalebar(ang_sep.to(u.degree))
+                        fig.scalebar.set_corner(plot_param['scalebar_pos'])
+                        fig.scalebar.set_font(family='sans_serif',size=text_size)
+                        fig.scalebar.set(color=text_color)
+                        fig.scalebar.set_label('{0:4.2f}'.format(plot_param['scalebar_size']))
+                        # Labels
+                        label = label_list[i]
+                        label_loc = plot_param['label_loc']
+                        label_ha = plot_param['label_ha']
+                        fig.add_label(label_loc[0],label_loc[1],
+                                      '{0}\n{1}'.format(region,label),
+                                      relative=True, color=text_color,
+                                      horizontalalignment=label_ha,
+                                      family='sans_serif',size=text_size)
+                        # fig.set_system_latex(True)
+                        fig.save('figures/{0}_{1}_{2}_{3}.pdf'.format(region,line,file_extension,file_list[i]),
+                                 adjust_bbox=True,dpi=200)
+                        fig.close()
+                else:
+                    print('File {0} not found'.format(gparamfits))
+
+    # Next plot column density maps
+    for region in region_list:
+        if os.path.isdir(region):
+            print region
+            # Use NH3 (1,1) moment maps for contours? 
+            file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
+            plot_param = plottingDictionary[region]
+            for line in line_list:
+                colfits = '{0}/{0}_{2}_{1}_N.fits'.format(region,file_extension,line)
+                if os.path.isfile(colfits):
+                    col_hdu = fits.open(colfits)
+                    # Get NH3 (1,1) moment contours
+                    LowestContour= cont_levs[0]*0.5
+                    nh3mom0_hdu = fits.open(file_w11)
+                    nh3mom0 = nh3mom0_hdu[0].data
+                    mask = binary_opening(nh3mom0 > LowestContour, selem)
+                    MaskedMap = mask*nh3mom0
+                    nh3mom0_hdu[0].data = MaskedMap
                     # Use percentiles to set initial plot colourscale ranges
                     # Need to omit zeros from calculation
-                    plane = par_hdu[0].data[i,:,:]
-                    v_min=np.nanpercentile(plane[np.where(plane !=0)],2.5)
-                    v_max=np.nanpercentile(plane[np.where(plane !=0)],97.5)
-                    fig=aplpy.FITSFigure(par_hdu,slices=[i])
-                    fig.show_colorscale(cmap=ctable_list[i],vmin=v_min, vmax=v_max)
+                    v_min=np.nanpercentile(col_hdu[0].data[np.where(col_hdu[0].data !=0)],0.5)
+                    v_max=np.nanpercentile(col_hdu[0].data[np.where(col_hdu[0].data !=0)],99.5)
+                    v_mid = 0
+                    fig=aplpy.FITSFigure(col_hdu)
+                    fig.show_colorscale(cmap='Blues',vmin=v_min, vmax=v_max, vmid=v_mid,stretch='log')
                     # For some reason having set_nan_color *after* colorbar messes up the tick locations! 
-                    fig.set_nan_color('0.99')
+                    fig.set_nan_color('0.95')
                     # add colorbar
                     fig.add_colorbar()
                     fig.colorbar.show(box_orientation='horizontal', width=0.1, pad=0.0,
@@ -243,84 +316,13 @@ def plot_property_maps(regions='all',file_extension='all_rebase3'):
                     label_loc = plot_param['label_loc']
                     label_ha = plot_param['label_ha']
                     fig.add_label(label_loc[0],label_loc[1],
-                                  '{0}\n{1}'.format(region,label),
+                                  '{0}\n N({1})'.format(region,line),
                                   relative=True, color=text_color,
                                   horizontalalignment=label_ha,
                                   family='sans_serif',size=text_size)
                     # fig.set_system_latex(True)
-                    fig.save('figures/{0}_{1}_{2}_{3}.pdf'.format(region,line,file_extension,file_list[i]),
-                              adjust_bbox=True,dpi=200)
+                    fig.save('figures/{0}_{1}_{2}_N.pdf'.format(region,line,file_extension),
+                             adjust_bbox=True,dpi=200)
                     fig.close()
-            else:
-                print('File {0} not found'.format(gparamfits))
-
-    # Next plot column density maps
-    for region in region_list:
-        print region
-        # Use NH3 (1,1) moment maps for contours? 
-        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
-        plot_param = plottingDictionary[region]
-        for line in line_list:
-            colfits = '{0}/{0}_{2}_{1}_N.fits'.format(region,file_extension,line)
-            if os.path.isfile(colfits):
-                col_hdu = fits.open(colfits)
-                # Get NH3 (1,1) moment contours
-                LowestContour= cont_levs[0]*0.5
-                nh3mom0_hdu = fits.open(file_w11)
-                nh3mom0 = nh3mom0_hdu[0].data
-                mask = binary_opening(nh3mom0 > LowestContour, selem)
-                MaskedMap = mask*nh3mom0
-                nh3mom0_hdu[0].data = MaskedMap
-                # Use percentiles to set initial plot colourscale ranges
-                # Need to omit zeros from calculation
-                v_min=np.nanpercentile(col_hdu[0].data[np.where(col_hdu[0].data !=0)],0.5)
-                v_max=np.nanpercentile(col_hdu[0].data[np.where(col_hdu[0].data !=0)],99.5)
-                v_mid = 0
-                fig=aplpy.FITSFigure(col_hdu)
-                fig.show_colorscale(cmap='Blues',vmin=v_min, vmax=v_max, vmid=v_mid,stretch='log')
-                # For some reason having set_nan_color *after* colorbar messes up the tick locations! 
-                fig.set_nan_color('0.95')
-                # add colorbar
-                fig.add_colorbar()
-                fig.colorbar.show(box_orientation='horizontal', width=0.1, pad=0.0,
-                                  location='top')
-                fig.colorbar.set_font(family='sans_serif',size=text_size)
-                fig.colorbar.set_axis_label_font(family='sans_serif',size=text_size)
-                #
-                fig.show_contour(nh3mom0_hdu, colors='gray', levels=cont_levs, linewidths=w11_lw)
-                # Axis labels
-                fig.axis_labels.set_font(family='sans_serif',size=text_size)
-                # Ticks
-                fig.ticks.set_color(text_color)
-                fig.tick_labels.set_font(family='sans_serif',size=text_size)
-                fig.tick_labels.set_style('colons')
-                fig.tick_labels.set_xformat('hh:mm:ss')
-                fig.tick_labels.set_yformat('dd:mm')
-                # Add beam
-                fig.add_beam(major=0.0088441,minor=0.0088441,angle=0)
-                fig.beam.set_color(beam_color)
-                fig.beam.set_corner('bottom left')
-                # Scale bar
-                # magic line of code to obtain scale in arcsec obtained from
-                # http://www.astropy.org/astropy-tutorials/Quantities.html
-                ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies=u.dimensionless_angles())
-                fig.add_scalebar(ang_sep.to(u.degree))
-                fig.scalebar.set_corner(plot_param['scalebar_pos'])
-                fig.scalebar.set_font(family='sans_serif',size=text_size)
-                fig.scalebar.set(color=text_color)
-                fig.scalebar.set_label('{0:4.2f}'.format(plot_param['scalebar_size']))
-                # Labels
-                label = label_list[i]
-                label_loc = plot_param['label_loc']
-                label_ha = plot_param['label_ha']
-                fig.add_label(label_loc[0],label_loc[1],
-                              '{0}\n N({1})'.format(region,line),
-                              relative=True, color=text_color,
-                              horizontalalignment=label_ha,
-                              family='sans_serif',size=text_size)
-                # fig.set_system_latex(True)
-                fig.save('figures/{0}_{1}_{2}_N.pdf'.format(region,line,file_extension),
-                         adjust_bbox=True,dpi=200)
-                fig.close()
-            else:
-                print('File {0} not found'.format(gparamfits))
+                else:
+                    print('File {0} not found'.format(gparamfits))
