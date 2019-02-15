@@ -12,6 +12,7 @@ import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 from .gauss_fit import gauss_fitter
 from .run_first_look import trim_edge_spectral_cube
+import glob
 
 from pyspeckit.spectrum.models import ammonia
 from .config import plottingDictionary
@@ -269,14 +270,20 @@ def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3', thr
             mom_0_rms=rms * dv * np.sqrt(n_chan)
             mom_0_rms.write( file_rms_mom, overwrite=True)
 
-def run_moment_rest_all():
+def run_moment_rest_all(file_extension='all_rebase3',threshold=0.0125,save_masked=False,trim_edge=True):
     """
-    Update the moment calculations for all DR1 regions for non-NH3 lines
+    Update the moment calculations for all regions for non-NH3 lines
+    Get list of regions - run from images/ directory
+    Assume directories correspond to regions to be imaged
+    Update - use catalog?
     """
-    update_rest_moment0(region_name='B18',file_extension='DR1_rebase3',v_mean=5.9,sigma_v=0.2)
-    update_rest_moment0(region_name='L1688',file_extension='DR1_rebase3',v_mean=3.75,sigma_v=0.15)
-    update_rest_moment0(region_name='NGC1333',file_extension='DR1_rebase3',v_mean=8.4,sigma_v=0.2)
-    update_rest_moment0(region_name='OrionA',file_extension='DR1_rebase3',v_mean=9.8,sigma_v=0.2)
+    region_list = glob.glob("*/")
+    for i in range(len(region_list)):
+        region_list[i] = region_list[i].strip("/")
+    if 'figures' in region_list: region_list.remove('figures')
+    
+    for region in region_list:
+        update_rest_moment0_2(region_name=region, file_extension=file_extension, threshold=0.0125, save_masked=save_masked,trim_edge=trim_edge)
 
 
 def run_plot_fit_all():
