@@ -273,13 +273,15 @@ def plot_property_maps(regions='all',file_extension='all_rebase3'):
                     mask = binary_opening(nh3mom0 > LowestContour, selem)
                     MaskedMap = mask*nh3mom0
                     nh3mom0_hdu[0].data = MaskedMap
+                    # Plot log of column for clarity
+                    log_data = np.log10(col_hdu[0].data)
+                    col_hdu[0].data = log_data
                     # Use percentiles to set initial plot colourscale ranges
-                    # Need to omit zeros from calculation
-                    v_min=np.nanpercentile(col_hdu[0].data[np.where(col_hdu[0].data !=0)],0.5)
-                    v_max=np.nanpercentile(col_hdu[0].data[np.where(col_hdu[0].data !=0)],99.5)
+                    v_min=np.nanpercentile(col_hdu[0].data[np.where(col_hdu[0].data > 0)],0.5)
+                    v_max=np.nanpercentile(col_hdu[0].data[np.where(col_hdu[0].data > 0)],99.5)
                     v_mid = 0
                     fig=aplpy.FITSFigure(col_hdu)
-                    fig.show_colorscale(cmap='Blues',vmin=v_min, vmax=v_max, vmid=v_mid,stretch='log')
+                    fig.show_colorscale(cmap='Blues',vmin=v_min,vmax=v_max)
                     # For some reason having set_nan_color *after* colorbar messes up the tick locations! 
                     fig.set_nan_color('0.95')
                     # add colorbar
@@ -312,11 +314,10 @@ def plot_property_maps(regions='all',file_extension='all_rebase3'):
                     fig.scalebar.set(color=text_color)
                     fig.scalebar.set_label('{0:4.2f}'.format(plot_param['scalebar_size']))
                     # Labels
-                    label = label_list[i]
                     label_loc = plot_param['label_loc']
                     label_ha = plot_param['label_ha']
                     fig.add_label(label_loc[0],label_loc[1],
-                                  '{0}\n N({1})'.format(region,line),
+                                  '{0}\nlog N({1})'.format(region,line),
                                   relative=True, color=text_color,
                                   horizontalalignment=label_ha,
                                   family='sans_serif',size=text_size)

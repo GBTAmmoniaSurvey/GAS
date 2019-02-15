@@ -75,12 +75,13 @@ def plot_moments_QA(regions='all',file_extension='base_all'):
                 if os.path.isfile(file_mom0):
                     line_hdu = fits.open(file_mom0)
                     # Use percentiles to set initial plot colourscale ranges
-                    v_min=np.nanpercentile(line_hdu[0].data,0.1)
+                    v_min=np.nanpercentile(line_hdu[0].data,0.5)
                     v_max=np.nanpercentile(line_hdu[0].data,99.9)
                     fig=aplpy.FITSFigure(file_mom0, hdu=0)
                     if line_i == 'NH3_11':
                         fig.show_colorscale(cmap=color_table,vmin=v_min, vmax=v_max, stretch='log',
                                             vmid=v_min-(1.*np.abs(v_min)))
+                        fig.set_nan_color('0.95')
                         cbar_ticks = [0,3,6,12,24,48,96]
                         # add colorbar
                         fig.add_colorbar()
@@ -102,7 +103,6 @@ def plot_moments_QA(regions='all',file_extension='base_all'):
                                           location='top', axis_label_text='Integrated Intensity (K km s$^{-1}$)')
                     fig.colorbar.set_font(family='sans_serif',size=text_size)
                     fig.colorbar.set_axis_label_font(family='sans_serif',size=text_size)
-                    fig.set_nan_color('0.95')
                     #
                     fig.show_contour(w11_hdu, colors='gray', levels=cont_levs, linewidths=w11_lw)
                     # Axis labels
@@ -185,6 +185,7 @@ def plot_rms_QA(regions='all',file_extension='base_all'):
                     v_max=np.nanpercentile(line_hdu[0].data,99.)
                     fig=aplpy.FITSFigure(file_rms, hdu=0)
                     fig.show_colorscale( cmap=color_table,vmin=v_min, vmax=v_max)
+                    fig.set_nan_color('0.95')
                     # add colorbar
                     fig.add_colorbar()
                     #fig.colorbar.set_width(0.15)
@@ -192,7 +193,6 @@ def plot_rms_QA(regions='all',file_extension='base_all'):
                                        location='top', axis_label_text='(K)')
                     fig.colorbar.set_font(family='sans_serif',size=text_size)
                     fig.colorbar.set_axis_label_font(family='sans_serif',size=text_size)
-                    fig.set_nan_color('0.95')
                     # Axis labels
                     fig.axis_labels.set_font(family='sans_serif',size=text_size)
                     # Ticks
@@ -309,13 +309,13 @@ def plot_property_maps(regions='all',file_extension='base_all'):
                         v_max = np.nanpercentile(maskedProp,95)
                 fig=aplpy.FITSFigure(prop_hdu)
                 fig.show_colorscale(cmap=ctable_list[i],vmin=v_min, vmax=v_max)
+                fig.set_nan_color('0.99')
                 # add colorbar
                 fig.add_colorbar()
                 fig.colorbar.show(box_orientation='horizontal', width=0.1, pad=0.0,# ticks=cbar_ticks,
                                   location='top')#, axis_label_text='Integrated Intensity (K km s$^{-1}$)')
                 fig.colorbar.set_font(family='sans_serif',size=text_size)
                 fig.colorbar.set_axis_label_font(family='sans_serif',size=text_size)
-                fig.set_nan_color('0.99')
                 #
                 fig.show_contour(w11_hdu, colors='gray', levels=cont_levs, linewidths=w11_lw)
                 # Axis labels
