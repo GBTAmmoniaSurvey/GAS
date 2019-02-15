@@ -7,7 +7,7 @@ L1688 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom right',
          'sigma_mult' : 1.
          }
 
-L1689 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom right',
+L1689 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'top right',
          'label_loc' : [0.025,0.95], 'label_ha' : 'left',
          'distance' : 137.3*u.pc,
          'sigma_mult' : 1.
@@ -22,13 +22,13 @@ L1712 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom right',
 # Gobelins distance 126.6 pc
 B18 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom right',
        'distance' : 135*u.pc,
-       'label_loc' : [0.025,0.95], 'label_ha' : 'left',
+       'label_loc' : [0.025,0.9], 'label_ha' : 'left',
        'sigma_mult' : 1.
        }
 
-NGC1333 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom left',
+NGC1333 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'top right',
            'distance' : 250.*u.pc,
-           'label_loc' : [0.95,0.9], 'label_ha' : 'right',
+           'label_loc' : [0.95,0.8], 'label_ha' : 'right',
            'sigma_mult' : 1.
          }
 
@@ -44,7 +44,7 @@ OrionA_S = {'scalebar_size': 0.5*u.pc, 'scalebar_pos': 'bottom right',
             'sigma_mult' : 1.
          }
 
-B1 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom left',
+B1 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'top right',
       'distance' : 250.*u.pc,
       'label_loc' : [0.025,0.95], 'label_ha' : 'left',
       'sigma_mult' : 1.
@@ -62,7 +62,7 @@ L1448 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom right',
          'sigma_mult' : 1.
          }
 
-L1455 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom left',
+L1455 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'left',
          'distance' : 250.*u.pc,
          'label_loc' : [0.025,0.95], 'label_ha' : 'left',
          'sigma_mult' : 1.
@@ -102,13 +102,13 @@ Cepheus_L1228 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom right',
                  'label_loc' : [0.025,0.95], 'label_ha' : 'left',
                  'sigma_mult' : 1.}
 
-Cepheus_L1251 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom right',
+Cepheus_L1251 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'top right',
                  'distance' : 300.*u.pc,
                  'label_loc' : [0.025,0.95], 'label_ha' : 'left',
                  'sigma_mult' : 1.}
 
 # Gobelins distance
-IC348 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom left',
+IC348 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'top right',
          'distance' : 321.*u.pc,
          'label_loc' : [0.025,0.95], 'label_ha' : 'left',
          'sigma_mult' : 1.}

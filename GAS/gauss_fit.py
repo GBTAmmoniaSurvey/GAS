@@ -1,4 +1,5 @@
 from spectral_cube import SpectralCube
+import pyspeckit
 from astropy.io import fits
 import matplotlib.pyplot as plt
 import astropy.units as u
@@ -8,8 +9,11 @@ from scipy import *
 import time
 import pprocess
 from astropy.convolution import convolve
+from scipy.ndimage import binary_opening
 import radio_beam
 import sys
+import os
+import glob
 
 
 def run_gauss_fits_all(file_extension='all_rebase3'):
@@ -255,6 +259,68 @@ def gauss_fitter(region = 'Cepheus_L1251', snr_min = 3.0, mol = 'C2S', vmin = 5.
 	param_header['PLANE7'] = 'sigma_err'
 
 	fits.writeto(ParamOut, param_cube, header=param_header, clobber=True)
+
+
+def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
+        # Mask Gaussian fit results based on some S/N and parameter checks
+        if file_extension:
+                root = file_extension
+        else:
+                root = 'all'
+        line_list = ['C2S','HC5N','HC7N_22_21','HC7N_21_20','NH3_33']
+        for line in line_list:
+                gparamfits = '{0}/{0}_{2}_{1}_param_cube.fits'.format(region,root,line)
+                gcubefits  = '{0}/{0}_{2}_{1}_gauss_cube.fits'.format(region,root,line)
+                rmsfits    = '{0}/{0}_{2}_{1}_rms_QA.fits'.format(region,root,line)
+                mom0fits   = '{0}/{0}_{2}_{1}_mom0_QA.fits'.format(region,root,line)
+                m0sigfits   = '{0}/{0}_{2}_{1}_mom0_sigma_QA.fits'.format(region,root,line)
+                maskedfits = '{0}/{0}_{2}_{1}_param_cube_masked.fits'.format(region,root,line)
+                # Load pyspeckit cube and parameter cube if exists:
+                if os.path.isfile(gparamfits):
+                        gauss_cube = pyspeckit.Cube(gcubefits)
+                        param_cube = SpectralCube.read(gparamfits)
+                        param_pycube = pyspeckit.Cube(cube=param_cube)
+                        rms = fits.getdata(rmsfits)
+                        mom0 = fits.getdata(mom0fits)
+                        m0sig = fits.getdata(m0sigfits)
+                        # define mask 
+                        mask3d = gauss_cube.cube > threshold
+                        im_mask=np.sum(mask3d, axis=0)
+                        # Defining mask for poor fits. Using moment map and moment map sigma here.
+                        # Need to test on a number of regions. 
+                        for ii in np.arange(im_mask.shape[1]):
+                                for jj in np.arange( im_mask.shape[0]):
+                                        # Make sure unobserved regions are masked
+                                        if np.isnan(mom0[jj,ii]):
+                                                param_pycube.cube[:,jj,ii] = np.nan
+                                        else:
+                                                if ((im_mask[jj,ii] == 0) or 
+                                                    (param_pycube.cube[2,jj,ii] < 3*param_pycube.cube[5,jj,ii]) or
+                                                    (param_pycube.cube[2,jj,ii] == 0) or (param_pycube.cube[4,jj,ii] > 0.3) or 
+                                                    (mom0[jj,ii] < (4*m0sig[jj,ii]))):
+                                                        param_pycube.cube[:,jj,ii] = 0
+                        # Add last step to drop small (noisy) regions
+                        selem = np.array([[0,1,0],[1,1,1],[0,1,0]])
+                        mask = binary_opening(param_pycube.cube[0,:,:] > 0, selem)
+                        MaskedMap = mask*param_pycube.cube
+                        # create masked parameter cube
+                        masked_param_hdu = fits.PrimaryHDU(MaskedMap,header=param_cube.header)
+                        masked_param_hdu.writeto(maskedfits,overwrite=True)
+
+
+def mask_gauss_fits_all(file_extension='all_rebase3',threshold=0.0125):
+        # Get list of regions - run from images/ directory
+        # Assume directories correspond to regions to be imaged
+        # Update - use catalog?
+        # Note: need to have already updated moment maps based on fits for this step because we're using the mom0_QA files...
+        region_list = glob.glob("*/")
+        for i in range(len(region_list)):
+                region_list[i] = region_list[i].strip("/")
+        if 'figures' in region_list: region_list.remove('figures')
+
+        for region in region_list:
+                mask_gauss_fits(region=region,file_extension=file_extension,threshold=threshold)
+
 
 ### Examples ###
 # Fit the HC5N data in Cepheus_L1251, without convolution
