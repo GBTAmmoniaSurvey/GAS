@@ -271,9 +271,9 @@ def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
         for line in line_list:
                 gparamfits = '{0}/{0}_{2}_{1}_param_cube.fits'.format(region,root,line)
                 gcubefits  = '{0}/{0}_{2}_{1}_gauss_cube.fits'.format(region,root,line)
-                rmsfits    = '{0}/{0}_{2}_{1}_rms_QA.fits'.format(region,root,line)
-                mom0fits   = '{0}/{0}_{2}_{1}_mom0_QA.fits'.format(region,root,line)
-                m0sigfits   = '{0}/{0}_{2}_{1}_mom0_sigma_QA.fits'.format(region,root,line)
+                rmsfits    = '{0}/{0}_{2}_{1}_rms.fits'.format(region,root,line)
+                mom0fits   = '{0}/{0}_{2}_{1}_mom0.fits'.format(region,root,line)
+                #m0sigfits   = '{0}/{0}_{2}_{1}_mom0_sigma_QA.fits'.format(region,root,line)
                 maskedfits = '{0}/{0}_{2}_{1}_param_cube_masked.fits'.format(region,root,line)
                 # Load pyspeckit cube and parameter cube if exists:
                 if os.path.isfile(gparamfits):
@@ -282,7 +282,7 @@ def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
                         param_pycube = pyspeckit.Cube(cube=param_cube)
                         rms = fits.getdata(rmsfits)
                         mom0 = fits.getdata(mom0fits)
-                        m0sig = fits.getdata(m0sigfits)
+                        #m0sig = fits.getdata(m0sigfits)
                         # define mask 
                         mask3d = gauss_cube.cube > threshold
                         im_mask=np.sum(mask3d, axis=0)
@@ -296,8 +296,9 @@ def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
                                         else:
                                                 if ((im_mask[jj,ii] == 0) or 
                                                     (param_pycube.cube[2,jj,ii] < 3*param_pycube.cube[5,jj,ii]) or
-                                                    (param_pycube.cube[2,jj,ii] == 0) or (param_pycube.cube[4,jj,ii] > 0.3) or 
-                                                    (mom0[jj,ii] < (4*m0sig[jj,ii]))):
+                                                    (param_pycube.cube[2,jj,ii] == 0) or (param_pycube.cube[4,jj,ii] > 0.3)):
+                                                        
+                                                        #or (mom0[jj,ii] < (4*m0sig[jj,ii]))):
                                                         param_pycube.cube[:,jj,ii] = 0
                         # Add last step to drop small (noisy) regions
                         selem = np.array([[0,1,0],[1,1,1],[0,1,0]])

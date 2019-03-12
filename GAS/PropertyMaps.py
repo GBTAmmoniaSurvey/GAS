@@ -207,7 +207,7 @@ def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3', thr
 
     """
     for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S','NH3_33']:
-        fit_file='{0}/{0}_{1}_{2}_param_cube.fits'.format(region_name,line,file_extension)
+        fit_file='{0}/{0}_{1}_{2}_param_cube_masked.fits'.format(region_name,line,file_extension)
         fit_model_file='{0}/{0}_{1}_{2}_gauss_cube.fits'.format(region_name,line,file_extension)
         file_in ='{0}/{0}_{1}_{2}.fits'.format(region_name,line,file_extension)
         file_out='{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region_name,line,file_extension)
@@ -253,7 +253,25 @@ def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3', thr
                 for jj in np.arange( im_mask.shape[0]):
                     if ((im_mask[jj,ii] == 0) or (pycube.parcube[2,jj,ii] < 3*pycube.errcube[2,jj,ii]) or
                         (pycube.errcube[1,jj,ii] == 0) or (pycube.errcube[1,jj,ii] > 0.2)):
-                        mask3d[:,jj,ii] = total_spc
+                        # Find vlsr of nearby fits
+                        vmap_loc = vmap[jj-20:jj+20,ii-20:ii+20]
+                        vmean_loc = np.mean(vmap_loc[vmap_loc != 0])*u.km/u.s
+                        if np.isfinite(vmean_loc):
+                            vshift = np.int((vmean - vmean_loc)/dv)
+                            # Shift total_spc to match local vlsr
+                            total_spc_shift = np.roll(total_spc,vshift)
+                        else:
+                            # Try bigger window
+                            vmap_loc = vmap[jj-50:jj+50,ii-50:ii+50]
+                            vmean_loc = np.mean(vmap_loc[vmap_loc != 0])*u.km/u.s
+                            if np.isfinite(vmean_loc):
+                                vshift = np.int((vmean - vmean_loc)/dv)
+                                # Shift total_spc to match local vlsr
+                                total_spc_shift = np.roll(total_spc,vshift)
+                            else:
+                                # Use original window if no good fits nearby
+                                total_spc_shift = total_spc
+                        mask3d[:,jj,ii] = total_spc_shift
             n_chan=np.sum(mask3d, axis=0)
             # create masked cube
             cube2 = cube.with_mask(mask3d)
