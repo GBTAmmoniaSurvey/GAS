@@ -144,11 +144,11 @@ def calc_column_densities_fits(region='B18',file_extension='all_rebase3',tex=7.*
 
 def calc_all_columns(file_extension='all_rebase3',tex=7.*u.K):
     # Get region list from directories in GAS/imaging/
-    region_list = glob.glob("*/")
-    for i in range(len(region_list)):
-        region_list[i] = region_list[i].strip("/")
-    if 'figures' in region_list: 
-        region_list.remove('figures')
+    region_list = ['B1','B18','B1E','B59','Cepheus_L1228','Cepheus_L1251',
+                       'CrAeast','CrAwest','HC2','IC348','IC5146','L1448','L1451',
+                       'L1455','L1688','L1689','L1712','NGC1333','OrionA','OrionA_S',
+                       'OrionB_NGC2023-2024','OrionB_NGC2068-2071','Perseus','Pipe_Core40',
+                       'Serpens_Aquila','Serpens_MWC297']
 
     for region in region_list:
         calc_column_densities_fits(region=region,file_extension=file_extension,tex=tex)
