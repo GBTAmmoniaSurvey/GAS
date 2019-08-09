@@ -116,6 +116,7 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
                       Cleaned up
     Update (19/7/12): Removed S/N limit on (2,2) line, base masking of, e.g., Tk only on 
                       uncertainties in fitted parameters
+    Update (19/8/9):  Additional mask on N, Tk where no Tex values, and upper limit on e(N)
 
     Parameters
     ----------
@@ -134,6 +135,8 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
 
     flagMinTk = 5.0
     flagMaxeTk = 3.0
+
+    flagMaxeN = 0.15
 
     flagSN11 = 3.0
 
@@ -167,6 +170,7 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     etex = np.copy(cube[7,:,:])
     tk   = np.copy(cube[0,:,:])
     etk  = np.copy(cube[6,:,:])
+    eN   = np.copy(cube[8,:,:])
 
     hd = hd_cube.copy()
     rm_key=['NAXIS3','CRPIX3','CDELT3', 'CUNIT3', 'CTYPE3', 'CRVAL3']
@@ -180,7 +184,7 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     param=cube[0,:,:]
     eparam = cube[6,:,:]
     parMask = ((tex >flagMinTex) & (param >flagMinTk) & \
-               (etex < flagMaxeTex) & (eparam < flagMaxeTk) & (eparam != 0))
+               (etex < flagMaxeTex) & (eparam < flagMaxeTk) & (eparam != 0) & (eN<flagMaxeN) & (eN > 0))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_Tkin_{1}_masked.fits".format(region,root)
@@ -212,7 +216,8 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     hd['BUNIT']='cm-2'
     param=cube[2,:,:]
     eparam=cube[8,:,:]
-    parMask = ((tex > flagMinTex) & (tk > flagMinTk))
+    parMask = ((sn11>=flagSN11) & (tex > flagMinTex) & (tk > flagMinTk) & (etex < flagMaxeTex) &
+               (eparam < flagMaxeN) & (eparam > 0))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_N_NH3_{1}_masked.fits".format(region,root)
