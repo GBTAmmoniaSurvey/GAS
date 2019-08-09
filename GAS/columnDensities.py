@@ -187,7 +187,7 @@ def plot_property_maps(regions='all',file_extension='all_rebase3'):
         if os.path.isdir(region):
             print region
             # Use NH3 (1,1) moment maps for contours? 
-            file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
+            file_w11='{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region,file_extension)
             plot_param = plottingDictionary[region]
             for line in line_list:
                 gparamfits = '{0}/{0}_{2}_{1}_param_cube_masked.fits'.format(region,file_extension,line)
@@ -260,7 +260,7 @@ def plot_property_maps(regions='all',file_extension='all_rebase3'):
         if os.path.isdir(region):
             print region
             # Use NH3 (1,1) moment maps for contours? 
-            file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
+            file_w11='{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region,file_extension)
             plot_param = plottingDictionary[region]
             for line in line_list:
                 colfits = '{0}/{0}_{2}_{1}_N.fits'.format(region,file_extension,line)
