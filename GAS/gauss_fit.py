@@ -294,10 +294,11 @@ def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
                                         if np.isnan(mom0[jj,ii]):
                                                 param_pycube.cube[:,jj,ii] = np.nan
                                         else:
-                                                if ((im_mask[jj,ii] == 0) or 
+                                                if ((im_mask[jj,ii] == 0) or
+                                                    # error in line width vs. line width value
                                                     (param_pycube.cube[2,jj,ii] < 3*param_pycube.cube[5,jj,ii]) or
+                                                    # no good fit to line width or large uncertainty in vlsr fit
                                                     (param_pycube.cube[2,jj,ii] == 0) or (param_pycube.cube[4,jj,ii] > 0.3)):
-                                                        
                                                         #or (mom0[jj,ii] < (4*m0sig[jj,ii]))):
                                                         param_pycube.cube[:,jj,ii] = 0
                         # Add last step to drop small (noisy) regions
