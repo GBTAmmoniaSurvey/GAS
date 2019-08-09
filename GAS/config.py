@@ -104,7 +104,7 @@ Cepheus_L1228 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'bottom right',
 
 Cepheus_L1251 = {'scalebar_size': 0.1*u.pc, 'scalebar_pos': 'top right',
                  'distance' : 300.*u.pc,
-                 'label_loc' : [0.025,0.95], 'label_ha' : 'left',
+                 'label_loc' : [0.025,0.9], 'label_ha' : 'left',
                  'sigma_mult' : 1.}
 
 # Gobelins distance

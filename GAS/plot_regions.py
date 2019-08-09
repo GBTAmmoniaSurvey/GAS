@@ -24,17 +24,15 @@ def mask_binary(imageHDU,LowestContour,selem):
     imageHDU[0].data = MaskedMap
     return imageHDU, mask
 
-def plot_moments_QA(regions='all',file_extension='base_all'):
-    # Get list of regions - run from images/ directory
-    # Assume directories correspond to regions to be imaged
-    # Update - use catalog?
-    if regions == 'all':
-        region_list = glob.glob("*/")
-        for i in range(len(region_list)):
-            region_list[i] = region_list[i].strip("/")
-        if 'figures' in region_list: region_list.remove('figures')
+def plot_moments_QA(regions=None,file_extension='all_rebase3',release='all'):
+
+    RegionCatalog = catalogs.GenerateRegions(release=release)
+    if regions is None:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
     else:
-        region_list = [regions]
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
 
     line_list  = ['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
     label_list = ['NH$_3$(1,1)','NH$_3$(2,2)','NH$_3$(3,3)','C$_2$S','HC$_5$N',
@@ -52,15 +50,10 @@ def plot_moments_QA(regions='all',file_extension='base_all'):
     # Masking of small (noisy) regions
     selem = np.array([[0,1,0],[1,1,1],[0,1,0]])
 
-    for region in region_list:
+    for ThisRegion in RegionCatalog:
+        region = ThisRegion['Region name']
         plot_param = plottingDictionary[region]
-        # Want to use updated, rebaselined moment maps where available:
-        test_rebase = '{0}/{0}_NH3_11_{1}_rebase3_mom0_QA.fits'.format(region,file_extension)
-        if os.path.isfile(test_rebase):
-            extension = '{0}_rebase3'.format(file_extension)
-        else:
-            extension = file_extension
-        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,extension)
+        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region,extension)
         if os.path.isfile(file_w11):
             LowestContour= cont_levs[0]*0.5
             w11_hdu = fits.open(file_w11)
@@ -71,7 +64,7 @@ def plot_moments_QA(regions='all',file_extension='base_all'):
             for i in range(len(line_list)):
                 line_i=line_list[i]
                 label_i=label_list[i]
-                file_mom0='{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region,line_i,extension)
+                file_mom0='{0}/{0}_{1}_{2}_mom0_QA_trim.fits'.format(region,line_i,extension)
                 if os.path.isfile(file_mom0):
                     line_hdu = fits.open(file_mom0)
                     # Use percentiles to set initial plot colourscale ranges
@@ -137,22 +130,21 @@ def plot_moments_QA(regions='all',file_extension='base_all'):
                     # fig.set_system_latex(True)
                     fig.save( 'figures/{0}_{1}_{2}_mom0_QA_map.pdf'.format(region,line_i,extension),adjust_bbox=True,dpi=200)
                     fig.close()
-            else:
-                print('File {0} not found'.format(file_mom0))
-    else:
-        print('File {0} not found'.format(file_w11))
+                else:
+                    print('File {0} not found'.format(file_mom0))
+        else:
+            print('File {0} not found'.format(file_w11))
 
 
-def plot_rms_QA(regions='all',file_extension='base_all'):
-    # Get list of regions - run from images/ directory
-    # Assume directories correspond to regions to be imaged
-    # Update - use catalog?
-    if regions == 'all':
-        region_list = glob.glob("*/")
-        for i in range(len(region_list)):
-            region_list[i] = region_list[i].strip("/")
+def plot_rms_QA(regions=None,file_extension='all_rebase3',release='all'):
+
+    RegionCatalog = catalogs.GenerateRegions(release=release)
+    if regions is None:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
     else:
-        region_list = [regions]
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
 
     line_list  = ['NH3_11','NH3_22','NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
     label_list = ['NH$_3$(1,1)','NH$_3$(2,2)','NH$_3$(3,3)','C$_2$S','HC$_5$N',
@@ -166,18 +158,15 @@ def plot_rms_QA(regions='all',file_extension='base_all'):
     # Masking of small (noisy) regions
     selem = np.array([[0,1,0],[1,1,1],[0,1,0]])
 
-    for region in region_list:
-        test_rebase = '{0}/{0}_NH3_11_{1}_rebase3_rms_QA.fits'.format(region,file_extension)
-        if os.path.isfile(test_rebase):
-            extension = '{0}_rebase3'.format(file_extension)
-        else:
-            extension = file_extension
-        file_r11='{0}/{0}_NH3_11_{1}_rms_QA.fits'.format(region,extension)
+    for ThisRegion in RegionCatalog:
+        region = ThisRegion['Region name']
+        plot_param = plottingDictionary[region]
+        file_r11='{0}/{0}_NH3_11_{1}_rms_QA_trim.fits'.format(region,extension)
         if os.path.isfile(file_r11):
             for i in range(len(line_list)):
                 line_i=line_list[i]
                 label_i=label_list[i]
-                file_rms='{0}/{0}_{1}_{2}_rms_QA.fits'.format(region,line_i,extension)
+                file_rms='{0}/{0}_{1}_{2}_rms_QA_trim.fits'.format(region,line_i,extension)
                 if os.path.isfile(file_rms):
                     line_hdu = fits.open(file_rms)
                     # Use percentiles to set initial plot colourscale ranges
@@ -208,7 +197,7 @@ def plot_rms_QA(regions='all',file_extension='base_all'):
                     # Scale bar
                     # magic line of code to obtain scale in arcsec obtained from
                     # http://www.astropy.org/astropy-tutorials/Quantities.html
-                    ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies=dimensionless_angles())
+                    ang_sep =  (plot_param['scalebar_size'].to(u.au)/plot_param['distance']).to(u.arcsec, equivalencies=u.dimensionless_angles())
                     fig.add_scalebar(ang_sep.to(u.degree))
                     fig.scalebar.set_corner(plot_param['scalebar_pos'])
                     fig.scalebar.set_font(family='sans_serif',size=text_size)
@@ -225,22 +214,21 @@ def plot_rms_QA(regions='all',file_extension='base_all'):
                     # fig.set_system_latex(True)
                     fig.save( 'figures/{0}_{1}_{2}_rms_QA_map.pdf'.format(region,line_i,extension),adjust_bbox=True)
                     fig.close()
-            else:
-                print('File {0} not found'.format(file_rms))
-    else:
-        print('File {0} not found'.format(file_r11))
+                else:
+                    print('File {0} not found'.format(file_rms))
+        else:
+            print('File {0} not found'.format(file_r11))
 
 
-def plot_property_maps(regions='all',file_extension='base_all'):
-    # Get list of regions - run from images/ directory
-    # Assume directories correspond to regions to be imaged
-    # Update - use catalog?
-    if regions == 'all':
-        region_list = glob.glob("*/")
-        for i in range(len(region_list)):
-            region_list[i] = region_list[i].strip("/")
+def plot_property_maps(regions=None,file_extension='all_rebase3',release='all'):
+
+    RegionCatalog = catalogs.GenerateRegions(release=release)
+    if regions is None:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
     else:
-        region_list = [regions]
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
 
     ext_list  = [4,3,0,1,2]
     label_list = ['$v_{LSR}$ (km s$^{-1}$)','$\sigma_v$ (km s$^{-1}$)','$T_K$ (K)','$T_{ex}$ (K)','log N(para-NH$_3$)']
@@ -257,19 +245,14 @@ def plot_property_maps(regions='all',file_extension='base_all'):
     # Masking of small (noisy) regions
     selem = np.array([[0,1,0],[1,1,1],[0,1,0]])
 
-    for region in region_list:
+    for ThisRegion in RegionCatalog:
+        region = ThisRegion['Region name']
         print region
         plot_param = plottingDictionary[region]
-        # Want to use updated, rebaselined moment maps where available:
-        test_rebase = '{0}/{0}_NH3_11_{1}_rebase3_mom0_QA.fits'.format(region,file_extension)
-        if os.path.isfile(test_rebase):
-            extension = '{0}_rebase3'.format(file_extension)
-        else:
-            extension = file_extension
-        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,extension)
+        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region,file_extension)
         if not os.path.isfile(file_w11):
-            file_w11 = '{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,extension)
-        data_file = '{0}/{0}_parameter_maps_{1}.fits'.format(region,extension)
+            file_w11 = '{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
+        data_file = '{0}/{0}_parameter_maps_{1}_masked.fits'.format(region,file_extension)
         if os.path.isfile(data_file):
             hdu = fits.open(data_file)
             data = hdu[0].data
@@ -348,7 +331,7 @@ def plot_property_maps(regions='all',file_extension='base_all'):
                               horizontalalignment=label_ha,
                               family='sans_serif',size=text_size)
                 # fig.set_system_latex(True)
-                fig.save( 'figures/{0}_{1}_{2}.pdf'.format(region,extension,file_list[i]),adjust_bbox=True,dpi=200)
+                fig.save( 'figures/{0}_{1}_{2}.pdf'.format(region,file_extension,file_list[i]),adjust_bbox=True,dpi=200)
                 fig.close()
-    else:
-        print('File {0} not found'.format(data_file))
+        else:
+            print('File {0} not found'.format(data_file))
