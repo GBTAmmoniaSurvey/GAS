@@ -114,6 +114,8 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
                       Set flagged values to zero rather than NaN
                       Output masked cube file
                       Cleaned up
+    Update (19/7/12): Removed S/N limit on (2,2) line, base masking of, e.g., Tk only on 
+                      uncertainties in fitted parameters
 
     Parameters
     ----------
@@ -133,11 +135,12 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     flagMinTk = 5.0
     flagMaxeTk = 3.0
 
-    flagSN22 = 2.5
     flagSN11 = 3.0
 
     root = file_extension
-    
+    if not os.path.exists('{0}/parameterMaps'.format(region)):
+        os.mkdir('{0}/parameterMaps'.format(region))
+        
     hdu=fits.open("{0}/{0}_parameter_maps_{1}_trim.fits".format(region,root))
     hd_cube=hdu[0].header
     cube=hdu[0].data
@@ -150,17 +153,9 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     m0_11data = m0_11[0].data
     hd11 = m0_11[0].header
     m0_11.close()
-    rms22hdu = fits.open("{0}/{0}_NH3_22_{1}_mom0_sigma_QA.fits".format(region,root))
-    rms22data = rms22hdu[0].data
-    rms22hdu.close()
-    m0_22 = fits.open("{0}/{0}_NH3_22_{1}_mom0_QA.fits".format(region,root))
-    m0_22data = m0_22[0].data
-    hd22 = m0_22[0].header
-    m0_22.close()
 
     sn11 = m0_11data/rms11data
     sn11HDU = fits.PrimaryHDU(sn11,hd11)
-    sn22 = m0_22data/rms22data
 
     # Get binary mask
     selem=np.array([[0,1,0],[1,1,1],[0,1,0]])
@@ -184,7 +179,7 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     hd['BUNIT']='K'
     param=cube[0,:,:]
     eparam = cube[6,:,:]
-    parMask = ((sn22 >= flagSN22) & (tex >flagMinTex) & (param >flagMinTk) & \
+    parMask = ((tex >flagMinTex) & (param >flagMinTk) & \
                (etex < flagMaxeTex) & (eparam < flagMaxeTk) & (eparam != 0))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
@@ -217,7 +212,7 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     hd['BUNIT']='cm-2'
     param=cube[2,:,:]
     eparam=cube[8,:,:]
-    parMask = ((sn22 >= flagSN22) & (tex > flagMinTex) & (tk > flagMinTk))
+    parMask = ((tex > flagMinTex) & (tk > flagMinTk))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
     file_out="{0}/parameterMaps/{0}_N_NH3_{1}_masked.fits".format(region,root)

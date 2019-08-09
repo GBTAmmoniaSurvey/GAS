@@ -53,7 +53,7 @@ def plot_moments_QA(regions=None,file_extension='all_rebase3',release='all'):
     for ThisRegion in RegionCatalog:
         region = ThisRegion['Region name']
         plot_param = plottingDictionary[region]
-        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,extension)
+        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region,extension)
         if os.path.isfile(file_w11):
             LowestContour= cont_levs[0]*0.5
             w11_hdu = fits.open(file_w11)
@@ -64,7 +64,7 @@ def plot_moments_QA(regions=None,file_extension='all_rebase3',release='all'):
             for i in range(len(line_list)):
                 line_i=line_list[i]
                 label_i=label_list[i]
-                file_mom0='{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region,line_i,extension)
+                file_mom0='{0}/{0}_{1}_{2}_mom0_QA_trim.fits'.format(region,line_i,extension)
                 if os.path.isfile(file_mom0):
                     line_hdu = fits.open(file_mom0)
                     # Use percentiles to set initial plot colourscale ranges
@@ -161,12 +161,12 @@ def plot_rms_QA(regions=None,file_extension='all_rebase3',release='all'):
     for ThisRegion in RegionCatalog:
         region = ThisRegion['Region name']
         plot_param = plottingDictionary[region]
-        file_r11='{0}/{0}_NH3_11_{1}_rms_QA.fits'.format(region,extension)
+        file_r11='{0}/{0}_NH3_11_{1}_rms_QA_trim.fits'.format(region,extension)
         if os.path.isfile(file_r11):
             for i in range(len(line_list)):
                 line_i=line_list[i]
                 label_i=label_list[i]
-                file_rms='{0}/{0}_{1}_{2}_rms_QA.fits'.format(region,line_i,extension)
+                file_rms='{0}/{0}_{1}_{2}_rms_QA_trim.fits'.format(region,line_i,extension)
                 if os.path.isfile(file_rms):
                     line_hdu = fits.open(file_rms)
                     # Use percentiles to set initial plot colourscale ranges
@@ -249,10 +249,10 @@ def plot_property_maps(regions=None,file_extension='all_rebase3',release='all'):
         region = ThisRegion['Region name']
         print region
         plot_param = plottingDictionary[region]
-        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
+        file_w11='{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region,file_extension)
         if not os.path.isfile(file_w11):
-            file_w11 = '{0}/{0}_NH3_11_{1}_mom0.fits'.format(region,file_extension)
-        data_file = '{0}/{0}_parameter_maps_{1}.fits'.format(region,file_extension)
+            file_w11 = '{0}/{0}_NH3_11_{1}_mom0_QA.fits'.format(region,file_extension)
+        data_file = '{0}/{0}_parameter_maps_{1}_masked.fits'.format(region,file_extension)
         if os.path.isfile(data_file):
             hdu = fits.open(data_file)
             data = hdu[0].data
