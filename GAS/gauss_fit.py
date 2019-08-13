@@ -6,6 +6,7 @@ import astropy.units as u
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy import *
+from . import catalogs
 import time
 import pprocess
 from astropy.convolution import convolve
@@ -309,6 +310,33 @@ def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
                         masked_param_hdu = fits.PrimaryHDU(MaskedMap,header=param_cube.header)
                         masked_param_hdu.writeto(maskedfits,overwrite=True)
 
+
+def write_fit_pars(regions=None,file_extension='all_rebase3',release='all'):
+        if file_extension:
+        	root = file_extension
+    	else:
+        	root = 'all'
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        if regions is None:
+                RegionCatalog = catalogs.GenerateRegions(release=release)
+        else:
+                RegionCatalog = catalogs.GenerateRegions(release=release)
+                keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+                RegionCatalog = RegionCatalog[keep]
+        mol_list = ['C2S','HC5N','HC7N_22_21','HC7N_21_20','NH3_33']
+        for ThisRegion in RegionCatalog:
+                region=ThisRegion['Region name']
+                for mol in mol_list:
+                        try:
+                                parFits = '{0}/{0}_{2}_{1}_param_cube_masked.fits'.format(region,root,mol)
+                                parData,parHdr = fits.getdata(parFits,header=True)
+                                parList = ['Tmb','vlsr','sigv','eTmb','eVlsr','eSigv']
+                                for i in range(len(parList)):
+                                        newHDU = fits.PrimaryHDU(parData[i],header=parHdr)
+                                        newHDUList = fits.HDUList([newHDU])
+                                        newHDUList.writeto('{0}/parameterMaps/{0}_{2}_{1}_{3}_masked.fits'.format(region,root,mol,parList[i]),overwrite=True)
+                        except:
+                                print '{0}/{0}_{2}_{1}_param_cube_masked.fits does not exist.'.format(region,root,mol)
 
 def mask_gauss_fits_all(file_extension='all_rebase3',threshold=0.0125):
         # Get list of regions - run from images/ directory
