@@ -220,10 +220,10 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
                (eparam < flagMaxeN) & (eparam > 0))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
-    file_out="{0}/parameterMaps/{0}_N_NH3_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_N_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, param, hd, overwrite=True)
     # Write out uncertainties
-    file_out="{0}/parameterMaps/{0}_eN_NH3_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_eN_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, eparam, hd, overwrite=True)    # sigma
     # Update cube
     cube[2,:,:] = param
