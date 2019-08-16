@@ -109,8 +109,8 @@ def calc_column_densities_fits(region='B18',file_extension='all_rebase3',tex=7.*
     for line in lines:
         gparamfits = '{0}/{0}_{2}_{1}_param_cube_masked.fits'.format(region,root,line)
         mom0file = '{0}/{0}_{1}_{2}_mom0_QA.fits'.format(region,line,root)
-        colfile = '{0}/{0}_{1}_{2}_N.fits'.format(region,line,root)
-        taufile = '{0}/{0}_{1}_{2}_tau.fits'.format(region,line,root)
+        colfile = '{0}/parameterMaps/{0}_{1}_{2}_N_masked.fits'.format(region,line,root)
+        taufile = '{0}/parameterMaps/{0}_{1}_{2}_tau_masked.fits'.format(region,line,root)
         # Make sure files exist
         if os.path.isfile(gparamfits):
             gparam_hdu = fits.open(gparamfits)
@@ -142,30 +142,24 @@ def calc_column_densities_fits(region='B18',file_extension='all_rebase3',tex=7.*
             new_hdu2.writeto(taufile,overwrite=True)
 
 
-def calc_all_columns(file_extension='all_rebase3',tex=7.*u.K):
-    # Get region list from directories in GAS/imaging/
-    region_list = ['B1','B18','B1E','B59','Cepheus_L1228','Cepheus_L1251',
-                       'CrAeast','CrAwest','HC2','IC348','IC5146','L1448','L1451',
-                       'L1455','L1688','L1689','L1712','NGC1333','OrionA','OrionA_S',
-                       'OrionB_NGC2023-2024','OrionB_NGC2068-2071','Perseus','Pipe_Core40',
-                       'Serpens_Aquila','Serpens_MWC297']
+def calc_all_columns(file_extension='all_rebase3',tex=7.*u.K,release='all'):
+    RegionCatalog = catalogs.GenerateRegions(release=release)
 
-    for region in region_list:
+    for ThisRegion in RegionCatalog:
+        region = ThisRegion['Region name']
         calc_column_densities_fits(region=region,file_extension=file_extension,tex=tex)
 
 
-def plot_property_maps(regions='all',file_extension='all_rebase3'):
+def plot_property_maps(regions=None,file_extension='all_rebase3',release='all'):
     # Get list of regions - run from images/ directory
     # Assume directories correspond to regions to be imaged
     # Update - use region list
-    if regions == 'all':
-        region_list = ['B1','B18','B1E','B59','Cepheus_L1228','Cepheus_L1251',
-                       'CrAeast','CrAwest','HC2','IC348','IC5146','L1448','L1451',
-                       'L1455','L1688','L1689','L1712','NGC1333','OrionA','OrionA_S',
-                       'OrionB_NGC2023-2024','OrionB_NGC2068-2071','Perseus','Pipe_Core40',
-                       'Serpens_Aquila','Serpens_MWC297']
+    if regions is None:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
     else:
-        region_list = [regions]
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
 
     ext_list  = [0,1,2]
     label_list = ['$T_B (K)','$v_\mathrm{LSR}$ (km s$^{-1}$)','$\sigma_v$ (km s$^{-1}$)']
@@ -183,7 +177,8 @@ def plot_property_maps(regions='all',file_extension='all_rebase3'):
 
     line_list = ['HC5N','C2S','HC7N_21_20','HC7N_22_21','NH3_33']
 
-    for region in region_list:
+    for ThisRegion in RegionCatalog:
+        region = ThisRegion['Region name']
         if os.path.isdir(region):
             print region
             # Use NH3 (1,1) moment maps for contours? 
@@ -263,7 +258,7 @@ def plot_property_maps(regions='all',file_extension='all_rebase3'):
             file_w11='{0}/{0}_NH3_11_{1}_mom0_QA_trim.fits'.format(region,file_extension)
             plot_param = plottingDictionary[region]
             for line in line_list:
-                colfits = '{0}/{0}_{2}_{1}_N.fits'.format(region,file_extension,line)
+                colfits = '{0}/parameterMaps/{0}_{2}_{1}_N_masked.fits'.format(region,file_extension,line)
                 if os.path.isfile(colfits):
                     col_hdu = fits.open(colfits)
                     # Get NH3 (1,1) moment contours

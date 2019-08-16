@@ -13,6 +13,7 @@ from skimage.morphology import remove_small_objects,closing,disk,opening
 from .gauss_fit import gauss_fitter
 from .run_first_look import trim_edge_spectral_cube
 import glob
+from . import catalogs
 
 from pyspeckit.spectrum.models import ammonia
 from .config import plottingDictionary
@@ -23,16 +24,16 @@ moment and property maps
 '''
 
 
-def mask_all_data(regions='all'):
-    if regions == 'all':
-        region_list = ['B1','B18','B1E','B59','Cepheus_L1228','Cepheus_L1251',
-                       'CrAeast','CrAwest','HC2','IC348','IC5146','L1448','L1451',
-                       'L1455','L1688','L1689','L1712','NGC1333','OrionA','OrionA_S',
-                       'OrionB_NGC2023-2024','OrionB_NGC2068-2071','Perseus','Pipe_Core40',
-                       'Serpens_Aquila','Serpens_MWC297']
+def mask_all_data(regions=None,release='all'):
+    if regions is None:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
     else:
-        region_list = regions
-    for region in region_list:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
+        
+    for ThisRegion in RegionCatalog:
+        region=ThisRegion['Region name']
         trim_cubes(region=region)
         flag_all_data(region=region)
 
