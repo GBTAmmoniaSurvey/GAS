@@ -6,6 +6,7 @@ import astropy.units as u
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy import *
+from . import catalogs
 import time
 import pprocess
 from astropy.convolution import convolve
@@ -294,10 +295,11 @@ def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
                                         if np.isnan(mom0[jj,ii]):
                                                 param_pycube.cube[:,jj,ii] = np.nan
                                         else:
-                                                if ((im_mask[jj,ii] == 0) or 
+                                                if ((im_mask[jj,ii] == 0) or
+                                                    # error in line width vs. line width value
                                                     (param_pycube.cube[2,jj,ii] < 3*param_pycube.cube[5,jj,ii]) or
+                                                    # no good fit to line width or large uncertainty in vlsr fit
                                                     (param_pycube.cube[2,jj,ii] == 0) or (param_pycube.cube[4,jj,ii] > 0.3)):
-                                                        
                                                         #or (mom0[jj,ii] < (4*m0sig[jj,ii]))):
                                                         param_pycube.cube[:,jj,ii] = 0
                         # Add last step to drop small (noisy) regions
@@ -309,18 +311,48 @@ def mask_gauss_fits(region='HC2',file_extension='all_rebase3',threshold=0.0125):
                         masked_param_hdu.writeto(maskedfits,overwrite=True)
 
 
-def mask_gauss_fits_all(file_extension='all_rebase3',threshold=0.0125):
-        # Get list of regions - run from images/ directory
-        # Assume directories correspond to regions to be imaged
-        # Update - use catalog?
-        # Note: need to have already updated moment maps based on fits for this step because we're using the mom0_QA files...
-        region_list = glob.glob("*/")
-        for i in range(len(region_list)):
-                region_list[i] = region_list[i].strip("/")
-        if 'figures' in region_list: region_list.remove('figures')
+def write_fit_pars(regions=None,file_extension='all_rebase3',release='all'):
+        if file_extension:
+        	root = file_extension
+    	else:
+        	root = 'all'
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        if regions is None:
+                RegionCatalog = catalogs.GenerateRegions(release=release)
+        else:
+                RegionCatalog = catalogs.GenerateRegions(release=release)
+                keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+                RegionCatalog = RegionCatalog[keep]
+        mol_list = ['C2S','HC5N','HC7N_22_21','HC7N_21_20','NH3_33']
+        for ThisRegion in RegionCatalog:
+                region=ThisRegion['Region name']
+                for mol in mol_list:
+                        try:
+                                parFits = '{0}/{0}_{2}_{1}_param_cube_masked.fits'.format(region,root,mol)
+                                parData,parHdr = fits.getdata(parFits,header=True)
+                                parList = ['Tmb','vlsr','sigv','eTmb','eVlsr','eSigv']
+                                for i in range(len(parList)):
+                                        newHDU = fits.PrimaryHDU(parData[i],header=parHdr)
+                                        newHDUList = fits.HDUList([newHDU])
+                                        newHDUList.writeto('{0}/parameterMaps/{0}_{2}_{1}_{3}_masked.fits'.format(region,root,mol,parList[i]),overwrite=True)
+                        except:
+                                print '{0}/{0}_{2}_{1}_param_cube_masked.fits does not exist.'.format(region,root,mol)
 
-        for region in region_list:
-                mask_gauss_fits(region=region,file_extension=file_extension,threshold=threshold)
+def mask_gauss_fits_all(regions=None,file_extension='all_rebase3',threshold=0.0125,release='all'):
+    # Get list of regions - run from images/ directory
+    # Assume directories correspond to regions to be imaged
+    # Update - use catalog?
+    # Note: need to have already updated moment maps based on fits for this step because we're using the mom0_QA files...
+    if regions is None:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+    else:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
+
+    for ThisRegion in RegionCatalog:
+        region=ThisRegion['Region name']
+        mask_gauss_fits(region=region,file_extension=file_extension,threshold=threshold)
 
 
 ### Examples ###

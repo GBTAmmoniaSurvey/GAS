@@ -13,6 +13,7 @@ from skimage.morphology import remove_small_objects,closing,disk,opening
 from .gauss_fit import gauss_fitter
 from .run_first_look import trim_edge_spectral_cube
 import glob
+from . import catalogs
 
 from pyspeckit.spectrum.models import ammonia
 from .config import plottingDictionary
@@ -23,16 +24,16 @@ moment and property maps
 '''
 
 
-def mask_all_data(regions='all'):
-    if regions == 'all':
-        region_list = ['B1','B18','B1E','B59','Cepheus_L1228','Cepheus_L1251',
-                       'CrAeast','CrAwest','HC2','IC348','IC5146','L1448','L1451',
-                       'L1455','L1688','L1689','L1712','NGC1333','OrionA','OrionA_S',
-                       'OrionB_NGC2023-2024','OrionB_NGC2068-2071','Perseus','Pipe_Core40',
-                       'Serpens_Aquila','Serpens_MWC297']
+def mask_all_data(regions=None,release='all'):
+    if regions is None:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
     else:
-        region_list = regions
-    for region in region_list:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
+        
+    for ThisRegion in RegionCatalog:
+        region=ThisRegion['Region name']
         trim_cubes(region=region)
         flag_all_data(region=region)
 
@@ -116,6 +117,7 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
                       Cleaned up
     Update (19/7/12): Removed S/N limit on (2,2) line, base masking of, e.g., Tk only on 
                       uncertainties in fitted parameters
+    Update (19/8/9):  Additional mask on N, Tk where no Tex values, and upper limit on e(N)
 
     Parameters
     ----------
@@ -134,6 +136,8 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
 
     flagMinTk = 5.0
     flagMaxeTk = 3.0
+
+    flagMaxeN = 0.15
 
     flagSN11 = 3.0
 
@@ -167,6 +171,7 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     etex = np.copy(cube[7,:,:])
     tk   = np.copy(cube[0,:,:])
     etk  = np.copy(cube[6,:,:])
+    eN   = np.copy(cube[8,:,:])
 
     hd = hd_cube.copy()
     rm_key=['NAXIS3','CRPIX3','CDELT3', 'CUNIT3', 'CTYPE3', 'CRVAL3']
@@ -180,13 +185,13 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     param=cube[0,:,:]
     eparam = cube[6,:,:]
     parMask = ((tex >flagMinTex) & (param >flagMinTk) & \
-               (etex < flagMaxeTex) & (eparam < flagMaxeTk) & (eparam != 0))
+               (etex < flagMaxeTex) & (eparam < flagMaxeTk) & (eparam != 0) & (eN<flagMaxeN) & (eN > 0))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
-    file_out="{0}/parameterMaps/{0}_Tkin_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_Tkin_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, param, hd, overwrite=True)
     # Write out uncertainties
-    file_out="{0}/parameterMaps/{0}_eTkin_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_eTkin_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, eparam, hd, overwrite=True)
     # Update cube
     cube[0,:,:] = param
@@ -199,10 +204,10 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     parMask = ((sn11>=flagSN11) & (tex > flagMinTex) & (tk > flagMinTk) & (etex < flagMaxeTex))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
-    file_out="{0}/parameterMaps/{0}_Tex_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_Tex_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, param, hd, overwrite=True)
     # Write out uncertainties
-    file_out="{0}/parameterMaps/{0}_eTex_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_eTex_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, eparam, hd, overwrite=True)
     # Update cube
     cube[1,:,:] = param
@@ -212,13 +217,14 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     hd['BUNIT']='cm-2'
     param=cube[2,:,:]
     eparam=cube[8,:,:]
-    parMask = ((tex > flagMinTex) & (tk > flagMinTk))
+    parMask = ((sn11>=flagSN11) & (tex > flagMinTex) & (tk > flagMinTk) & (etex < flagMaxeTex) &
+               (eparam < flagMaxeN) & (eparam > 0))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
-    file_out="{0}/parameterMaps/{0}_N_NH3_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_N_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, param, hd, overwrite=True)
     # Write out uncertainties
-    file_out="{0}/parameterMaps/{0}_eN_NH3_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_eN_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, eparam, hd, overwrite=True)    # sigma
     # Update cube
     cube[2,:,:] = param
@@ -232,10 +238,10 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     parMask = ((sn11 >= flagSN11))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
-    file_out="{0}/parameterMaps/{0}_Sigma_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_Sigma_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, param, hd, overwrite=True)
     # Write out uncertainties
-    file_out="{0}/parameterMaps/{0}_eSigma_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_eSigma_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, eparam, hd, overwrite=True)
     # Update cube
     cube[3,:,:] = param
@@ -248,10 +254,10 @@ def flag_all_data(region='OrionA',file_extension='all_rebase3'):
     parMask = ((sn11 >= flagSN11))
     param = param * pixel_mask * parMask
     eparam = eparam * pixel_mask * parMask
-    file_out="{0}/parameterMaps/{0}_Vlsr_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_Vlsr_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, param, hd, overwrite=True)
     # Write out uncertainties
-    file_out="{0}/parameterMaps/{0}_eVlsr_{1}_masked.fits".format(region,root)
+    file_out="{0}/parameterMaps/{0}_NH3_eVlsr_{1}_masked.fits".format(region,root)
     fits.writeto(file_out, eparam, hd, overwrite=True)
     # Update cube
     cube[4,:,:] = param
