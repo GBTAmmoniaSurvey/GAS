@@ -19,6 +19,10 @@ def tar_moment_files(regions=None,file_extension='all_rebase3',release='all'):
         RegionCatalog = catalogs.GenerateRegions(release=release)
         keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
         RegionCatalog = RegionCatalog[keep]
+    outDir = 'tarFiles'
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
+        
     lineList = ['NH3_33','C2S','HC5N','HC7N_21_20','HC7N_22_21']
     for ThisRegion in RegionCatalog:
         region = ThisRegion['Region name']
@@ -32,7 +36,7 @@ def tar_moment_files(regions=None,file_extension='all_rebase3',release='all'):
                 for item in files:
                     f.write("%s\n" % item)
             # Use list to tar files
-            os.system('tar zcvf {0}/{0}_NH3_{1}_{2}_maps.tgz -T {3}'.format(region,line,file_extension,fileList))
+            os.system('tar zcvf {4}/{0}_NH3_{1}_{2}_maps.tgz -T {3}'.format(region,line,file_extension,fileList,outDir))
         # Other lines
         for line in lineList:
             files = ['{0}/{0}_{1}_{2}_mom0_QA_trim.fits'.format(region,line,file_extension),'{0}/{0}_{1}_{2}_rms_QA_trim.fits'.format(region,line,file_extension),'{0}/{0}_{1}_{2}_trim.fits'.format(region,line,file_extension)]
@@ -41,7 +45,7 @@ def tar_moment_files(regions=None,file_extension='all_rebase3',release='all'):
                 for item in files:
                     f.write("%s\n" % item)
             # Use list to tar files
-            os.system('tar zcvf {0}/{0}_{1}_{2}_maps.tgz -T {3}'.format(region,line,file_extension,fileList))
+            os.system('tar zcvf {4}/{0}_{1}_{2}_maps.tgz -T {3}'.format(region,line,file_extension,fileList,outDir))
 
 
 def tar_fit_files(regions=None,file_extension='all_rebase3',release='all'):
@@ -51,6 +55,9 @@ def tar_fit_files(regions=None,file_extension='all_rebase3',release='all'):
         RegionCatalog = catalogs.GenerateRegions(release=release)
         keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
         RegionCatalog = RegionCatalog[keep]
+    outDir = 'tarFiles'
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
     # Note that NH3 (3,3), HC7N 22-21 don't have N, tau files
     lineList1 = ['C2S','HC5N','HC7N_21_20']
     lineList2 = ['NH3_33','HC7N_22_21']
@@ -66,7 +73,7 @@ def tar_fit_files(regions=None,file_extension='all_rebase3',release='all'):
             for item in files:
                 f.write("%s\n" % item)
         # Use list to tar files
-        os.system('tar zcvf {0}/{0}_NH3_parameterMaps_{1}.tgz -T {2}'.format(region,file_extension,fileList))
+        os.system('tar zcvf {3}/{0}_NH3_parameterMaps_{1}.tgz -T {2}'.format(region,file_extension,fileList,outDir))
         # Other lines
         fitResults = ['vlsr','eVlsr','sigv','eSigv','Tmb','eTmb','N','tau']
         for line in lineList1:
@@ -78,7 +85,7 @@ def tar_fit_files(regions=None,file_extension='all_rebase3',release='all'):
                 for item in files:
                     f.write("%s\n" % item)
             # Use list to tar files
-            os.system('tar zcvf {0}/{0}_{1}_parameterMaps_{2}.tgz -T {3}'.format(region,line,file_extension,fileList))
+            os.system('tar zcvf {4}/{0}_{1}_parameterMaps_{2}.tgz -T {3}'.format(region,line,file_extension,fileList,outDir))
         # Lines without N, tau maps
         fitResults = ['vlsr','eVlsr','sigv','eSigv','Tmb','eTmb']
         for line in lineList2:
@@ -90,4 +97,4 @@ def tar_fit_files(regions=None,file_extension='all_rebase3',release='all'):
                 for item in files:
                     f.write("%s\n" % item)
             # Use list to tar files
-            os.system('tar zcvf {0}/{0}_{1}_parameterMaps_{2}.tgz -T {3}'.format(region,line,file_extension,fileList))
+            os.system('tar zcvf {4}/{0}_{1}_parameterMaps_{2}.tgz -T {3}'.format(region,line,file_extension,fileList,outDir))
