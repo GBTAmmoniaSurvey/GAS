@@ -24,7 +24,7 @@ moment and property maps
 '''
 
 
-def mask_all_data(regions=None,release='all'):
+def mask_all_data(regions=None,file_extension='all_rebase3',release='all'):
     if regions is None:
         RegionCatalog = catalogs.GenerateRegions(release=release)
     else:
@@ -34,8 +34,8 @@ def mask_all_data(regions=None,release='all'):
         
     for ThisRegion in RegionCatalog:
         region=ThisRegion['Region name']
-        trim_cubes(region=region)
-        flag_all_data(region=region)
+        trim_cubes(region=region,file_extension=file_extension)
+        flag_all_data(region=region,file_extension=file_extension)
 
 def mask_binary(imageHDU,LowestContour=3,selem=np.array([[0,1,0],[1,1,1],[0,1,0]])):
     """

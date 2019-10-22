@@ -6,6 +6,7 @@ import astropy.units as u
 import glob
 from scipy.ndimage import binary_opening
 import aplpy
+from . import catalogs
 
 import matplotlib as mpl
 mpl.rcParams['xtick.direction'] = 'in'
