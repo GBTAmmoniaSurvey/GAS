@@ -19,7 +19,7 @@ def FirstLook(regions=None, file_extension=None, release='all', trim_edge=True, 
     convention specified in our observing logs.
     ----------
     regions : list
-        List of region names (strings) to be included.  If empty, all
+        List of region names (strings) to be included.  If empty, all
         regions in the log file are searched for and reduced.
     release : string
         Name of data release.  Must match boolean column name in the 

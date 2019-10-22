@@ -2,6 +2,7 @@ import pyspeckit
 import astropy.io.fits as fits
 import numpy as np
 import os
+import warnings
 from .first_look import trim_edge_cube
 from spectral_cube import SpectralCube
 from pyspeckit.spectrum.models.ammonia_constants import voff_lines_dict
@@ -12,6 +13,7 @@ import aplpy
 from skimage.morphology import remove_small_objects,closing,disk,opening
 from .gauss_fit import gauss_fitter
 from .run_first_look import trim_edge_spectral_cube
+from . import catalogs
 import glob
 
 from pyspeckit.spectrum.models import ammonia
@@ -179,7 +181,9 @@ def update_rest_moment0(region_name='L1688', file_extension='DR1_rebase3', v_mea
         rms=cube3.std(axis=0)
         rms.write( file_rms, overwrite=True)
 
-def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3', threshold=0.0125, save_masked=False,trim_edge=True):
+def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3',
+                          threshold=0.0125, save_masked=False,trim_edge=True,
+                          vsys=5.*u.km/u.s,throw=2.*u.km/u.s):
     """
     Function to update moment calculation based on centroid velocity from line fit.
     For a given line cube, we check which channels have flux in the model cube, 
@@ -200,12 +204,17 @@ def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3', thr
     save_masked : Boolean
         Keyword to store the masked cube used in the integrated intensity calculation.
         This is useful to 
-
+    trim_edge : Boolean
+        Trim map edges (3 pixels in)
+    vsys, throw: float w. units
+        Describes window in velocity to be used for moment and rms maps 
+        if no good fits to lines are found in the cube. 
     Usage: 
     import GAS
     GAS.PropertyMaps.update_rest_moment0_2(region_name='NGC1333', file_extension='DR1_rebase3', threshold=0.0125, save_masked=True)
 
     """
+    
     for line in ['HC5N','HC7N_21_20','HC7N_22_21','C2S','NH3_33']:
         fit_file='{0}/{0}_{1}_{2}_param_cube_masked.fits'.format(region_name,line,file_extension)
         fit_model_file='{0}/{0}_{1}_{2}_gauss_cube.fits'.format(region_name,line,file_extension)
@@ -217,91 +226,108 @@ def update_rest_moment0_2(region_name='L1688', file_extension='all_rebase3', thr
         # Check that files exist
         if os.path.isfile(file_in):
             # Load pyspeckit cube
-            # Might be able to just load the Gaussian cube here.. 
             pycube = pyspeckit.Cube(file_in)
             pycube.load_model_fit( fit_file, npars=3, npeaks=1, fittype='gaussian')
             # If threshold is not defined, then use the machine accuracy
             if threshold == None:
                 threshold=np.finfo(pycube.data.dtype).eps
-            # Get model cube from pyspeckit. Is completely zero for Gaussian fits. Why? 
+            # Get model cube from pyspeckit. Is completely zero for Gaussian fits. Why?
+            try:
             #modelcube = pycube.get_modelcube()
             # Using output model file from the Gaussian fitter instead
-            model = pyspeckit.Cube(fit_model_file)
-            modelcube = model.cube
-            # Use spectral cube to calculate integrated intensity maps
-            cube_raw = SpectralCube.read(file_in)
-            # in km/s not Hz
-            cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
-            if trim_edge:
-                cube = trim_edge_spectral_cube(cube) 
-            vaxis=cube.spectral_axis
-            dv=np.abs(vaxis[1]-vaxis[0])
-            # define mask 
-            mask3d = modelcube > threshold
-            # What to do with pixels without signal
-            # Calculate mean velocity and velocity dispersion
-            vmap=pycube.parcube[1,:,:]
-            sigma_map=pycube.parcube[2,:,:]
-            vmean=np.nanmean(vmap[vmap != 0])*u.km/u.s
-            sigma_v=( np.nanmedian(sigma_map[vmap != 0]))*u.km/u.s
-            total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
-            im_mask=np.sum(mask3d, axis=0)
-            # Here checking for bad fits. Places where parameter uncertainties are zero or unreasonably low
-            # Probably a more elegant way to do this! 
-            # For Gaussian fits: parameters are [amp, vlsr, sigma]
-            for ii in np.arange( im_mask.shape[1]):
-                for jj in np.arange( im_mask.shape[0]):
-                    if ((im_mask[jj,ii] == 0) or (pycube.parcube[2,jj,ii] < 3*pycube.errcube[2,jj,ii]) or
-                        (pycube.errcube[1,jj,ii] == 0) or (pycube.errcube[1,jj,ii] > 0.2)):
-                        # Find vlsr of nearby fits
-                        vmap_loc = vmap[jj-20:jj+20,ii-20:ii+20]
-                        vmean_loc = np.mean(vmap_loc[vmap_loc != 0])*u.km/u.s
-                        if np.isfinite(vmean_loc):
-                            vshift = np.int((vmean - vmean_loc)/dv)
-                            # Shift total_spc to match local vlsr
-                            total_spc_shift = np.roll(total_spc,vshift)
-                        else:
-                            # Try bigger window
-                            vmap_loc = vmap[jj-50:jj+50,ii-50:ii+50]
+                model = pyspeckit.Cube(fit_model_file)
+                modelcube = model.cube
+                # Use spectral cube to calculate integrated intensity maps
+                cube_raw = SpectralCube.read(file_in)
+                # in km/s not Hz
+                cube = cube_raw.with_spectral_unit(u.km / u.s,velocity_convention='radio')
+                if trim_edge:
+                    cube = trim_edge_spectral_cube(cube) 
+                vaxis=cube.spectral_axis
+                dv=np.abs(vaxis[1]-vaxis[0])
+                # define mask 
+                mask3d = modelcube > threshold
+                # What to do with pixels without signal
+                # Calculate mean velocity and velocity dispersion
+                vmap=pycube.parcube[1,:,:]
+                sigma_map=pycube.parcube[2,:,:]
+                vmean=np.nanmean(vmap[vmap != 0])*u.km/u.s
+                sigma_v=( np.nanmedian(sigma_map[vmap != 0]))*u.km/u.s
+                if np.isfinite(vmean):
+                    total_spc=np.sqrt( (vaxis-vmean)**2)/sigma_v < 3.0
+                else:
+                    total_spc=np.sqrt((vaxis-vsys)**2)/throw < 3
+                im_mask=np.sum(mask3d, axis=0)
+                # Here checking for bad fits. Places where parameter uncertainties are zero or unreasonably low
+                # Probably a more elegant way to do this! 
+                # For Gaussian fits: parameters are [amp, vlsr, sigma]
+                for ii in np.arange( im_mask.shape[1]):
+                    for jj in np.arange( im_mask.shape[0]):
+                        if ((im_mask[jj,ii] == 0) or (pycube.parcube[2,jj,ii] < 3*pycube.errcube[2,jj,ii]) or
+                            (pycube.errcube[1,jj,ii] == 0) or (pycube.errcube[1,jj,ii] > 0.2)):
+                            # Find vlsr of nearby fits
+                            vmap_loc = vmap[jj-20:jj+20,ii-20:ii+20]
                             vmean_loc = np.mean(vmap_loc[vmap_loc != 0])*u.km/u.s
                             if np.isfinite(vmean_loc):
                                 vshift = np.int((vmean - vmean_loc)/dv)
                                 # Shift total_spc to match local vlsr
                                 total_spc_shift = np.roll(total_spc,vshift)
                             else:
-                                # Use original window if no good fits nearby
-                                total_spc_shift = total_spc
-                        mask3d[:,jj,ii] = total_spc_shift
-            n_chan=np.sum(mask3d, axis=0)
-            # create masked cube
-            cube2 = cube.with_mask(mask3d)
-            cube3 = cube.with_mask(~mask3d)
-            #
-            if save_masked:
-                cube2.write( file_temp, overwrite=True)
-            # calculate moment map
-            moment_0 = cube2.moment(axis=0)
-            moment_0.write( file_out, overwrite=True)
-            cube3.allow_huge_operations=True
-            rms=cube3.std(axis=0)
-            rms.write( file_rms, overwrite=True)
-            mom_0_rms=rms * dv * np.sqrt(n_chan)
-            mom_0_rms.write( file_rms_mom, overwrite=True)
+                                # Try bigger window
+                                vmap_loc = vmap[jj-50:jj+50,ii-50:ii+50]
+                                vmean_loc = np.mean(vmap_loc[vmap_loc != 0])*u.km/u.s
+                                if np.isfinite(vmean_loc):
+                                    vshift = np.int((vmean - vmean_loc)/dv)
+                                    # Shift total_spc to match local vlsr
+                                    total_spc_shift = np.roll(total_spc,vshift)
+                                else:
+                                    # Use original window if no good fits nearby
+                                    total_spc_shift = total_spc
+                            mask3d[:,jj,ii] = total_spc_shift
+                n_chan=np.sum(mask3d, axis=0)
+                # create masked cube
+                cube2 = cube.with_mask(mask3d)
+                cube3 = cube.with_mask(~mask3d)
+                #
+                if save_masked:
+                    cube2.write( file_temp, overwrite=True)
+                # calculate moment map
+                moment_0 = cube2.moment(axis=0)
+                moment_0.write( file_out, overwrite=True)
+                cube3.allow_huge_operations=True
+                rms=cube3.std(axis=0)
+                rms.write( file_rms, overwrite=True)
+                mom_0_rms=rms * dv * np.sqrt(n_chan)
+                mom_0_rms.write( file_rms_mom, overwrite=True)
+            except IOError:
+                warnings.warn("File not found: {0}".format(fit_model_file))
 
-def run_moment_rest_all(file_extension='all_rebase3',threshold=0.0125,save_masked=False,trim_edge=True):
+def run_moment_rest_all(regions=None,file_extension='all_rebase3',threshold=0.0125,save_masked=False,trim_edge=True,release='all'):
     """
     Update the moment calculations for all regions for non-NH3 lines
     Get list of regions - run from images/ directory
     Assume directories correspond to regions to be imaged
     Update - use catalog?
     """
-    region_list = glob.glob("*/")
-    for i in range(len(region_list)):
-        region_list[i] = region_list[i].strip("/")
-    if 'figures' in region_list: region_list.remove('figures')
-    
-    for region in region_list:
-        update_rest_moment0_2(region_name=region, file_extension=file_extension, threshold=0.0125, save_masked=save_masked,trim_edge=trim_edge)
+    if file_extension is None:
+        file_extension = '_'+release
+
+    if regions is None:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+    else:
+        RegionCatalog = catalogs.GenerateRegions(release=release)
+        keep = [idx for idx, row in enumerate(RegionCatalog) if row['Region name'] in regions]
+        RegionCatalog = RegionCatalog[keep]
+
+    for ThisRegion in RegionCatalog:
+        region_name=ThisRegion['Region name']
+        print('Now {0}'.format(region_name))
+        vsys = ThisRegion['VAVG']*u.km/u.s
+        throw = 2.*u.km/u.s + ThisRegion['VRANGE']*u.km/u.s/2.
+        update_rest_moment0_2(region_name=region_name,
+                              file_extension=file_extension,
+                              threshold=0.0125, save_masked=save_masked,
+                              trim_edge=trim_edge,vsys=vsys,throw=throw)
 
 
 def run_plot_fit_all():
