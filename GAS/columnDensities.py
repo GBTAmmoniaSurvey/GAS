@@ -252,7 +252,8 @@ def plot_property_maps(regions=None,file_extension='all_rebase3',release='all'):
                     print('File {0} not found'.format(gparamfits))
 
     # Next plot column density maps
-    for region in region_list:
+    for ThisRegion in RegionCatalog:
+        region = ThisRegion['Region name']
         if os.path.isdir(region):
             print region
             # Use NH3 (1,1) moment maps for contours? 
