@@ -163,7 +163,7 @@ def plot_property_maps(regions=None,file_extension='all_rebase3',release='all'):
         RegionCatalog = RegionCatalog[keep]
 
     ext_list  = [0,1,2]
-    label_list = ['$T_B (K)','$v_\mathrm{LSR}$ (km s$^{-1}$)','$\sigma_v$ (km s$^{-1}$)']
+    label_list = ['$T_B$ (K)','$v_\mathrm{LSR}$ (km s$^{-1}$)','$\sigma_v$ (km s$^{-1}$)']
     file_list = ['T_B','vlsr','sigv']
     ctable_list = ['plasma','RdYlBu_r','plasma'] #'YlGnBu_r'
     text_color='black'
