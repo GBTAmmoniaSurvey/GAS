@@ -33,3 +33,4 @@ Dependencies
 * radio_beam
 * scikit-image (>=0.12.3)
 * pprocess
+* gbtpipe (>=0.1.2)
